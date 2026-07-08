@@ -1,8 +1,9 @@
 #include <iostream>
 #include "zidian.h"
 
+extern void TestLogs();
+
 int main() {
-    std::cout << "hello this is sandbox app" << std::endl;
-    std::cout << "zidian version :" << zidian::Version() << std::endl;
+    TestLogs();
     return 0;
-}
+}//end main
