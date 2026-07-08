@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-
+#include "application.h"
 #include "utils/log.h"
 
 namespace zidian{

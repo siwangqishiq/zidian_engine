@@ -1,9 +1,10 @@
 #include <iostream>
-#include "zidian.h"
 
 extern void TestLogs();
+extern void TestApplication();
 
 int main() {
-    TestLogs();
+    // TestLogs();
+    TestApplication();
     return 0;
 }//end main
