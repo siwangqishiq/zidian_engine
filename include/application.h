@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstdint>
+#include <memory>
 
 class GLFWwindow;
 
@@ -13,6 +14,8 @@ namespace zidian{
         bool vsync = true;
     };
 
+    class Render;
+
     class Application{
     public:
         static std::string TAG;
@@ -23,10 +26,16 @@ namespace zidian{
 
         int execute();
 
+        void onDispose();
+
         ~Application();
+
+    protected:
+        std::unique_ptr<Render> render;
+
     private:
         AppConfig config;
-        GLFWwindow *mWindow;
+        GLFWwindow *window;
 
         void initWindow();
     };

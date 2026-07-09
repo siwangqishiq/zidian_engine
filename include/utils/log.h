@@ -45,6 +45,7 @@ namespace zidian {
             static void purple(const std::string &tag , std::string msg);
             static void blue(const std::string &tag , std::string msg);
             static void brown(const std::string &tag , std::string msg);
+            static void green(const std::string &tag , std::string msg);
 
             static void log(std::string msg){
                 i(TAG ,msg);
@@ -78,6 +79,11 @@ namespace zidian {
             template<typename... Args>
             static void brown(const std::string &tag,const std::string format , Args... args){
                 brown(tag , FormatString(format , args...));
+            }
+
+            template<typename... Args>
+            static void green(const std::string &tag,const std::string format , Args... args){
+                green(tag , FormatString(format , args...));
             }
 
             template<typename... Args>

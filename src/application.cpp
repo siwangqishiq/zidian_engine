@@ -5,6 +5,8 @@
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 
+#include "renderer/render.h"
+
 namespace zidian{
     std::string Application::TAG = "app_tag";
 
@@ -17,16 +19,19 @@ namespace zidian{
         config = cfg;
 
         initWindow();
+
+        render = std::make_unique<Render>();
+        render->initVulkan();
     }
 
     void Application::initWindow(){
         glfwInit();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        mWindow = glfwCreateWindow(config.windowWidth, config.windowHeight, 
+        window = glfwCreateWindow(config.windowWidth, config.windowHeight, 
             config.name.c_str(), nullptr, nullptr);
-        glfwSetWindowPos(mWindow, 32, 64);
+        glfwSetWindowPos(window, 32, 64);
         glfwSwapInterval(config.vsync?1:0);//启动垂直同步
-        glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods){
+        glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods){
             if(key == GLFW_KEY_ESCAPE){
                 glfwSetWindowShouldClose(window, true);
             }   
@@ -35,13 +40,19 @@ namespace zidian{
 
     int Application::execute(){
         Log::i(TAG,"Application execute");
-
-        while(!glfwWindowShouldClose(mWindow)){
+        while(!glfwWindowShouldClose(window)){
             glfwPollEvents();
             // todo draw frame use vulkan
         }//end while
-        glfwDestroyWindow(mWindow);
+
+        onDispose();
+        glfwDestroyWindow(window);
         return SUCCESS;
+    }
+
+    void Application::onDispose() {
+        Log::i(TAG,"Application onDispose");
+        render->onDispose();
     }
 
     Application::~Application(){

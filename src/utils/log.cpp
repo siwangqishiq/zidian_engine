@@ -48,6 +48,10 @@ namespace zidian {
         printf(PURPLE"%s[%s]:%s\n" NONE ,currentShowTime().c_str(), tag.c_str() , msg.c_str());
     }
 
+    void Log::green(const std::string &tag , std::string msg) {
+        printf(GREEN"%s[%s]:%s\n" NONE ,currentShowTime().c_str(), tag.c_str() , msg.c_str());
+    }
+
     void Log::blue(const std::string &tag , std::string msg){
         printf(BLUE"%s[%s]:%s\n" NONE ,currentShowTime().c_str(), tag.c_str() , msg.c_str());
     }
