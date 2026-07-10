@@ -115,29 +115,45 @@ namespace zidian {
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
         Log::i("render", "Find %d physical devices:", deviceCount);
+
         for(VkPhysicalDevice &device : devices){
             VkPhysicalDeviceProperties props;
             vkGetPhysicalDeviceProperties(device, &props);
             Log::i("render", "\t %s type: %d", props.deviceName, props.deviceType);
-            if(isPhyDeviceSuitable(device, props)){
+        }//end for each
+
+        for(VkPhysicalDevice &device : devices){
+            VkPhysicalDeviceProperties props;
+            vkGetPhysicalDeviceProperties(device, &props);
+            
+            if(props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU){
                 physicalDevice = device;
-                Log::i("render", "Select GPU : %s", props.deviceName);
                 break;
             }
         }//end for each
 
         if(physicalDevice == VK_NULL_HANDLE){
+            for(VkPhysicalDevice &device : devices){
+                VkPhysicalDeviceProperties props;
+                vkGetPhysicalDeviceProperties(device, &props);
+                if(isPhyDeviceSuitable(device, props)){
+                    physicalDevice = device;
+                    break;
+                }
+            }//end for each
+        }
+
+        if(physicalDevice == VK_NULL_HANDLE){
             Log::e("render", "No suitable GPU found");
             throw std::runtime_error("No suitable GPU found");
-            return;
+        }else{
+            VkPhysicalDeviceProperties props;
+            vkGetPhysicalDeviceProperties(physicalDevice, &props);
+            Log::i("render", "Select GPU : %s", props.deviceName);
         }
     }
 
     bool Render::isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props){
-        if(props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU){
-            return true;
-        }
-
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
