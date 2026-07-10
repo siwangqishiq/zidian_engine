@@ -37,6 +37,8 @@ target_include_directories(vulkan INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/vk
 )
 
+add_compile_options(-Wno-deprecated-declarations)
+
 add_executable(${PROJECT_NAME} 
     ${APP_SRCS} 
     ${ZIDIAN_SRCS}

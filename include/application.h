@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 class GLFWwindow;
 
@@ -35,15 +36,16 @@ namespace zidian{
 
         AppConfig& getAppConfig();
         
+        GLFWwindow *window;
     protected:
         std::unique_ptr<Render> render;
         std::unique_ptr<TaskSchedule> taskSchedule;
         AppConfig config;
     private:
-        GLFWwindow *window;
-
         void initWindow();
         void tick();
+
         int fps = 0;
+        std::vector<const char*> findGlfwExtension();
     };
 }

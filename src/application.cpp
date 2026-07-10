@@ -20,6 +20,7 @@ namespace zidian{
         config = cfg;
 
         initWindow();
+        findGlfwExtension();
 
         taskSchedule = std::make_unique<TaskSchedule>();
         taskSchedule->scheduleAtFixedRate([this](void *){
@@ -28,7 +29,20 @@ namespace zidian{
         },1000);
 
         render = std::make_unique<Render>(this);
-        render->initVulkan();
+
+        auto glfwExtension = findGlfwExtension();
+        render->initVulkan(glfwExtension);
+    }
+
+    std::vector<const char*> Application::findGlfwExtension(){
+        uint32_t glfwExtensionCount = 0;
+        const char** extensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+        std::vector<const char*> extensionList;
+        for(uint32_t i=0; i < glfwExtensionCount; i++){
+            extensionList.push_back(extensions[i]);
+        }
+        return extensionList;
     }
 
     void Application::initWindow(){
