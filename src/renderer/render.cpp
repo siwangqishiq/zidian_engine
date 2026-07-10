@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include "renderer/render.h"
 #include "utils/log.h"
 #include "application.h"
@@ -22,6 +23,10 @@ namespace zidian {
         }//end for each
 
         createInstance();
+        createSurface();
+        pickPhysicalDevice();
+        createLogicDevice();
+        createSwapchain();
     }
 
     void Render::createInstance() {
@@ -94,6 +99,231 @@ namespace zidian {
         }
     }
 
+    void Render::createSurface(){
+        surface = appCtx->createSurfaceFromInstance(instance);
+    }
+
+    void Render::pickPhysicalDevice(){
+        uint32_t deviceCount = 0;
+        vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+
+        if(deviceCount == 0){
+            Log::e("render", "No Vulkan physical device found");
+            throw std::runtime_error("No Vulkan physical device found.");
+        }
+
+        std::vector<VkPhysicalDevice> devices(deviceCount);
+        vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+        Log::i("render", "Find %d physical devices:", deviceCount);
+        for(VkPhysicalDevice &device : devices){
+            VkPhysicalDeviceProperties props;
+            vkGetPhysicalDeviceProperties(device, &props);
+            Log::i("render", "\t %s type: %d", props.deviceName, props.deviceType);
+            if(isPhyDeviceSuitable(device, props)){
+                physicalDevice = device;
+                Log::i("render", "Select GPU : %s", props.deviceName);
+                break;
+            }
+        }//end for each
+
+        if(physicalDevice == VK_NULL_HANDLE){
+            Log::e("render", "No suitable GPU found");
+            throw std::runtime_error("No suitable GPU found");
+            return;
+        }
+    }
+
+    bool Render::isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props){
+        if(props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU){
+            return true;
+        }
+
+        uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+        for(auto &queueFamily : queueFamilies){
+            if(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT){
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    void Render::createLogicDevice(){
+        graphQueueFamily = findGraphQueueFamily(physicalDevice);
+        Log::i("render", "Graphics Queue Family : %d", graphQueueFamily);
+
+        const float priority = 1.0f;
+        VkDeviceQueueCreateInfo queueCreateInfo{};
+        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = graphQueueFamily;
+        queueCreateInfo.queueCount = 1;
+        queueCreateInfo.pQueuePriorities = &priority;
+
+        VkPhysicalDeviceFeatures deviceFeatures{};
+
+        const char* deviceExtensions[] = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        };
+        VkDeviceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.queueCreateInfoCount = 1;
+        createInfo.pQueueCreateInfos = &queueCreateInfo;
+        createInfo.pEnabledFeatures = &deviceFeatures;
+        createInfo.enabledExtensionCount = 1;
+        createInfo.ppEnabledExtensionNames = deviceExtensions;
+
+        if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS){
+            throw std::runtime_error("Create logical device failed.");
+        }
+        vkGetDeviceQueue(device, graphQueueFamily, 0, &graphQueue);
+
+        Log::i("render", "Create logical device success.");
+    }
+
+    void Render::createSwapchain(){
+        VkBool32 presentSupport = VK_FALSE;
+        vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, graphQueueFamily, surface, &presentSupport);
+
+        if(!presentSupport){
+            throw std::runtime_error("graphQueueFamily not support present");
+        }
+
+        Log::i("render", "graphQueueFamily is supported present : %d", presentSupport);
+        presentFamily = graphQueueFamily;
+        
+        SwapChainSupportDetails support = querySwapChainSupport(physicalDevice);
+
+        VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(support.formats);
+        VkPresentModeKHR presentMode = chooseSwapPresentMode(support.presentModes);
+        VkExtent2D extent = chooseSwapExtent(support.capabilities);
+
+        uint32_t imageCount = support.capabilities.minImageCount + 1;
+        if(support.capabilities.maxImageCount > 0 && imageCount > support.capabilities.maxImageCount){
+            imageCount = support.capabilities.maxImageCount;
+        }
+
+        Log::i("render", "imageCount : %d", imageCount);
+
+        VkSwapchainCreateInfoKHR createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        createInfo.surface = surface;
+        createInfo.minImageCount = imageCount;
+        createInfo.imageFormat = surfaceFormat.format;
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;
+        createInfo.imageExtent = extent;
+        createInfo.imageArrayLayers = 1;
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+        uint32_t queueFamilyIndices[] = {graphQueueFamily,presentFamily};
+
+        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        createInfo.preTransform = support.capabilities.currentTransform;
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        createInfo.presentMode = presentMode;
+        createInfo.clipped = VK_TRUE;
+
+        if(vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS){
+            throw std::runtime_error("create swapchain failed");
+        }
+
+        vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
+        swapChainImages.resize(imageCount);
+        
+        vkGetSwapchainImagesKHR(device,swapChain,&imageCount,swapChainImages.data());
+
+        swapChainImageFormat = surfaceFormat.format;
+        swapChainExtent = extent;
+
+        Log::i("render", "create swapchain success image count = %d", imageCount);
+    }
+
+    SwapChainSupportDetails Render::querySwapChainSupport(VkPhysicalDevice device){
+        SwapChainSupportDetails details{};
+
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+
+        uint32_t formatCount = 0;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+        if(formatCount > 0){
+            details.formats.resize(formatCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+        }
+
+        uint32_t presentCount = 0;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentCount, nullptr);
+
+        if(presentCount > 0){
+            details.presentModes.resize(presentCount);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentCount, details.presentModes.data());
+        }
+
+        return details;
+    }
+
+    VkSurfaceFormatKHR Render::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats){
+        for(const auto& format : formats){
+            if(format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR){
+                return format;
+            }
+        }
+
+        return formats[0];
+    }
+
+    VkPresentModeKHR Render::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& modes){
+        for(auto mode : modes){
+            if(mode == VK_PRESENT_MODE_MAILBOX_KHR){
+                return mode;
+            }
+        }
+        return VK_PRESENT_MODE_FIFO_KHR;
+    }
+
+    VkExtent2D Render::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities){
+        if(capabilities.currentExtent.width != UINT32_MAX){
+            return capabilities.currentExtent;
+        }
+
+        int width = 0;
+        int height = 0;
+
+        appCtx->getFramebufferSize(width, height);
+        Log::i("render", "Get framebuffer size %d x %d", width, height);
+
+        VkExtent2D extent{};
+        extent.width = std::clamp(
+            static_cast<uint32_t>(width),
+            capabilities.minImageExtent.width,
+            capabilities.maxImageExtent.width);
+
+        extent.height = std::clamp(
+            static_cast<uint32_t>(height),
+            capabilities.minImageExtent.height,
+            capabilities.maxImageExtent.height);
+
+        return extent;
+    }
+
+    uint32_t Render::findGraphQueueFamily(VkPhysicalDevice device){
+        uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+        Log::i("render", "Graphics Queue Family Count: %d", queueFamilyCount);
+        for(uint32_t i = 0; i < queueFamilyCount; i++){
+            if(queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT){
+                return i;
+            }
+        }
+
+        throw std::runtime_error("Graphics queue not found.");
+    }
+
     void Render::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo){
         createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -117,6 +347,16 @@ namespace zidian {
     }
 
     void Render::onDispose(){
+        vkDestroySwapchainKHR(device, swapChain, nullptr);
+
+        if(device != VK_NULL_HANDLE){
+            vkDestroyDevice(device, nullptr);
+        }
+
+        if(surface != VK_NULL_HANDLE) {
+            vkDestroySurfaceKHR(instance, surface, nullptr);
+        }
+
         if(debugMessenger != VK_NULL_HANDLE){
             DestroyDebugUtilsMessengerEXT(instance, debugMessenger);
         }
@@ -127,9 +367,8 @@ namespace zidian {
         }
     }
 
-    void Render::drawTriangles() {
+    void Render::drawTriangles(glm::vec2 *verts, int count) {
         Log::i("render", "todo will draw triangles");
-        
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(

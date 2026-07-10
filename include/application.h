@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include "vulkan/vulkan.h"
 
 class GLFWwindow;
 
@@ -37,6 +38,10 @@ namespace zidian{
         AppConfig& getAppConfig();
         
         GLFWwindow *window;
+
+        VkSurfaceKHR createSurfaceFromInstance(VkInstance instance);
+
+        void getFramebufferSize(int &width, int &height);
     protected:
         std::unique_ptr<Render> render;
         std::unique_ptr<TaskSchedule> taskSchedule;

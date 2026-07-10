@@ -47,7 +47,7 @@ namespace zidian{
 
     void Application::initWindow(){
         glfwInit();
-        // glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
         window = glfwCreateWindow(config.windowWidth, config.windowHeight, 
             config.name.c_str(), nullptr, nullptr);
@@ -69,6 +69,20 @@ namespace zidian{
 
     AppConfig& Application::getAppConfig() {
         return config; 
+    }
+
+    VkSurfaceKHR Application::createSurfaceFromInstance(VkInstance instance){
+        VkSurfaceKHR surface;
+        auto ret = glfwCreateWindowSurface(instance, window, nullptr, &surface);
+        if(ret != VK_SUCCESS){
+            Log::e(TAG, "create surface error %d",ret);
+            return VK_NULL_HANDLE;            
+        }
+        return surface;
+    }
+
+    void Application::getFramebufferSize(int &width, int &height){
+        glfwGetFramebufferSize(window, &width, &height);
     }
 
     int Application::execute(){
