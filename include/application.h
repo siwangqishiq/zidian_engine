@@ -15,6 +15,7 @@ namespace zidian{
     };
 
     class Render;
+    class TaskSchedule;
 
     class Application{
     public:
@@ -30,13 +31,19 @@ namespace zidian{
 
         ~Application();
 
+        std::unique_ptr<Render>& getRender();
+
+        AppConfig& getAppConfig();
+        
     protected:
         std::unique_ptr<Render> render;
-
-    private:
+        std::unique_ptr<TaskSchedule> taskSchedule;
         AppConfig config;
+    private:
         GLFWwindow *window;
 
         void initWindow();
+        void tick();
+        int fps = 0;
     };
 }
