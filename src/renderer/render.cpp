@@ -284,15 +284,14 @@ namespace zidian {
     }
 
     VkExtent2D Render::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities){
+        int width = 0;
+        int height = 0;
+        appCtx->getFramebufferSize(width, height);
+        Log::i("render", "Get framebuffer size %d x %d", width, height);
+        
         if(capabilities.currentExtent.width != UINT32_MAX){
             return capabilities.currentExtent;
         }
-
-        int width = 0;
-        int height = 0;
-
-        appCtx->getFramebufferSize(width, height);
-        Log::i("render", "Get framebuffer size %d x %d", width, height);
 
         VkExtent2D extent{};
         extent.width = std::clamp(
