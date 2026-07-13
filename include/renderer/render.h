@@ -1,11 +1,14 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include "vulkan/vulkan.h"
 #include "renderer/canvas.h"
+#include "renderer/pipeline/pipeline_manager.h"
 
 namespace zidian{
     class Application;
+    class PipelineManager;
 
 
     VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -39,6 +42,8 @@ namespace zidian{
         void endRenderFrame();
 
         void drawTriangles(glm::vec2 *verts, int count);
+
+        std::unique_ptr<PipelineManager> pipelines;
     private:
         VkInstance instance = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
@@ -56,14 +61,22 @@ namespace zidian{
         VkFormat swapChainImageFormat;
         VkExtent2D swapChainExtent;
 
+        uint32_t swapChainImageCount = 0;
+        std::vector<VkImageView> swapChainImageViews;
+
         std::vector<const char *> instanceExtensions;
         std::vector<const char *> layers;
+
+        VkRenderPass renderPass = VK_NULL_HANDLE;
 
         void createInstance();
         void createSurface();
         void pickPhysicalDevice();
         void createLogicDevice();
         void createSwapchain();
+        void createImageViews();
+        void createRenderPass();
+        void createPipelines();
 
         bool isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props);
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
@@ -76,6 +89,5 @@ namespace zidian{
         VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
         Application *appCtx;
-
     };
 }

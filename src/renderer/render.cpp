@@ -27,6 +27,10 @@ namespace zidian {
         pickPhysicalDevice();
         createLogicDevice();
         createSwapchain();
+        createImageViews();
+        createRenderPass();
+
+        createPipelines();
     }
 
     void Render::createInstance() {
@@ -115,7 +119,7 @@ namespace zidian {
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
         Log::i("render", "Find %d physical devices:", deviceCount);
-
+        
         for(VkPhysicalDevice &device : devices){
             VkPhysicalDeviceProperties props;
             vkGetPhysicalDeviceProperties(device, &props);
@@ -257,6 +261,72 @@ namespace zidian {
         Log::i("render", "create swapchain success image count = %d", imageCount);
     }
 
+    void Render::createImageViews(){
+        swapChainImageViews.resize(swapChainImages.size());
+        for (int i = 0; i < swapChainImageViews.size(); i++) {
+            VkImageViewCreateInfo info{};
+            info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            info.image = swapChainImages[i];
+            info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            info.format = swapChainImageFormat;
+
+            info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+            info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            info.subresourceRange.baseMipLevel = 0;
+            info.subresourceRange.levelCount = 1;
+            info.subresourceRange.baseArrayLayer = 0;
+            info.subresourceRange.layerCount = 1;
+
+            if (vkCreateImageView(device, &info, nullptr, &swapChainImageViews[i]) != VK_SUCCESS) {
+                Log::e("render", "create image views failed");
+                throw std::runtime_error("create image view failed");
+            }
+        }//end for i
+    }
+
+    void Render::createRenderPass(){
+        VkAttachmentDescription colorAttachment{};
+        colorAttachment.format = swapChainImageFormat;
+        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        VkAttachmentReference colorAttachmentRef{};
+        colorAttachmentRef.attachment = 0;
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription subpass{};
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.colorAttachmentCount = 1;
+        subpass.pColorAttachments = &colorAttachmentRef;
+
+        VkRenderPassCreateInfo renderPassCreateInfo{};
+        renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassCreateInfo.attachmentCount = 1;
+        renderPassCreateInfo.pAttachments = &colorAttachment;
+        renderPassCreateInfo.subpassCount = 1;
+        renderPassCreateInfo.pSubpasses = &subpass;
+
+        if (vkCreateRenderPass(device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) {
+            Log::e("render", "create render pass failed");
+            throw std::runtime_error("create render pass failed");
+        }
+        Log::i("render", "create render pass success!");
+    }
+
+    void Render::createPipelines(){
+        pipelines = std::make_unique<PipelineManager>(device);
+        pipelines->createPipelines();
+    }
+
     SwapChainSupportDetails Render::querySwapChainSupport(VkPhysicalDevice device){
         SwapChainSupportDetails details{};
 
@@ -362,6 +432,16 @@ namespace zidian {
     }
 
     void Render::onDispose(){
+        pipelines->clearPipelines();
+
+        if(renderPass != VK_NULL_HANDLE){
+            vkDestroyRenderPass(device, renderPass, nullptr);
+        }
+
+        for (int i = 0; i < swapChainImageViews.size(); i++) {
+            vkDestroyImageView(device, swapChainImageViews[i], nullptr);
+        }//end for i
+
         vkDestroySwapchainKHR(device, swapChain, nullptr);
 
         if(device != VK_NULL_HANDLE){
