@@ -28,7 +28,7 @@ namespace zidian{
             fps = 0;
         },1000);
 
-        render = std::make_unique<Render>(this);
+        render = std::make_unique<Render>(*this);
 
         auto glfwExtension = findGlfwExtension();
         render->initVulkan(glfwExtension);

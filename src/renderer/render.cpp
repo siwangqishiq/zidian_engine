@@ -6,10 +6,6 @@
 #include "config.h"
 
 namespace zidian {
-    Render::Render(Application *appContext){
-        appCtx = appContext;
-    }
-
     void Render::initVulkan(std::vector<const char *> &glfwExtenstinList) {
         instanceExtensions.clear();
         instanceExtensions.insert(instanceExtensions.end(), glfwExtenstinList.begin(), glfwExtenstinList.end());
@@ -47,7 +43,7 @@ namespace zidian {
 
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName = appCtx->getAppConfig().name.c_str();
+        appInfo.pApplicationName = appCtx.getAppConfig().name.c_str();
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.pEngineName = "zidian";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -104,7 +100,7 @@ namespace zidian {
     }
 
     void Render::createSurface(){
-        surface = appCtx->createSurfaceFromInstance(instance);
+        surface = appCtx.createSurfaceFromInstance(instance);
     }
 
     void Render::pickPhysicalDevice(){
@@ -372,7 +368,7 @@ namespace zidian {
     VkExtent2D Render::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities){
         int width = 0;
         int height = 0;
-        appCtx->getFramebufferSize(width, height);
+        appCtx.getFramebufferSize(width, height);
         Log::i("render", "Get framebuffer size %d x %d", width, height);
         
         if(capabilities.currentExtent.width != UINT32_MAX){

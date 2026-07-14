@@ -7,12 +7,12 @@ namespace zidian {
 
     class PrimitivePipeline{
     public:
-        PrimitivePipeline(PipelineManager *pipelineManager);
+        PrimitivePipeline(PipelineManager &pipelineManager) : pipeMgr(pipelineManager){}
 
         void create();
         void dispose();
     private:
-        PipelineManager *pipeMgr;
+        PipelineManager& pipeMgr;
         VkPipeline pipeline = VK_NULL_HANDLE;
     };
 }

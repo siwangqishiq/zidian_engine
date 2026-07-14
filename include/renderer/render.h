@@ -31,7 +31,7 @@ namespace zidian{
     
     class Render : public ICanvas{
     public:
-        Render(Application *appContext);
+        Render(Application &appContext) : appCtx(appContext) {};
 
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
 
@@ -43,7 +43,7 @@ namespace zidian{
 
         void drawTriangles(glm::vec2 *verts, int count);
 
-        std::unique_ptr<PipelineManager> pipelines;
+        std::unique_ptr<PipelineManager> pipelines = nullptr;
     private:
         VkInstance instance = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
@@ -88,6 +88,6 @@ namespace zidian{
         VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& modes);
         VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
-        Application *appCtx;
+        Application &appCtx;
     };
 }
