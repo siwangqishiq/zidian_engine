@@ -9,6 +9,49 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+# Shader目录
+set(SHADER_SOURCE_DIR ${CMAKE_SOURCE_DIR}/shaders)
+# SPIR-V输出目录
+set(SHADER_BINARY_DIR ${CMAKE_SOURCE_DIR}/assets/shaders)
+# glslangValidator
+set(GLSLANG_VALIDATOR
+    ${CMAKE_SOURCE_DIR}/tools/glsl/glslang.exe)
+# 搜索所有Shader
+file(GLOB_RECURSE GLSL_FILES
+    CONFIGURE_DEPENDS
+    "${SHADER_SOURCE_DIR}/*.vert"
+    "${SHADER_SOURCE_DIR}/*.frag"
+)
+
+set(SPV_FILES)
+foreach(GLSL ${GLSL_FILES})
+    get_filename_component(FILE_NAME ${GLSL} NAME)
+
+    set(SPV ${SHADER_BINARY_DIR}/${FILE_NAME}.spv)
+    add_custom_command(
+        OUTPUT ${SPV}
+        COMMAND
+            ${GLSLANG_VALIDATOR}
+            -V
+            ${GLSL}
+            -o
+            ${SPV}
+        DEPENDS
+            ${GLSL}
+        COMMENT "Compiling Shader ${FILE_NAME}"
+        VERBATIM
+    )
+
+    list(APPEND SPV_FILES ${SPV})
+endforeach()
+
+add_custom_target(
+    Shaders
+    ALL
+    DEPENDS
+    ${SPV_FILES}
+)
+
 file(GLOB_RECURSE ZIDIAN_SRCS CONFIGURE_DEPENDS 
     "src/*.cpp" 
     "src/*.h" 
@@ -54,3 +97,5 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE 
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+add_dependencies(${PROJECT_NAME} Shaders)
