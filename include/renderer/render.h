@@ -9,6 +9,7 @@
 namespace zidian{
     class Application;
     class PipelineManager;
+    class ShaderManager;
 
 
     VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -31,7 +32,7 @@ namespace zidian{
     
     class Render : public ICanvas{
     public:
-        Render(Application &appContext) : appCtx(appContext) {};
+        Render(Application &appContext);
 
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
 
@@ -43,14 +44,16 @@ namespace zidian{
 
         void drawTriangles(glm::vec2 *verts, int count);
 
-        std::unique_ptr<PipelineManager> pipelines = nullptr;
-    private:
+        virtual ~Render();
+
+        std::unique_ptr<PipelineManager> pipelines;
+        std::unique_ptr<ShaderManager> shaderManager;
+
         VkInstance instance = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
         VkSurfaceKHR surface = VK_NULL_HANDLE;
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDevice device = VK_NULL_HANDLE;
-
         uint32_t graphQueueFamily = UINT32_MAX;
         VkQueue graphQueue = VK_NULL_HANDLE;
 
@@ -68,7 +71,7 @@ namespace zidian{
         std::vector<const char *> layers;
 
         VkRenderPass renderPass = VK_NULL_HANDLE;
-
+    private:
         void createInstance();
         void createSurface();
         void pickPhysicalDevice();

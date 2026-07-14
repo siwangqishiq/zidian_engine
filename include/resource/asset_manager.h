@@ -36,6 +36,8 @@ namespace zidian{
 
         virtual std::string readAssetFileAsString(std::string path);
 
+        virtual std::vector<char> readShaderFileAsBinary(std::string path, long &length);
+
         virtual std::unique_ptr<uint8_t[]> readAssetFileAsBinary(std::string path, long &length);
 
         virtual uint8_t* loadImageFileFromPath(std::string path, int &width, int &height,

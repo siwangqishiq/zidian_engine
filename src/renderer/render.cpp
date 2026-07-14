@@ -4,8 +4,15 @@
 #include "utils/log.h"
 #include "application.h"
 #include "config.h"
+#include "renderer/shader/shader_manager.h"
 
 namespace zidian {
+    Render::Render(Application &appContext):appCtx(appContext) {
+    }
+
+    Render::~Render(){
+    }
+
     void Render::initVulkan(std::vector<const char *> &glfwExtenstinList) {
         instanceExtensions.clear();
         instanceExtensions.insert(instanceExtensions.end(), glfwExtenstinList.begin(), glfwExtenstinList.end());
@@ -319,7 +326,9 @@ namespace zidian {
     }
 
     void Render::createPipelines(){
-        pipelines = std::make_unique<PipelineManager>(device);
+        shaderManager = std::make_unique<ShaderManager>(*this);
+
+        pipelines = std::make_unique<PipelineManager>(*this);
         pipelines->createPipelines();
     }
 
@@ -428,6 +437,10 @@ namespace zidian {
     }
 
     void Render::onDispose(){
+        if (device != VK_NULL_HANDLE) {
+            vkDeviceWaitIdle(device);
+        }
+
         pipelines->clearPipelines();
 
         if(renderPass != VK_NULL_HANDLE){

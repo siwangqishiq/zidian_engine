@@ -102,6 +102,25 @@ namespace zidian{
         return ReadFileAsString(file_path.c_str());
     }
 
+    std::vector<char> AssetManager::readShaderFileAsBinary(std::string path, long &length){
+        std::string file_path = assetDir() + path;
+        std::ifstream file(file_path,std::ios::ate | std::ios::binary);
+        if(!file.is_open()){
+            Log::e("asset_manager","failed to open shader file: %s", file_path.c_str());
+            length = -1;
+            return {};
+        }
+
+        long fileSize = static_cast<long>(file.tellg());
+        std::vector<char> buffer(fileSize);
+
+        file.seekg(0);
+        file.read(buffer.data(),fileSize);
+        file.close();
+        length = fileSize;
+        return buffer;
+    }
+
     std::unique_ptr<uint8_t[]> AssetManager::readAssetFileAsBinary(std::string path, long &length){
         std::string file_path = assetDir() + path;
         Log::i("asset_manager" , "read asset bin file path %s" , file_path.c_str());

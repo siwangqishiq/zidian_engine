@@ -1,17 +1,25 @@
 #pragma once
 
+#include <string>
 #include "vulkan/vulkan.h"
+#include <memory>
 
 namespace zidian{
+    class Render;
+    class PrimitivePipeline;
+
     class PipelineManager{
     public:
-        PipelineManager(VkDevice d) : device(d){}
+        PipelineManager(Render &context);
 
         void createPipelines();
         void clearPipelines();
-        
-        VkDevice device;
+
+        ~PipelineManager();
+
+        std::unique_ptr<PrimitivePipeline> primitivePipe;
     private:
+        Render &ctx;
     };
 }
 
