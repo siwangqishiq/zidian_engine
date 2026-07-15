@@ -31,7 +31,8 @@ namespace zidian{
         render = std::make_unique<Render>(*this);
 
         auto glfwExtension = findGlfwExtension();
-        render->initVulkan(glfwExtension);
+        
+        render->init(glfwExtension);
     }
 
     std::vector<const char*> Application::findGlfwExtension(){
@@ -63,9 +64,9 @@ namespace zidian{
         // glfwSwapInterval(config.vsync?1:0);//启动垂直同步
     }
 
-    std::unique_ptr<Render>& Application::getRender(){
-        return this->render;
-    }
+    // std::unique_ptr<Render>& Application::getRender(){
+    //     return this->render;
+    // }
 
     AppConfig& Application::getAppConfig() {
         return config; 
@@ -99,10 +100,22 @@ namespace zidian{
     }
 
     void Application::tick(){
-        getRender()->beginRenderFrame();
+        render->beginRenderFrame();
+
+        const uint8_t vertexCount = 3; 
+        glm::vec2 vertices[vertexCount] = {
+            {},{},{}
+        };
+        glm::vec4 colors[vertexCount] = {
+            {1.0f, 0.0f , 0.0f, 1.0f},
+            {0.0f, 1.0f , 0.0f, 1.0f},
+            {0.0f, 0.0f , 1.0f, 1.0f}
+        };
+        render->getCanvas()->drawTriangles(vertices, colors, vertexCount);
+
 
         taskSchedule->tick();
-        getRender()->endRenderFrame();
+        render->endRenderFrame();
 
         fps++;
     }

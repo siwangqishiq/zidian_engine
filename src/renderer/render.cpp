@@ -4,6 +4,7 @@
 #include "utils/log.h"
 #include "application.h"
 #include "config.h"
+#include "renderer/vk_canvas.h"
 #include "renderer/shader/shader_manager.h"
 
 namespace zidian {
@@ -11,6 +12,13 @@ namespace zidian {
     }
 
     Render::~Render(){
+    }
+
+    void Render::init(std::vector<const char *> &glfwExtenstinList){
+        initVulkan(glfwExtenstinList);
+
+        //init canvas
+        canvas = std::make_unique<VkCanvas>(*this);
     }
 
     void Render::initVulkan(std::vector<const char *> &glfwExtenstinList) {
@@ -428,12 +436,21 @@ namespace zidian {
         createInfo.pfnUserCallback = DebugCallback;
     }
 
+    std::unique_ptr<ICanvas>& Render::getCanvas(){
+        return canvas;
+    }
+
     void Render::beginRenderFrame(){
         // Log::i("render", "begin render frame");
+
+        //清理命令列表
+        commandList.getPrimitiveVertices().clear();
+        commandList.getPrimitiveCommands().clear();
     }
 
     void Render::endRenderFrame(){
         // Log::i("render", "end render frame");
+        
     }
 
     void Render::onDispose(){
@@ -469,10 +486,6 @@ namespace zidian {
             vkDestroyInstance(instance, nullptr);
             instance = VK_NULL_HANDLE;
         }
-    }
-
-    void Render::drawTriangles(glm::vec2 *verts, int count) {
-        Log::i("render", "todo will draw triangles");
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(

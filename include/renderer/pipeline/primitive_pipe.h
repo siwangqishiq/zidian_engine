@@ -1,19 +1,10 @@
 #pragma once
 
 #include "vulkan/vulkan.h"
-#include "glm/glm.hpp"
-#include <array>
+#include "renderer/vertex/primitive_vertex.h"
 
 namespace zidian {
     class Render;
-
-    struct PrimitiveVertex{
-        glm::vec3 position;
-        glm::vec4 color;
-
-        static VkVertexInputBindingDescription bindingDesc();
-        static std::array<VkVertexInputAttributeDescription , 2> attributeDesc();
-    };
 
     class PrimitivePipeline{
     public:

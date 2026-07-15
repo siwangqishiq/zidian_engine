@@ -5,6 +5,10 @@
 namespace zidian{
     class ICanvas{
     public:
-        virtual void drawTriangles(glm::vec2 *verts, int count) = 0;
+        virtual void flush() = 0;
+
+        virtual void drawTriangles(const glm::vec2 *vertices,const glm::vec4 *colors,const uint32_t vertexCount) = 0;
+
+        virtual ~ICanvas(){}
     };
 }

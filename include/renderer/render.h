@@ -5,11 +5,13 @@
 #include "vulkan/vulkan.h"
 #include "renderer/canvas.h"
 #include "renderer/pipeline/pipeline_manager.h"
+#include "renderer/command/command_list.h"
 
 namespace zidian{
     class Application;
     class PipelineManager;
     class ShaderManager;
+    
 
 
     VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -30,11 +32,11 @@ namespace zidian{
         std::vector<VkPresentModeKHR> presentModes;
     };
     
-    class Render : public ICanvas{
+    class Render {
     public:
         Render(Application &appContext);
 
-        void initVulkan(std::vector<const char *> &glfwExtenstinList);
+        void init(std::vector<const char *> &glfwExtenstinList);
 
         void onDispose();
 
@@ -42,7 +44,9 @@ namespace zidian{
 
         void endRenderFrame();
 
-        void drawTriangles(glm::vec2 *verts, int count);
+        std::unique_ptr<ICanvas>& getCanvas();
+
+        CommandList commandList;
 
         virtual ~Render();
 
@@ -54,9 +58,10 @@ namespace zidian{
         VkSurfaceKHR surface = VK_NULL_HANDLE;
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDevice device = VK_NULL_HANDLE;
-        uint32_t graphQueueFamily = UINT32_MAX;
-        VkQueue graphQueue = VK_NULL_HANDLE;
 
+        VkQueue graphQueue = VK_NULL_HANDLE;
+        
+        uint32_t graphQueueFamily = UINT32_MAX;
         uint32_t presentFamily = UINT32_MAX;
 
         VkSwapchainKHR swapChain = VK_NULL_HANDLE;
@@ -67,11 +72,12 @@ namespace zidian{
         uint32_t swapChainImageCount = 0;
         std::vector<VkImageView> swapChainImageViews;
 
-        std::vector<const char *> instanceExtensions;
-        std::vector<const char *> layers;
+        std::vector<const char*> instanceExtensions;
+        std::vector<const char*> layers;
 
         VkRenderPass renderPass = VK_NULL_HANDLE;
     private:
+        void initVulkan(std::vector<const char *> &glfwExtenstinList);
         void createInstance();
         void createSurface();
         void pickPhysicalDevice();
@@ -92,5 +98,6 @@ namespace zidian{
         VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
         Application &appCtx;
+        std::unique_ptr<ICanvas> canvas;
     };
 }
