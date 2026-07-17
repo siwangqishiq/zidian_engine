@@ -42,6 +42,7 @@ namespace zidian {
         createRenderPass();
 
         createPipelines();
+        createCommandBuffers();
     }
 
     void Render::createInstance() {
@@ -340,6 +341,36 @@ namespace zidian {
         pipelines->createPipelines();
     }
 
+    void Render::createCommandBuffers(){
+        VkCommandPoolCreateInfo poolCreateInfo{};
+        poolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolCreateInfo.queueFamilyIndex = graphQueueFamily;
+        poolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+        VkResult result = vkCreateCommandPool(device, &poolCreateInfo, nullptr, &commandPool);
+        if(result != VK_SUCCESS){
+            Log::e("render", "Create command pool failed!");
+            return;
+        }
+        Log::i("render", "Create command pool success");
+        
+
+        commandBuffers.resize(swapChainImages.size());
+
+        VkCommandBufferAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.commandPool = commandPool;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandBufferCount = swapChainImages.size();
+
+        result = vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data());
+        if(result != VK_SUCCESS){
+            Log::e("render", "Create command buffer failed!");
+            return;
+        }
+        Log::i("render", "Create command buffer(count : %d) success", commandBuffers.size());
+    }
+
     SwapChainSupportDetails Render::querySwapChainSupport(VkPhysicalDevice device){
         SwapChainSupportDetails details{};
 
@@ -456,6 +487,10 @@ namespace zidian {
     void Render::onDispose(){
         if (device != VK_NULL_HANDLE) {
             vkDeviceWaitIdle(device);
+        }
+
+        if(commandPool != VK_NULL_HANDLE){
+            vkDestroyCommandPool(device, commandPool, nullptr);
         }
 
         pipelines->clearPipelines();

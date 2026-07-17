@@ -76,6 +76,8 @@ namespace zidian{
         std::vector<const char*> layers;
 
         VkRenderPass renderPass = VK_NULL_HANDLE;
+        VkCommandPool commandPool = VK_NULL_HANDLE;
+        std::vector<VkCommandBuffer> commandBuffers;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
         void createInstance();
@@ -86,6 +88,7 @@ namespace zidian{
         void createImageViews();
         void createRenderPass();
         void createPipelines();
+        void createCommandBuffers();
 
         bool isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props);
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
