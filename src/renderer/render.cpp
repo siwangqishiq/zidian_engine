@@ -167,6 +167,38 @@ namespace zidian {
             vkGetPhysicalDeviceProperties(physicalDevice, &props);
             Log::i("render", "Select GPU : %s", props.deviceName);
         }
+
+
+        VkPhysicalDeviceMemoryProperties memProperties{};
+        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+        Log::green("render", "memoryTypeCount : %d", memProperties.memoryTypeCount);
+        Log::green("render", "memoryHeapCount : %d", memProperties.memoryHeapCount);
+        Log::green("render", "memory heap:");
+        for(uint32_t i = 0 ; i < memProperties.memoryHeapCount ; i++){
+            VkMemoryHeap heap = memProperties.memoryHeaps[i];
+            Log::green("render", "\theapsize : %u", heap.size);
+            Log::green("render", "\tVkMemoryHeapFlags : %d", heap.flags);
+        }//end for i
+
+        Log::green("render", "memory type:");
+        for(uint32_t i = 0 ; i < memProperties.memoryTypeCount ; i++){
+            VkMemoryType type = memProperties.memoryTypes[i];
+            Log::green("render", "\t%u heap index : %u", i, type.heapIndex);
+            /**
+             *      
+             *      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT = 0x00000001,
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT = 0x00000002,
+                    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT = 0x00000004,
+                    VK_MEMORY_PROPERTY_HOST_CACHED_BIT = 0x00000008,
+                    VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT = 0x00000010,
+                    VK_MEMORY_PROPERTY_PROTECTED_BIT = 0x00000020,
+                    VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD = 0x00000040,
+                    VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD = 0x00000080,
+                    VK_MEMORY_PROPERTY_RDMA_CAPABLE_BIT_NV = 0x00000100
+             */
+            Log::green("render", "\t%u properties flags : %d",i, type.propertyFlags);
+            Log::green("render", "\t==========================================");
+        }//end for i
     }
 
     bool Render::isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props){
