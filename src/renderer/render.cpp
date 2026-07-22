@@ -397,7 +397,7 @@ namespace zidian {
         Log::i("render", "Create command pool success");
         
 
-        commandBuffers.resize(FRAME_IN_FLIGHT);
+        commandBuffers.resize(MAX_FRAME_IN_FLIGHT);
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -443,26 +443,32 @@ namespace zidian {
     }
 
     void Render::createSyncObjects(){
-        VkSemaphoreCreateInfo semaphoreInfo{};
-        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS){
-            Log::e("render", "Create imageAvailableSemaphore failed!");
-            return;
-        }
+        inFlightFences.resize(MAX_FRAME_IN_FLIGHT);
+        imageAvailableSemaphores.resize(MAX_FRAME_IN_FLIGHT);
+        renderFinishSemaphores.resize(MAX_FRAME_IN_FLIGHT);
 
-        if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishSemaphore) != VK_SUCCESS){
-            Log::e("render", "Create renderFinishSemaphore failed!");
-            return;
-        }
+        for(uint32_t i = 0 ; i < MAX_FRAME_IN_FLIGHT; i++){
+            VkSemaphoreCreateInfo semaphoreInfo{};
+            semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS){
+                Log::e("render", "Create imageAvailableSemaphore failed!");
+                return;
+            }
 
-        VkFenceCreateInfo fenceCreateInfo{};
-        fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-        if(vkCreateFence(device, &fenceCreateInfo, nullptr, &inFlightFence) != VK_SUCCESS){
-            Log::e("render", "Create inFightFence failed!");
-            return;
-        }
+            if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishSemaphores[i]) != VK_SUCCESS){
+                Log::e("render", "Create renderFinishSemaphore failed!");
+                return;
+            }
 
+            VkFenceCreateInfo fenceCreateInfo{};
+            fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+            if(vkCreateFence(device, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS){
+                Log::e("render", "Create inFightFence failed!");
+                return;
+            }
+        }//end for i
+        
         Log::i("render", "Create sync object success imageAvailableSemaphore renderFinishSemaphore flightFence");
     }
 
@@ -566,22 +572,101 @@ namespace zidian {
         return canvas;
     }
 
-    void Render::beginRenderFrame(){
+    bool Render::beginRenderFrame(){
         // Log::i("render", "begin render frame");
+        //
+        vkWaitForFences(device, 1, &inFlightFences[currentFrameIndex], VK_TRUE, UINT64_MAX);
+        uint32_t imageIdx = UINT32_MAX;
+        auto result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrameIndex], VK_NULL_HANDLE, &imageIdx);
+        if(result != VK_SUCCESS){
+            Log::e("render" , "acquire image index failed.");
+            return false;
+        }
 
+        currentImageIndex = imageIdx;
+        // Log::i("render", "currentFrameIndex = %u , currentImageIndex = %u", currentFrameIndex , currentImageIndex);
+        vkResetFences(device, 1, &inFlightFences[currentFrameIndex]);
+
+        //重置commandbuffer
+        vkResetCommandBuffer(commandBuffers[currentFrameIndex], 0);
+
+        //begin command buffer
+        VkCommandBufferBeginInfo cfBeginInfo{};
+        cfBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        cfBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        vkBeginCommandBuffer(commandBuffers[currentFrameIndex], &cfBeginInfo);
+
+        //begin render pass
+        VkRenderPassBeginInfo passBeginInfo{};
+        passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        passBeginInfo.renderPass = renderPass;
+        passBeginInfo.framebuffer = frameBuffers[currentFrameIndex];
+        VkRect2D rect = {
+            {0,0},
+            swapChainExtent
+        };
+        passBeginInfo.renderArea = rect;
+        VkClearValue clearColor{};
+        clearColor.color = { 0.1f,1.1f,0.1f,1.0f};
+        passBeginInfo.clearValueCount = 1;
+        passBeginInfo.pClearValues = &clearColor;
+        vkCmdBeginRenderPass(commandBuffers[currentFrameIndex], &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 
         //清理命令列表
-        commandList.getPrimitiveVertices().clear();
-        commandList.getPrimitiveCommands().clear();
-
-
+        commandList.reset();
+        return true;
     }
 
     void Render::endRenderFrame(){
         // Log::i("render", "end render frame");
+        VkCommandBuffer& cmd = commandBuffers[currentFrameIndex];
+
+        //end renderpass
+        vkCmdEndRenderPass(cmd);
+
+        //end command buffer
+        vkEndCommandBuffer(cmd);
+
+        //submit 
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        VkSemaphore waitSemaphores[] ={
+            imageAvailableSemaphores[currentFrameIndex]
+        };
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        VkPipelineStageFlags waitStages[] ={
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+        };
+        submitInfo.pWaitDstStageMask = waitStages;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmd;
+        VkSemaphore signalSemaphores[] = {
+            renderFinishSemaphores[currentFrameIndex]
+        };
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
+        vkQueueSubmit(graphQueue, 1 , &submitInfo, inFlightFences[currentFrameIndex]);
+
+        //present
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+        VkSwapchainKHR swapchains[] = {
+            swapChain
+        };
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapchains;
+        presentInfo.pImageIndices = &currentImageIndex;
+
+        VkResult presentResult = vkQueuePresentKHR(graphQueue, &presentInfo);
+        if(presentResult != VK_SUCCESS){
+            Log::e("render", "present queue error!");
+        }
         
-        currentFrameIndex = (currentFrameIndex + 1) % FRAME_IN_FLIGHT;
+        currentFrameIndex = (currentFrameIndex + 1) % MAX_FRAME_IN_FLIGHT;
         // Log::purple("render", "currentFrameIndex = %u", currentFrameIndex);
     }
 
@@ -590,15 +675,19 @@ namespace zidian {
             vkDeviceWaitIdle(device);
         }
 
-        if(imageAvailableSemaphore != VK_NULL_HANDLE){
-            vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
+        for(auto &fence : inFlightFences){
+            vkDestroyFence(device, fence, nullptr);
         }
-        if(renderFinishSemaphore != VK_NULL_HANDLE) {
-            vkDestroySemaphore(device, renderFinishSemaphore, nullptr);
+        inFlightFences.clear();
+
+        for(auto &sema : imageAvailableSemaphores){
+            vkDestroySemaphore(device, sema, nullptr);
         }
-        if(inFlightFence != VK_NULL_HANDLE){
-            vkDestroyFence(device, inFlightFence, nullptr);
+        imageAvailableSemaphores.clear();
+        for(auto &sema : renderFinishSemaphores){
+            vkDestroySemaphore(device, sema, nullptr);
         }
+        renderFinishSemaphores.clear();
 
         for(auto &fb : frameBuffers){
             vkDestroyFramebuffer(device, fb, nullptr);
@@ -642,8 +731,8 @@ namespace zidian {
         VkDebugUtilsMessageSeverityFlagBitsEXT severity,
         VkDebugUtilsMessageTypeFlagsEXT type,
         const VkDebugUtilsMessengerCallbackDataEXT* callback,
-        void* user) {
-        
+        void* user
+    ) {
         if(severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT){
             Log::e("Debug", "%s",callback->pMessage);
         }else{

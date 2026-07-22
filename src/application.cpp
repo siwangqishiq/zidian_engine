@@ -100,11 +100,23 @@ namespace zidian{
     }
 
     void Application::tick(){
-        render->beginRenderFrame();
+        if(!render->beginRenderFrame()) {
+            return;
+        }
 
+        onDrawFrame();
+
+        taskSchedule->tick();
+        render->endRenderFrame();
+        fps++;
+    }
+
+    void Application::onDrawFrame(){
         const uint8_t vertexCount = 3; 
         glm::vec2 vertices[vertexCount] = {
-            {},{},{}
+            {-0.5f,   0.5f},
+            { 0.5f ,  0.5f},
+            { 0.0f , -0.5f}
         };
         glm::vec4 colors[vertexCount] = {
             {1.0f, 0.0f , 0.0f, 1.0f},
@@ -112,12 +124,6 @@ namespace zidian{
             {0.0f, 0.0f , 1.0f, 1.0f}
         };
         render->getCanvas()->drawTriangles(vertices, colors, vertexCount);
-
-
-        taskSchedule->tick();
-        render->endRenderFrame();
-
-        fps++;
     }
 
     void Application::onDispose() {

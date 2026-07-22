@@ -13,6 +13,8 @@ namespace zidian {
         std::vector<PrimitiveVertex>& getPrimitiveVertices();
         std::vector<PrimitiveCommand>& getPrimitiveCommands();
 
+        void reset();
+
     private:
         std::vector<PrimitiveVertex> primitiveVertices;
         std::vector<PrimitiveCommand> primitiveCommands;

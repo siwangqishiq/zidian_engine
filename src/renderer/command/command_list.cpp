@@ -7,6 +7,10 @@ namespace zidian {
     CommandList::~CommandList(){
     }
 
+    void CommandList::reset(){
+        primitiveVertices.clear();
+        primitiveCommands.clear();
+    }
 
     std::vector<PrimitiveVertex>& CommandList::getPrimitiveVertices(){
         return primitiveVertices;

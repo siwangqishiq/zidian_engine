@@ -34,7 +34,7 @@ namespace zidian{
     
     class Render {
     public:
-        const uint32_t FRAME_IN_FLIGHT = 2;
+        const uint32_t MAX_FRAME_IN_FLIGHT = 2;
         uint32_t currentFrameIndex = 0;
 
         Render(Application &appContext);
@@ -43,7 +43,7 @@ namespace zidian{
 
         void onDispose();
 
-        void beginRenderFrame();
+        bool beginRenderFrame();
 
         void endRenderFrame();
 
@@ -67,6 +67,7 @@ namespace zidian{
         uint32_t graphQueueFamily = UINT32_MAX;
         uint32_t presentFamily = UINT32_MAX;
 
+        uint32_t currentImageIndex = UINT32_MAX;
         VkSwapchainKHR swapChain = VK_NULL_HANDLE;
         std::vector<VkImage> swapChainImages;
         VkFormat swapChainImageFormat;
@@ -84,10 +85,11 @@ namespace zidian{
         std::vector<VkCommandBuffer> commandBuffers;
 
         //GPU同步对象
-        VkSemaphore imageAvailableSemaphore = VK_NULL_HANDLE;
-        VkSemaphore renderFinishSemaphore = VK_NULL_HANDLE;
+        std::vector<VkSemaphore> imageAvailableSemaphores;
+        std::vector<VkSemaphore> renderFinishSemaphores;
+
         //CPU -> GPU 同步对象
-        VkFence inFlightFence = VK_NULL_HANDLE;
+        std::vector<VkFence> inFlightFences;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
         void createInstance();

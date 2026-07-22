@@ -31,6 +31,8 @@ namespace zidian{
 
         void onDispose();
 
+        void onDrawFrame();
+
         ~Application();
 
         std::unique_ptr<Render>& getRender();
