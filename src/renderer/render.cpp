@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "renderer/render.h"
 #include "utils/log.h"
+#include "utils/format.h"
 #include "application.h"
 #include "config.h"
 #include "renderer/vk_canvas.h"
@@ -43,6 +44,8 @@ namespace zidian {
 
         createPipelines();
         createCommandBuffers();
+        createFramebuffers();
+        createSyncObjects();
     }
 
     void Render::createInstance() {
@@ -173,11 +176,18 @@ namespace zidian {
         vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
         Log::green("render", "memoryTypeCount : %d", memProperties.memoryTypeCount);
         Log::green("render", "memoryHeapCount : %d", memProperties.memoryHeapCount);
+
         Log::green("render", "memory heap:");
         for(uint32_t i = 0 ; i < memProperties.memoryHeapCount ; i++){
             VkMemoryHeap heap = memProperties.memoryHeaps[i];
-            Log::green("render", "\theapsize : %u", heap.size);
-            Log::green("render", "\tVkMemoryHeapFlags : %d", heap.flags);
+            Log::green("render", "heap type\theapsize : %s", Utils::FormatBytes(heap.size).c_str());
+            /**
+             * 
+            VK_MEMORY_HEAP_DEVICE_LOCAL_BIT = 0x00000001,
+            VK_MEMORY_HEAP_MULTI_INSTANCE_BIT = 0x00000002,
+            VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM = 0x00000008,
+             */
+            Log::green("render", "heap type\tVkMemoryHeapFlags : %d", heap.flags);
         }//end for i
 
         Log::green("render", "memory type:");
@@ -387,7 +397,7 @@ namespace zidian {
         Log::i("render", "Create command pool success");
         
 
-        commandBuffers.resize(swapChainImages.size());
+        commandBuffers.resize(FRAME_IN_FLIGHT);
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -401,6 +411,59 @@ namespace zidian {
             return;
         }
         Log::i("render", "Create command buffer(count : %d) success", commandBuffers.size());
+    }
+
+    void Render::createFramebuffers(){
+        frameBuffers.resize(swapChainImageViews.size());
+        bool isFailed = false;
+        for(int i = 0 ; i < swapChainImageViews.size() ; i++){
+            VkFramebufferCreateInfo fbCreateInfo{};
+            fbCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            fbCreateInfo.renderPass = renderPass;
+            VkImageView attachments[] ={
+                swapChainImageViews[i]
+            };
+            fbCreateInfo.attachmentCount = 1;
+            fbCreateInfo.pAttachments = attachments;
+            fbCreateInfo.layers = 1;
+            fbCreateInfo.width = swapChainExtent.width;
+            fbCreateInfo.height = swapChainExtent.height;
+
+            if(vkCreateFramebuffer(device, &fbCreateInfo , nullptr, &frameBuffers[i]) != VK_SUCCESS){
+                isFailed = true;
+                Log::e("render", "Create framebuffer[%d] failed!", i);
+                continue;
+            }
+        }//end for i
+
+        if(!isFailed){
+            return;
+        }
+        Log::i("render", "Create frame buffer success (%d)", frameBuffers.size());
+    }
+
+    void Render::createSyncObjects(){
+        VkSemaphoreCreateInfo semaphoreInfo{};
+        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS){
+            Log::e("render", "Create imageAvailableSemaphore failed!");
+            return;
+        }
+
+        if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishSemaphore) != VK_SUCCESS){
+            Log::e("render", "Create renderFinishSemaphore failed!");
+            return;
+        }
+
+        VkFenceCreateInfo fenceCreateInfo{};
+        fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        if(vkCreateFence(device, &fenceCreateInfo, nullptr, &inFlightFence) != VK_SUCCESS){
+            Log::e("render", "Create inFightFence failed!");
+            return;
+        }
+
+        Log::i("render", "Create sync object success imageAvailableSemaphore renderFinishSemaphore flightFence");
     }
 
     SwapChainSupportDetails Render::querySwapChainSupport(VkPhysicalDevice device){
@@ -506,20 +569,40 @@ namespace zidian {
     void Render::beginRenderFrame(){
         // Log::i("render", "begin render frame");
 
+
+
         //清理命令列表
         commandList.getPrimitiveVertices().clear();
         commandList.getPrimitiveCommands().clear();
+
+
     }
 
     void Render::endRenderFrame(){
         // Log::i("render", "end render frame");
         
+        currentFrameIndex = (currentFrameIndex + 1) % FRAME_IN_FLIGHT;
+        // Log::purple("render", "currentFrameIndex = %u", currentFrameIndex);
     }
 
     void Render::onDispose(){
         if (device != VK_NULL_HANDLE) {
             vkDeviceWaitIdle(device);
         }
+
+        if(imageAvailableSemaphore != VK_NULL_HANDLE){
+            vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
+        }
+        if(renderFinishSemaphore != VK_NULL_HANDLE) {
+            vkDestroySemaphore(device, renderFinishSemaphore, nullptr);
+        }
+        if(inFlightFence != VK_NULL_HANDLE){
+            vkDestroyFence(device, inFlightFence, nullptr);
+        }
+
+        for(auto &fb : frameBuffers){
+            vkDestroyFramebuffer(device, fb, nullptr);
+        }//end for each
 
         if(commandPool != VK_NULL_HANDLE){
             vkDestroyCommandPool(device, commandPool, nullptr);

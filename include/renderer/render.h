@@ -34,6 +34,9 @@ namespace zidian{
     
     class Render {
     public:
+        const uint32_t FRAME_IN_FLIGHT = 2;
+        uint32_t currentFrameIndex = 0;
+
         Render(Application &appContext);
 
         void init(std::vector<const char *> &glfwExtenstinList);
@@ -71,6 +74,7 @@ namespace zidian{
 
         uint32_t swapChainImageCount = 0;
         std::vector<VkImageView> swapChainImageViews;
+        std::vector<VkFramebuffer> frameBuffers;
 
         std::vector<const char*> instanceExtensions;
         std::vector<const char*> layers;
@@ -78,6 +82,12 @@ namespace zidian{
         VkRenderPass renderPass = VK_NULL_HANDLE;
         VkCommandPool commandPool = VK_NULL_HANDLE;
         std::vector<VkCommandBuffer> commandBuffers;
+
+        //GPU同步对象
+        VkSemaphore imageAvailableSemaphore = VK_NULL_HANDLE;
+        VkSemaphore renderFinishSemaphore = VK_NULL_HANDLE;
+        //CPU -> GPU 同步对象
+        VkFence inFlightFence = VK_NULL_HANDLE;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
         void createInstance();
@@ -89,6 +99,9 @@ namespace zidian{
         void createRenderPass();
         void createPipelines();
         void createCommandBuffers();
+        void createFramebuffers();
+        void createSyncObjects();
+        
 
         bool isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props);
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
