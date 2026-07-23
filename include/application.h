@@ -18,6 +18,13 @@ namespace zidian{
         glm::vec4 clearColor = {0.1f, 0.1f , 0.1f, 1.0f};
     };
 
+    class IGame{
+    public:
+        virtual void onInit() = 0;
+        virtual void onTick() = 0;
+        virtual void onDispose() = 0;
+    };
+
     class Render;
     class TaskSchedule;
 
@@ -38,7 +45,7 @@ namespace zidian{
         ~Application();
 
         std::unique_ptr<Render>& getRender();
-
+        std::unique_ptr<TaskSchedule>& getTaskSchedule();
         AppConfig& getAppConfig();
         
         GLFWwindow *window;
@@ -46,10 +53,13 @@ namespace zidian{
         VkSurfaceKHR createSurfaceFromInstance(VkInstance instance);
 
         void getFramebufferSize(int &width, int &height);
+
+        void setGameObject(std::shared_ptr<IGame> obj);
     protected:
         std::unique_ptr<Render> render;
         std::unique_ptr<TaskSchedule> taskSchedule;
         AppConfig config;
+        std::shared_ptr<IGame> game = nullptr;
     private:
         void initWindow();
         void tick();

@@ -11,7 +11,10 @@
 namespace zidian{
     std::string Application::TAG = "app_tag";
 
+    Application* Instance;
+
     Application::Application(){
+        Instance = this;
         Log::i(TAG,"Application construct");
     }
 
@@ -72,6 +75,14 @@ namespace zidian{
         return config; 
     }
 
+    std::unique_ptr<Render>& Application::getRender(){
+        return render;
+    }
+
+    std::unique_ptr<TaskSchedule>& Application::getTaskSchedule(){
+        return taskSchedule;
+    }
+
     VkSurfaceKHR Application::createSurfaceFromInstance(VkInstance instance){
         VkSurfaceKHR surface;
         auto ret = glfwCreateWindowSurface(instance, window, nullptr, &surface);
@@ -86,8 +97,17 @@ namespace zidian{
         glfwGetFramebufferSize(window, &width, &height);
     }
 
+    void Application::setGameObject(std::shared_ptr<IGame> obj){
+        this->game = obj;
+    }
+
     int Application::execute(){
         Log::i(TAG,"Application execute");
+
+        if(game != nullptr){
+            game->onInit();
+        }
+
         while(!glfwWindowShouldClose(window)){
             glfwPollEvents();
             tick();
@@ -112,21 +132,16 @@ namespace zidian{
     }
 
     void Application::onDrawFrame(){
-        const uint8_t vertexCount = 3; 
-        glm::vec2 vertices[vertexCount] = {
-            {-0.5f,   0.5f},
-            { 0.5f ,  0.5f},
-            { 0.0f , -0.5f}
-        };
-        glm::vec4 colors[vertexCount] = {
-            {1.0f, 0.0f , 0.0f, 1.0f},
-            {0.0f, 1.0f , 0.0f, 1.0f},
-            {0.0f, 0.0f , 1.0f, 1.0f}
-        };
-        render->getCanvas()->drawTriangles(vertices, colors, vertexCount);
+        if(game != nullptr){
+            game->onTick();
+        }
     }
 
     void Application::onDispose() {
+        if(game != nullptr){
+            game->onDispose();
+        }
+
         Log::i(TAG,"Application onDispose");
         render->onDispose();
     }
