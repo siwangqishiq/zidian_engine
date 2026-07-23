@@ -21,7 +21,7 @@ namespace zidian {
         }
 
         Log::i("shader_manager","read shader file: %s size = %ld", path.c_str(), codeSize);
-
+        
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         createInfo.codeSize = code.size();

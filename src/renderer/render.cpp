@@ -545,16 +545,25 @@ namespace zidian {
 
     VkPresentModeKHR Render::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& modes){
         for(auto mode : modes){
-            if(!appCtx.getAppConfig().vsync){ // 非垂直同步 使用立即模式
+            if(appCtx.getAppConfig().vsync){ //开启垂直同步
+                if(mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR){
+                    return mode;
+                }
+                if(mode == VK_PRESENT_MODE_FIFO_KHR){
+                    return mode;
+                }
+            }else { //关闭垂直同步
                 if(mode == VK_PRESENT_MODE_IMMEDIATE_KHR){
                     return mode;
                 }
+                if(mode == VK_PRESENT_MODE_MAILBOX_KHR){
+                    return mode;
+                }
             }
-            
 
-            if(mode == VK_PRESENT_MODE_MAILBOX_KHR){
-                return mode;
-            }
+            // if(mode == VK_PRESENT_MODE_MAILBOX_KHR){
+            //     return mode;
+            // }
         }
         return VK_PRESENT_MODE_FIFO_KHR;
     }
