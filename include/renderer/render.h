@@ -103,6 +103,8 @@ namespace zidian{
         void createCommandBuffers();
         void createFramebuffers();
         void createSyncObjects();
+
+        void printMemoryInfo();
         
 
         bool isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props);
@@ -114,6 +116,9 @@ namespace zidian{
         VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats);
         VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& modes);
         VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
+        std::string heapMemoryFlagsToStr(VkMemoryHeap &heap);
+        std::string memoryPropertiesToStr(VkMemoryPropertyFlags &propFlags);
 
         Application &appCtx;
         std::unique_ptr<ICanvas> canvas;

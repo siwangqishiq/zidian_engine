@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include "vulkan/vulkan.h"
+#include "glm/glm.hpp"
 
 class GLFWwindow;
 
@@ -14,6 +15,7 @@ namespace zidian{
         uint32_t windowWidth;
         uint32_t windowHeight;
         bool vsync = true;
+        glm::vec4 clearColor = {0.1f, 0.1f , 0.1f, 1.0f};
     };
 
     class Render;

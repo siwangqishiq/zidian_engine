@@ -170,43 +170,77 @@ namespace zidian {
             vkGetPhysicalDeviceProperties(physicalDevice, &props);
             Log::i("render", "Select GPU : %s", props.deviceName);
         }
+       
+        printMemoryInfo();
+    }
 
+    std::string Render::heapMemoryFlagsToStr(VkMemoryHeap &heap){
+        std::string result = "";
+        if(heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT){
+            result = result + "device_local ";
+        }
 
-        VkPhysicalDeviceMemoryProperties memProperties{};
+        if(heap.flags & VK_MEMORY_HEAP_MULTI_INSTANCE_BIT){
+            result = result + "multi_instance ";
+        }
+
+        if(heap.flags & VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM){
+            result = result + "tile_memory_qcom ";
+        }
+        
+        return result;
+    }
+
+    std::string Render::memoryPropertiesToStr(VkMemoryPropertyFlags &propFlags){
+        std::string result = "";
+        if(propFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT){
+            result = result + "device_local ";
+        }
+        if(propFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT){
+            result = result + "host_visible ";
+        }
+        if(propFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT){
+            result = result + "host_coherent ";
+        }
+        if(propFlags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT){
+            result = result + "host_cached ";
+        }
+        if(propFlags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT){
+            result = result + "lazily_allocated ";
+        }
+        if(propFlags & VK_MEMORY_PROPERTY_PROTECTED_BIT){
+            result = result + "protected ";
+        }
+        if(propFlags & VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD){
+            result = result + "device_coherent(amd) ";
+        }
+        if(propFlags & VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD){
+            result = result + "device_uncached(amd) ";
+        }
+        if(propFlags & VK_MEMORY_PROPERTY_RDMA_CAPABLE_BIT_NV){
+            result = result + "rdma_capable (nv) ";
+        }
+        return result;
+    }
+
+    void Render::printMemoryInfo(){
+         VkPhysicalDeviceMemoryProperties memProperties{};
         vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
         Log::green("render", "memoryTypeCount : %d", memProperties.memoryTypeCount);
         Log::green("render", "memoryHeapCount : %d", memProperties.memoryHeapCount);
-
         Log::green("render", "memory heap:");
+
         for(uint32_t i = 0 ; i < memProperties.memoryHeapCount ; i++){
             VkMemoryHeap heap = memProperties.memoryHeaps[i];
             Log::green("render", "heap type\theapsize : %s", Utils::FormatBytes(heap.size).c_str());
-            /**
-             * 
-            VK_MEMORY_HEAP_DEVICE_LOCAL_BIT = 0x00000001,
-            VK_MEMORY_HEAP_MULTI_INSTANCE_BIT = 0x00000002,
-            VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM = 0x00000008,
-             */
-            Log::green("render", "heap type\tVkMemoryHeapFlags : %d", heap.flags);
+            Log::green("render", "heap type\tVkMemoryHeapFlags : %s", heapMemoryFlagsToStr(heap).c_str());
         }//end for i
 
-        Log::green("render", "memory type:");
+        Log::green("render", "memory types:");
         for(uint32_t i = 0 ; i < memProperties.memoryTypeCount ; i++){
             VkMemoryType type = memProperties.memoryTypes[i];
-            Log::green("render", "\t%u heap index : %u", i, type.heapIndex);
-            /**
-             *      
-             *      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT = 0x00000001,
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT = 0x00000002,
-                    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT = 0x00000004,
-                    VK_MEMORY_PROPERTY_HOST_CACHED_BIT = 0x00000008,
-                    VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT = 0x00000010,
-                    VK_MEMORY_PROPERTY_PROTECTED_BIT = 0x00000020,
-                    VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD = 0x00000040,
-                    VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD = 0x00000080,
-                    VK_MEMORY_PROPERTY_RDMA_CAPABLE_BIT_NV = 0x00000100
-             */
-            Log::green("render", "\t%u properties flags : %d",i, type.propertyFlags);
+            Log::green("render", "\t type -> %u     heap index -> %u", i, type.heapIndex);
+            Log::green("render", "\t properties: %s",memoryPropertiesToStr(type.propertyFlags).c_str());
             Log::green("render", "\t==========================================");
         }//end for i
     }
@@ -445,7 +479,6 @@ namespace zidian {
     void Render::createSyncObjects(){
         inFlightFences.resize(MAX_FRAME_IN_FLIGHT);
         imageAvailableSemaphores.resize(MAX_FRAME_IN_FLIGHT);
-        renderFinishSemaphores.resize(MAX_FRAME_IN_FLIGHT);
 
         for(uint32_t i = 0 ; i < MAX_FRAME_IN_FLIGHT; i++){
             VkSemaphoreCreateInfo semaphoreInfo{};
@@ -455,16 +488,21 @@ namespace zidian {
                 return;
             }
 
-            if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishSemaphores[i]) != VK_SUCCESS){
-                Log::e("render", "Create renderFinishSemaphore failed!");
-                return;
-            }
-
             VkFenceCreateInfo fenceCreateInfo{};
             fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
             if(vkCreateFence(device, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS){
                 Log::e("render", "Create inFightFence failed!");
+                return;
+            }
+        }//end for i
+
+        renderFinishSemaphores.resize(swapChainImageViews.size());
+        for(uint32_t i = 0 ; i < swapChainImageViews.size(); i++){
+            VkSemaphoreCreateInfo semaphoreInfo{};
+            semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishSemaphores[i]) != VK_SUCCESS){
+                Log::e("render", "Create renderFinishSemaphore failed!");
                 return;
             }
         }//end for i
@@ -578,13 +616,13 @@ namespace zidian {
         vkWaitForFences(device, 1, &inFlightFences[currentFrameIndex], VK_TRUE, UINT64_MAX);
         uint32_t imageIdx = UINT32_MAX;
         auto result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrameIndex], VK_NULL_HANDLE, &imageIdx);
-        if(result != VK_SUCCESS){
+        if(result != VK_SUCCESS && imageIdx != UINT32_MAX){
             Log::e("render" , "acquire image index failed.");
             return false;
         }
 
         currentImageIndex = imageIdx;
-        // Log::i("render", "currentFrameIndex = %u , currentImageIndex = %u", currentFrameIndex , currentImageIndex);
+
         vkResetFences(device, 1, &inFlightFences[currentFrameIndex]);
 
         //重置commandbuffer
@@ -600,18 +638,17 @@ namespace zidian {
         VkRenderPassBeginInfo passBeginInfo{};
         passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         passBeginInfo.renderPass = renderPass;
-        passBeginInfo.framebuffer = frameBuffers[currentFrameIndex];
+        passBeginInfo.framebuffer = frameBuffers[currentImageIndex];
         VkRect2D rect = {
             {0,0},
             swapChainExtent
         };
         passBeginInfo.renderArea = rect;
-        VkClearValue clearColor{};
-        clearColor.color = { 0.1f,1.1f,0.1f,1.0f};
+        glm::vec4 configClearColor = appCtx.getAppConfig().clearColor;
+        VkClearValue clearColor = {configClearColor[0],configClearColor[1],configClearColor[2],configClearColor[3]};
         passBeginInfo.clearValueCount = 1;
         passBeginInfo.pClearValues = &clearColor;
         vkCmdBeginRenderPass(commandBuffers[currentFrameIndex], &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
 
         //清理命令列表
         commandList.reset();
@@ -643,7 +680,7 @@ namespace zidian {
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &cmd;
         VkSemaphore signalSemaphores[] = {
-            renderFinishSemaphores[currentFrameIndex]
+            renderFinishSemaphores[currentImageIndex]
         };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
