@@ -24,6 +24,8 @@ namespace zidian{
         void destroy();
 
         Allocation allocate(const VkMemoryRequirements& requirements, MemoryType memoryType);
+
+        void free(const Allocation& allocation);
     private:
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE; 
         VkDevice device = VK_NULL_HANDLE;

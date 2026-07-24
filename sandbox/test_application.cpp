@@ -4,9 +4,9 @@ class GameApp : public zidian::IGame {
 public:
     virtual void onInit() override{
         zidian::Log::brown("game", "game init");
-        zidian::Instance->getTaskSchedule()->scheduleAtFixedRate([](void *){
-            zidian::Log::brown("game", "game tick");
-        },1000);
+        // zidian::Instance->getTaskSchedule()->scheduleAtFixedRate([](void *){
+        //     zidian::Log::brown("game", "game tick");
+        // },1000);
     }
     
     virtual void onTick() override{

@@ -17,6 +17,9 @@ namespace zidian {
         memories.clear();
     }
 
+    void MemoryAllocator::free(const Allocation& allocation){
+    }
+
     Allocation MemoryAllocator::allocate(const VkMemoryRequirements& requirements, MemoryType memoryType){
         Allocation allocation;
         VkMemoryPropertyFlags properties = 0;
@@ -46,6 +49,8 @@ namespace zidian {
         allocation.memory = memory;
         allocation.offset = 0;
         allocation.size = requirements.size;
+        allocation.memoryTypeIndex = memoryTypeIndex;
+
         return allocation;
     }
 

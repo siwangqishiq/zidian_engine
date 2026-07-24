@@ -46,6 +46,8 @@ namespace zidian {
         createCommandBuffers();
         createFramebuffers();
         createSyncObjects();
+
+        memoryAllocator.init(physicalDevice, device); //初始化内存分配器
     }
 
     void Render::createInstance() {
@@ -672,6 +674,8 @@ namespace zidian {
     }
 
     void Render::endRenderFrame(){
+        uploadCommands();
+
         // Log::i("render", "end render frame");
         VkCommandBuffer& cmd = commandBuffers[currentFrameIndex];
 
@@ -723,10 +727,26 @@ namespace zidian {
         // Log::purple("render", "currentFrameIndex = %u", currentFrameIndex);
     }
 
+    void Render::uploadCommands(){
+        uploadPrimitive();
+    }
+
+    void Render::uploadPrimitive(){
+        if(commandList.getPrimitiveCommands().empty()){
+            return;
+        }
+
+        for(PrimitiveCommand &command : commandList.getPrimitiveCommands()){
+            
+        }//end for each
+    }
+
     void Render::onDispose(){
         if (device != VK_NULL_HANDLE) {
             vkDeviceWaitIdle(device);
         }
+        
+        memoryAllocator.destroy();
 
         for(auto &fence : inFlightFences){
             vkDestroyFence(device, fence, nullptr);

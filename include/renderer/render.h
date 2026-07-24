@@ -6,6 +6,7 @@
 #include "renderer/canvas.h"
 #include "renderer/pipeline/pipeline_manager.h"
 #include "renderer/command/command_list.h"
+#include "renderer/mem/memory_allocator.h"
 
 namespace zidian{
     class Application;
@@ -90,6 +91,8 @@ namespace zidian{
 
         //CPU -> GPU 同步对象
         std::vector<VkFence> inFlightFences;
+
+        MemoryAllocator memoryAllocator;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
         void createInstance();
@@ -105,6 +108,9 @@ namespace zidian{
         void createSyncObjects();
 
         void printMemoryInfo();
+
+        void uploadCommands();
+        void uploadPrimitive();
         
 
         bool isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props);
