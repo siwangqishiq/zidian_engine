@@ -92,7 +92,11 @@ namespace zidian{
         //CPU -> GPU 同步对象
         std::vector<VkFence> inFlightFences;
 
+        // 内存分配器
         MemoryAllocator memoryAllocator;
+
+        VkBuffer primitiveVertexBuffer = VK_NULL_HANDLE;
+        VkDeviceMemory primitiveVertexMemory = VK_NULL_HANDLE;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
         void createInstance();
@@ -106,13 +110,13 @@ namespace zidian{
         void createCommandBuffers();
         void createFramebuffers();
         void createSyncObjects();
+        void createPrimitiveVertexBuffer();
 
         void printMemoryInfo();
 
         void uploadCommands();
         void uploadPrimitive();
         
-
         bool isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props);
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
 

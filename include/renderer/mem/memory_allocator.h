@@ -26,12 +26,12 @@ namespace zidian{
         Allocation allocate(const VkMemoryRequirements& requirements, MemoryType memoryType);
 
         void free(const Allocation& allocation);
+
+        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     private:
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE; 
         VkDevice device = VK_NULL_HANDLE;
 
         std::vector<DeviceMemory *> memories;
-
-        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     };
 }

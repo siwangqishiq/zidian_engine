@@ -48,6 +48,8 @@ namespace zidian {
         createSyncObjects();
 
         memoryAllocator.init(physicalDevice, device); //初始化内存分配器
+
+        createPrimitiveVertexBuffer();
     }
 
     void Render::createInstance() {
@@ -512,6 +514,35 @@ namespace zidian {
         Log::i("render", "Create sync object success imageAvailableSemaphore renderFinishSemaphore flightFence");
     }
 
+    void Render::createPrimitiveVertexBuffer(){
+        VkDeviceSize bufferSize = sizeof(PrimitiveVertex) * 1024;
+
+        VkBufferCreateInfo bufferCreateInfo{};
+        bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferCreateInfo.size = bufferSize;
+        bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        if(vkCreateBuffer(device, &bufferCreateInfo, nullptr, &primitiveVertexBuffer) != VK_SUCCESS){
+            Log::e("render", "Create primitive vertex buffer failed!");
+            return;
+        }
+
+        VkMemoryRequirements memRequirements{};
+        vkGetBufferMemoryRequirements(device, primitiveVertexBuffer, &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = memoryAllocator.findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        
+        if(vkAllocateMemory(device,&allocInfo,nullptr,&primitiveVertexMemory) != VK_SUCCESS){
+            Log::e("render", "allocte primitive memory failed!");
+            return;
+        }
+
+        vkBindBufferMemory(device, primitiveVertexBuffer, primitiveVertexMemory, 0);
+    }
+
     SwapChainSupportDetails Render::querySwapChainSupport(VkPhysicalDevice device){
         SwapChainSupportDetails details{};
 
@@ -737,7 +768,6 @@ namespace zidian {
         }
 
         for(PrimitiveCommand &command : commandList.getPrimitiveCommands()){
-            
         }//end for each
     }
 
@@ -745,7 +775,14 @@ namespace zidian {
         if (device != VK_NULL_HANDLE) {
             vkDeviceWaitIdle(device);
         }
-        
+
+        if(primitiveVertexBuffer != VK_NULL_HANDLE){
+            vkDestroyBuffer(device, primitiveVertexBuffer, nullptr);
+        }
+        if(primitiveVertexMemory != VK_NULL_HANDLE){
+            vkFreeMemory(device, primitiveVertexMemory, nullptr);
+        }
+
         memoryAllocator.destroy();
 
         for(auto &fence : inFlightFences){
