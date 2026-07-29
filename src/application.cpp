@@ -127,6 +127,7 @@ namespace zidian{
         onDrawFrame();
 
         taskSchedule->tick();
+        
         render->endRenderFrame();
         fps++;
     }

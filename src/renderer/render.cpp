@@ -6,7 +6,10 @@
 #include "application.h"
 #include "config.h"
 #include "renderer/vk_canvas.h"
+#include "renderer/pipeline/pipeline_manager.h"
+#include "renderer/pipeline/primitive_pipe.h"
 #include "renderer/shader/shader_manager.h"
+#include "renderer/vertex/primitive_vertex.h"
 
 namespace zidian {
     Render::Render(Application &appContext):appCtx(appContext) {
@@ -417,8 +420,8 @@ namespace zidian {
     void Render::createPipelines(){
         shaderManager = std::make_unique<ShaderManager>(*this);
 
-        pipelines = std::make_unique<PipelineManager>(*this);
-        pipelines->createPipelines();
+        pipelineManager = std::make_unique<PipelineManager>(*this);
+        pipelineManager->createPipelines();
     }
 
     void Render::createCommandBuffers(){
@@ -533,7 +536,8 @@ namespace zidian {
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = memoryAllocator.findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        allocInfo.memoryTypeIndex = memoryAllocator.findMemoryType(memRequirements.memoryTypeBits, 
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         
         if(vkAllocateMemory(device,&allocInfo,nullptr,&primitiveVertexMemory) != VK_SUCCESS){
             Log::e("render", "allocte primitive memory failed!");
@@ -541,6 +545,12 @@ namespace zidian {
         }
 
         vkBindBufferMemory(device, primitiveVertexBuffer, primitiveVertexMemory, 0);
+
+        auto memoryMapResult = vkMapMemory(device, primitiveVertexMemory, 0, bufferSize, 0, &primitiveMemoryMapped);
+        if(memoryMapResult != VK_SUCCESS){
+            Log::e("render", "map the primitive memory failed!");
+            return;
+        }
     }
 
     SwapChainSupportDetails Render::querySwapChainSupport(VkPhysicalDevice device){
@@ -706,6 +716,7 @@ namespace zidian {
 
     void Render::endRenderFrame(){
         uploadCommands();
+        recordCommands();
 
         // Log::i("render", "end render frame");
         VkCommandBuffer& cmd = commandBuffers[currentFrameIndex];
@@ -767,14 +778,24 @@ namespace zidian {
             return;
         }
 
-        for(PrimitiveCommand &command : commandList.getPrimitiveCommands()){
-        }//end for each
+        const uint32_t vertexCount = commandList.getPrimitiveVertices().size();
+        memcpy(primitiveMemoryMapped, commandList.getPrimitiveVertices().data(), vertexCount * sizeof(PrimitiveVertex));
+    }
+
+    void Render::recordCommands(){
+        const uint32_t vertexCount = commandList.getPrimitiveVertices().size();
+        vkCmdBindPipeline(commandBuffers[currentFrameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineManager->primitivePipe->pipeline);
+        VkDeviceSize offset[] = {0};
+        vkCmdBindVertexBuffers(commandBuffers[currentFrameIndex], 0, 1, &primitiveVertexBuffer, offset);
+        vkCmdDraw(commandBuffers[currentFrameIndex], vertexCount, 1, 0, 0);
     }
 
     void Render::onDispose(){
         if (device != VK_NULL_HANDLE) {
             vkDeviceWaitIdle(device);
         }
+
+        vkUnmapMemory(device, primitiveVertexMemory);
 
         if(primitiveVertexBuffer != VK_NULL_HANDLE){
             vkDestroyBuffer(device, primitiveVertexBuffer, nullptr);
@@ -807,7 +828,7 @@ namespace zidian {
             vkDestroyCommandPool(device, commandPool, nullptr);
         }
 
-        pipelines->clearPipelines();
+        pipelineManager->clearPipelines();
 
         if(renderPass != VK_NULL_HANDLE){
             vkDestroyRenderPass(device, renderPass, nullptr);

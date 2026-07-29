@@ -10,9 +10,7 @@
 
 namespace zidian{
     class Application;
-    class PipelineManager;
     class ShaderManager;
-    
 
 
     VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -54,7 +52,7 @@ namespace zidian{
 
         virtual ~Render();
 
-        std::unique_ptr<PipelineManager> pipelines;
+        std::unique_ptr<PipelineManager> pipelineManager;
         std::unique_ptr<ShaderManager> shaderManager;
 
         VkInstance instance = VK_NULL_HANDLE;
@@ -97,6 +95,7 @@ namespace zidian{
 
         VkBuffer primitiveVertexBuffer = VK_NULL_HANDLE;
         VkDeviceMemory primitiveVertexMemory = VK_NULL_HANDLE;
+        void *primitiveMemoryMapped;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
         void createInstance();
@@ -116,6 +115,7 @@ namespace zidian{
 
         void uploadCommands();
         void uploadPrimitive();
+        void recordCommands();
         
         bool isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props);
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
