@@ -26,6 +26,35 @@ namespace zidian {
         ctx.commandList.getPrimitiveCommands().push_back(command);
     }
 
+    void VkCanvas::drawTriangle(const glm::vec2 *vertices,const glm::vec4 color){
+        const uint32_t vertexCount = 3;
+        const glm::vec4 colors[vertexCount] = {color,color,color};
+        drawTriangles(vertices, colors, vertexCount);
+    }
+
+    int VkCanvas::getWidth() {
+        return ctx.swapChainExtent.width;
+    }
+
+    int VkCanvas::getHeight() {
+        return ctx.swapChainExtent.height;
+    }
+
+    void VkCanvas::drawRect(float left, float top, float width, float height, const glm::vec4 color) {
+        const uint32_t vertexCount = 6;
+        const glm::vec4 colors[vertexCount] = {color,color,color,color,color,color};
+        const glm::vec2 vertices[vertexCount] = {
+            {left + width, top},
+            {left, top},
+            {left , top + height},
+            {left + width, top},
+            {left , top + height},
+            {left + width, top + height}
+        };
+
+        drawTriangles(vertices, colors, vertexCount);
+    }
+
     void VkCanvas::flush(){
 
     }
