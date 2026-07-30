@@ -51,7 +51,6 @@ namespace zidian {
         createSyncObjects();
 
         memoryAllocator.init(physicalDevice, device); //初始化内存分配器
-
         createPrimitiveVertexBuffer();
     }
 
@@ -176,6 +175,7 @@ namespace zidian {
             VkPhysicalDeviceProperties props;
             vkGetPhysicalDeviceProperties(physicalDevice, &props);
             Log::i("render", "Select GPU : %s", props.deviceName);
+            Log::i("render", "GPU MaxPushConstant Size : %u", props.limits.maxPushConstantsSize);
         }
        
         printMemoryInfo();
@@ -783,11 +783,27 @@ namespace zidian {
     }
 
     void Render::recordCommands(){
+        auto& primitivePipeline = pipelineManager->primitivePipe;
+        VkCommandBuffer& cmdBuffer = commandBuffers[currentFrameIndex];
+
         const uint32_t vertexCount = commandList.getPrimitiveVertices().size();
-        vkCmdBindPipeline(commandBuffers[currentFrameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineManager->primitivePipe->pipeline);
+        vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, primitivePipeline->pipeline);
         VkDeviceSize offset[] = {0};
-        vkCmdBindVertexBuffers(commandBuffers[currentFrameIndex], 0, 1, &primitiveVertexBuffer, offset);
-        vkCmdDraw(commandBuffers[currentFrameIndex], vertexCount, 1, 0, 0);
+        vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &primitiveVertexBuffer, offset);
+
+        // std::cout << swapChainExtent.width << " " << swapChainExtent.height << std::endl;
+        pushConstData.proj = {
+            glm::vec4(2.0f / float(swapChainExtent.width), 0.0f, 0.0f, 0.0f),
+            glm::vec4(0.0f, 2.0f / float(swapChainExtent.height), 0.0f,0.0f),
+            glm::vec4(0.0f,  0.0f,  1.0f, 0.0f),
+            glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
+        };
+        vkCmdPushConstants(cmdBuffer,
+                primitivePipeline->pipelineLayout, 
+                VK_SHADER_STAGE_VERTEX_BIT,0, 
+                sizeof(PushConstantData), &pushConstData);//set push constant
+
+        vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
     }
 
     void Render::onDispose(){

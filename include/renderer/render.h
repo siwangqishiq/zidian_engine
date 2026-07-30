@@ -7,6 +7,7 @@
 #include "renderer/pipeline/pipeline_manager.h"
 #include "renderer/command/command_list.h"
 #include "renderer/mem/memory_allocator.h"
+#include "renderer/pipeline/push_constant_data.h"
 
 namespace zidian{
     class Application;
@@ -96,6 +97,8 @@ namespace zidian{
         VkBuffer primitiveVertexBuffer = VK_NULL_HANDLE;
         VkDeviceMemory primitiveVertexMemory = VK_NULL_HANDLE;
         void *primitiveMemoryMapped;
+
+        PushConstantData pushConstData = {glm::mat4()};
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
         void createInstance();

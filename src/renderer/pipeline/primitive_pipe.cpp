@@ -3,6 +3,8 @@
 #include "renderer/render.h"
 #include "renderer/shader/shader_manager.h"
 #include "utils/log.h"
+#include "renderer/pipeline/push_constant_data.h"
+
 
 namespace zidian{
     PrimitivePipeline::PrimitivePipeline(Render &context) : ctx(context){
@@ -214,11 +216,19 @@ namespace zidian{
 
     bool PrimitivePipeline::createPipelineLayout(){
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutCreateInfo.pushConstantRangeCount = 0;
         // layoutCreateInfo.setLayoutCount = 1;
         // layoutCreateInfo.pSetLayouts = &descriptorSetLayout;
         layoutCreateInfo.setLayoutCount = 0;
         layoutCreateInfo.pSetLayouts = nullptr;
+
+        //set push constant
+        VkPushConstantRange pushConstantRange{};
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        pushConstantRange.offset = 0;
+        pushConstantRange.size = sizeof(PushConstantData);
+        layoutCreateInfo.pushConstantRangeCount = 1;
+        layoutCreateInfo.pPushConstantRanges = &pushConstantRange;
+
         if(vkCreatePipelineLayout(ctx.device, &layoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS){
             Log::e("pipeline", "create pipeline layout failed!");
             return false;

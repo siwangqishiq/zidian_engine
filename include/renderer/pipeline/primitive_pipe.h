@@ -16,9 +16,9 @@ namespace zidian {
         ~PrimitivePipeline();
 
         VkPipeline pipeline = VK_NULL_HANDLE;
+        VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     private:
         Render& ctx;
-        VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 
         VkVertexInputBindingDescription vertexInputBind{};
         std::array<VkVertexInputAttributeDescription , 2> vertexInputDescs{};

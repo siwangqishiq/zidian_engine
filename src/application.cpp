@@ -52,6 +52,7 @@ namespace zidian{
     void Application::initWindow(){
         glfwInit();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
         window = glfwCreateWindow(config.windowWidth, config.windowHeight, 
             config.name.c_str(), nullptr, nullptr);

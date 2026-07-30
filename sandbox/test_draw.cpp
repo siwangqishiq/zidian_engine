@@ -12,7 +12,22 @@ public:
     
     virtual void onTick() override{
         auto &render = zidian::Instance->getRender();
-        
+        auto &canvas = render->getCanvas();
+
+        canvas->drawRect(0.0f, 0.0f, canvas->getWidth()/2, canvas->getHeight()/2, {1.0f, 0.0f , 0.0f , 1.0f});
+        canvas->drawRect(canvas->getWidth()/2, 0.0f, canvas->getWidth()/2, canvas->getHeight()/2, {0.0f, 1.0f , 0.0f , 1.0f});
+        canvas->drawRect(0.0f, canvas->getHeight()/2, canvas->getWidth()/2, canvas->getHeight()/2, {0.0f, 0.0f , 1.0f , 1.0f});
+        canvas->drawRect(canvas->getWidth()/2, canvas->getHeight()/2, canvas->getWidth()/2, canvas->getHeight()/2, {1.0f, 1.0f , 0.0f , 1.0f});
+    }
+
+    void test2(){
+        auto &render = zidian::Instance->getRender();
+        auto &canvas = render->getCanvas();
+        canvas->drawRect(0.0f, 0.0f, canvas->getWidth(), canvas->getHeight(), {0.0f, 1.0f , 0.0f , 1.0f});
+    }
+
+    void drawRect(){
+        auto &render = zidian::Instance->getRender();
         const uint8_t vertexCount = 3; 
         glm::vec2 vertices[vertexCount] = {
             {-0.5f,   0.5f},
