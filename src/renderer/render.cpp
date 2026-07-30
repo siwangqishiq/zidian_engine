@@ -518,7 +518,7 @@ namespace zidian {
     }
 
     void Render::createPrimitiveVertexBuffer(){
-        VkDeviceSize bufferSize = sizeof(PrimitiveVertex) * 1024;
+        VkDeviceSize bufferSize = sizeof(PrimitiveVertex) * primitiveVertexMaxCount;
 
         VkBufferCreateInfo bufferCreateInfo{};
         bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -709,13 +709,13 @@ namespace zidian {
         passBeginInfo.pClearValues = &clearColor;
         vkCmdBeginRenderPass(commandBuffers[currentFrameIndex], &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+        drawCallCount = 0;
         //清理命令列表
         commandList.reset();
         return true;
     }
 
     void Render::endRenderFrame(){
-        uploadCommands();
         recordCommands();
 
         // Log::i("render", "end render frame");
@@ -769,41 +769,48 @@ namespace zidian {
         // Log::purple("render", "currentFrameIndex = %u", currentFrameIndex);
     }
 
-    void Render::uploadCommands(){
-        uploadPrimitive();
-    }
-
-    void Render::uploadPrimitive(){
+    void Render::recordCommands(){
         if(commandList.getPrimitiveCommands().empty()){
             return;
         }
 
-        const uint32_t vertexCount = commandList.getPrimitiveVertices().size();
-        memcpy(primitiveMemoryMapped, commandList.getPrimitiveVertices().data(), vertexCount * sizeof(PrimitiveVertex));
-    }
-
-    void Render::recordCommands(){
         auto& primitivePipeline = pipelineManager->primitivePipe;
         VkCommandBuffer& cmdBuffer = commandBuffers[currentFrameIndex];
 
-        const uint32_t vertexCount = commandList.getPrimitiveVertices().size();
         vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, primitivePipeline->pipeline);
-        VkDeviceSize offset[] = {0};
-        vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &primitiveVertexBuffer, offset);
-
-        // std::cout << swapChainExtent.width << " " << swapChainExtent.height << std::endl;
         pushConstData.proj = {
-            glm::vec4(2.0f / float(swapChainExtent.width), 0.0f, 0.0f, 0.0f),
-            glm::vec4(0.0f, 2.0f / float(swapChainExtent.height), 0.0f,0.0f),
-            glm::vec4(0.0f,  0.0f,  1.0f, 0.0f),
+            glm::vec4(2.0f / swapChainExtent.width, 0.0f, 0.0f, 0.0f),
+            glm::vec4(0.0f, 2.0f / swapChainExtent.height, 0.0f, 0.0f),
+            glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
             glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
         };
+
         vkCmdPushConstants(cmdBuffer,
                 primitivePipeline->pipelineLayout, 
                 VK_SHADER_STAGE_VERTEX_BIT,0, 
                 sizeof(PushConstantData), &pushConstData);//set push constant
 
+        const uint32_t vertexCount = commandList.getPrimitiveVertices().size();
+
+        auto& allVertices = commandList.getPrimitiveVertices();
+
+        // 如果当前 primitive buffer 不够大，动态扩容
+        if(vertexCount > primitiveVertexMaxCount){
+            vkUnmapMemory(device, primitiveVertexMemory);
+            vkDestroyBuffer(device, primitiveVertexBuffer, nullptr);
+            vkFreeMemory(device, primitiveVertexMemory, nullptr);
+
+            primitiveVertexMaxCount = vertexCount;
+            createPrimitiveVertexBuffer();
+        }
+
+        // 一次性拷贝所有顶点并绘制
+        memcpy(primitiveMemoryMapped, allVertices.data(), vertexCount * sizeof(PrimitiveVertex));
+        VkDeviceSize offset[] = {0};
+        vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &primitiveVertexBuffer, offset);
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
+        drawCallCount++;
+        // std::cout << "vertex Count = " << vertexCount << std::endl;
     }
 
     void Render::onDispose(){

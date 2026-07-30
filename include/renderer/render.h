@@ -94,6 +94,7 @@ namespace zidian{
         // 内存分配器
         MemoryAllocator memoryAllocator;
 
+        uint32_t primitiveVertexMaxCount = 8 * 1024;
         VkBuffer primitiveVertexBuffer = VK_NULL_HANDLE;
         VkDeviceMemory primitiveVertexMemory = VK_NULL_HANDLE;
         void *primitiveMemoryMapped;
@@ -116,8 +117,8 @@ namespace zidian{
 
         void printMemoryInfo();
 
-        void uploadCommands();
-        void uploadPrimitive();
+        // void uploadCommands();
+        // void uploadPrimitive();
         void recordCommands();
         
         bool isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props);
@@ -135,5 +136,7 @@ namespace zidian{
 
         Application &appCtx;
         std::unique_ptr<ICanvas> canvas;
+
+        uint32_t drawCallCount = 0;
     };
 }

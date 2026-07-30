@@ -13,7 +13,7 @@ public:
     virtual void onTick() override{
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
-
+        
         canvas->drawRect(0.0f, 0.0f, canvas->getWidth()/2, canvas->getHeight()/2, {1.0f, 0.0f , 0.0f , 1.0f});
         canvas->drawRect(canvas->getWidth()/2, 0.0f, canvas->getWidth()/2, canvas->getHeight()/2, {0.0f, 1.0f , 0.0f , 1.0f});
         canvas->drawRect(0.0f, canvas->getHeight()/2, canvas->getWidth()/2, canvas->getHeight()/2, {0.0f, 0.0f , 1.0f , 1.0f});
