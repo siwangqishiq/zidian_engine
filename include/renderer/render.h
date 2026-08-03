@@ -75,7 +75,6 @@ namespace zidian{
 
         uint32_t swapChainImageCount = 0;
         std::vector<VkImageView> swapChainImageViews;
-        std::vector<VkFramebuffer> frameBuffers;
 
         std::vector<const char*> instanceExtensions;
         std::vector<const char*> layers;
@@ -83,6 +82,7 @@ namespace zidian{
         VkRenderPass renderPass = VK_NULL_HANDLE;
         VkCommandPool commandPool = VK_NULL_HANDLE;
         std::vector<VkCommandBuffer> commandBuffers;
+        std::vector<VkFramebuffer> frameBuffers;
 
         //GPU同步对象
         std::vector<VkSemaphore> imageAvailableSemaphores;
