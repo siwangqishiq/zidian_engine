@@ -8,6 +8,7 @@
 #include "renderer/command/command_list.h"
 #include "renderer/mem/memory_allocator.h"
 #include "renderer/pipeline/push_constant_data.h"
+#include "renderer/frame_resource.h"
 
 namespace zidian{
     class Application;
@@ -53,15 +54,11 @@ namespace zidian{
 
         virtual ~Render();
 
-        std::unique_ptr<PipelineManager> pipelineManager;
-        std::unique_ptr<ShaderManager> shaderManager;
-
         VkInstance instance = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
         VkSurfaceKHR surface = VK_NULL_HANDLE;
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDevice device = VK_NULL_HANDLE;
-
         VkQueue graphQueue = VK_NULL_HANDLE;
         
         uint32_t graphQueueFamily = UINT32_MAX;
@@ -81,25 +78,13 @@ namespace zidian{
 
         VkRenderPass renderPass = VK_NULL_HANDLE;
         VkCommandPool commandPool = VK_NULL_HANDLE;
-        std::vector<VkCommandBuffer> commandBuffers;
-        std::vector<VkFramebuffer> frameBuffers;
-
-        //GPU同步对象
-        std::vector<VkSemaphore> imageAvailableSemaphores;
-        std::vector<VkSemaphore> renderFinishSemaphores;
-
-        //CPU -> GPU 同步对象
-        std::vector<VkFence> inFlightFences;
 
         // 内存分配器
         MemoryAllocator memoryAllocator;
 
-        uint32_t primitiveVertexMaxCount = 8 * 1024;
-        VkBuffer primitiveVertexBuffer = VK_NULL_HANDLE;
-        VkDeviceMemory primitiveVertexMemory = VK_NULL_HANDLE;
-        void *primitiveMemoryMapped;
-
-        PushConstantData pushConstData = {glm::mat4()};
+        std::unique_ptr<PipelineManager> pipelineManager;
+        std::unique_ptr<ShaderManager> shaderManager;
+        std::unique_ptr<FrameResource> frameResources;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
         void createInstance();
@@ -110,10 +95,7 @@ namespace zidian{
         void createImageViews();
         void createRenderPass();
         void createPipelines();
-        void createCommandBuffers();
-        void createFramebuffers();
-        void createSyncObjects();
-        void createPrimitiveVertexBuffer();
+        void createCommandPool();
 
         void printMemoryInfo();
 

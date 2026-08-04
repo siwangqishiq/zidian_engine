@@ -44,14 +44,13 @@ namespace zidian {
         createSwapchain();
         createImageViews();
         createRenderPass();
-
         createPipelines();
-        createCommandBuffers();
-        createFramebuffers();
-        createSyncObjects();
 
         memoryAllocator.init(physicalDevice, device); //初始化内存分配器
-        createPrimitiveVertexBuffer();
+        createCommandPool();
+
+        frameResources = std::make_unique<FrameResource>(*this);
+        frameResources->init();
     }
 
     void Render::createInstance() {
@@ -424,7 +423,7 @@ namespace zidian {
         pipelineManager->createPipelines();
     }
 
-    void Render::createCommandBuffers(){
+    void Render::createCommandPool(){
         VkCommandPoolCreateInfo poolCreateInfo{};
         poolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolCreateInfo.queueFamilyIndex = graphQueueFamily;
@@ -436,121 +435,6 @@ namespace zidian {
             return;
         }
         Log::i("render", "Create command pool success");
-        
-
-        commandBuffers.resize(MAX_FRAME_IN_FLIGHT);
-
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = commandPool;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = swapChainImages.size();
-
-        result = vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data());
-        if(result != VK_SUCCESS){
-            Log::e("render", "Create command buffer failed!");
-            return;
-        }
-        Log::i("render", "Create command buffer(count : %d) success", commandBuffers.size());
-    }
-
-    void Render::createFramebuffers(){
-        frameBuffers.resize(swapChainImageViews.size());
-        bool isFailed = false;
-        for(int i = 0 ; i < swapChainImageViews.size() ; i++){
-            VkFramebufferCreateInfo fbCreateInfo{};
-            fbCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            fbCreateInfo.renderPass = renderPass;
-            VkImageView attachments[] ={
-                swapChainImageViews[i]
-            };
-            fbCreateInfo.attachmentCount = 1;
-            fbCreateInfo.pAttachments = attachments;
-            fbCreateInfo.layers = 1;
-            fbCreateInfo.width = swapChainExtent.width;
-            fbCreateInfo.height = swapChainExtent.height;
-
-            if(vkCreateFramebuffer(device, &fbCreateInfo , nullptr, &frameBuffers[i]) != VK_SUCCESS){
-                isFailed = true;
-                Log::e("render", "Create framebuffer[%d] failed!", i);
-                continue;
-            }
-        }//end for i
-
-        if(!isFailed){
-            return;
-        }
-        Log::i("render", "Create frame buffer success (%d)", frameBuffers.size());
-    }
-
-    void Render::createSyncObjects(){
-        inFlightFences.resize(MAX_FRAME_IN_FLIGHT);
-        imageAvailableSemaphores.resize(MAX_FRAME_IN_FLIGHT);
-
-        for(uint32_t i = 0 ; i < MAX_FRAME_IN_FLIGHT; i++){
-            VkSemaphoreCreateInfo semaphoreInfo{};
-            semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS){
-                Log::e("render", "Create imageAvailableSemaphore failed!");
-                return;
-            }
-
-            VkFenceCreateInfo fenceCreateInfo{};
-            fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-            fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-            if(vkCreateFence(device, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS){
-                Log::e("render", "Create inFightFence failed!");
-                return;
-            }
-        }//end for i
-
-        renderFinishSemaphores.resize(swapChainImageViews.size());
-        for(uint32_t i = 0 ; i < swapChainImageViews.size(); i++){
-            VkSemaphoreCreateInfo semaphoreInfo{};
-            semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishSemaphores[i]) != VK_SUCCESS){
-                Log::e("render", "Create renderFinishSemaphore failed!");
-                return;
-            }
-        }//end for i
-        
-        Log::i("render", "Create sync object success imageAvailableSemaphore renderFinishSemaphore flightFence");
-    }
-
-    void Render::createPrimitiveVertexBuffer(){
-        VkDeviceSize bufferSize = sizeof(PrimitiveVertex) * primitiveVertexMaxCount;
-
-        VkBufferCreateInfo bufferCreateInfo{};
-        bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferCreateInfo.size = bufferSize;
-        bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        if(vkCreateBuffer(device, &bufferCreateInfo, nullptr, &primitiveVertexBuffer) != VK_SUCCESS){
-            Log::e("render", "Create primitive vertex buffer failed!");
-            return;
-        }
-
-        VkMemoryRequirements memRequirements{};
-        vkGetBufferMemoryRequirements(device, primitiveVertexBuffer, &memRequirements);
-
-        VkMemoryAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = memoryAllocator.findMemoryType(memRequirements.memoryTypeBits, 
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        
-        if(vkAllocateMemory(device,&allocInfo,nullptr,&primitiveVertexMemory) != VK_SUCCESS){
-            Log::e("render", "allocte primitive memory failed!");
-            return;
-        }
-
-        vkBindBufferMemory(device, primitiveVertexBuffer, primitiveVertexMemory, 0);
-
-        auto memoryMapResult = vkMapMemory(device, primitiveVertexMemory, 0, bufferSize, 0, &primitiveMemoryMapped);
-        if(memoryMapResult != VK_SUCCESS){
-            Log::e("render", "map the primitive memory failed!");
-            return;
-        }
     }
 
     SwapChainSupportDetails Render::querySwapChainSupport(VkPhysicalDevice device){
@@ -672,9 +556,9 @@ namespace zidian {
     bool Render::beginRenderFrame(){
         // Log::i("render", "begin render frame");
         //
-        vkWaitForFences(device, 1, &inFlightFences[currentFrameIndex], VK_TRUE, UINT64_MAX);
+        vkWaitForFences(device, 1, &frameResources->inFlightFences[currentFrameIndex], VK_TRUE, UINT64_MAX);
         uint32_t imageIdx = UINT32_MAX;
-        auto result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrameIndex], VK_NULL_HANDLE, &imageIdx);
+        auto result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, frameResources->imageAvailableSemaphores[currentFrameIndex], VK_NULL_HANDLE, &imageIdx);
         if(result != VK_SUCCESS && imageIdx != UINT32_MAX){
             Log::e("render" , "acquire image index failed.");
             return false;
@@ -682,22 +566,22 @@ namespace zidian {
 
         currentImageIndex = imageIdx;
 
-        vkResetFences(device, 1, &inFlightFences[currentFrameIndex]);
+        vkResetFences(device, 1, &frameResources->inFlightFences[currentFrameIndex]);
 
         //重置commandbuffer
-        vkResetCommandBuffer(commandBuffers[currentFrameIndex], 0);
+        vkResetCommandBuffer(frameResources->commandBuffers[currentFrameIndex], 0);
 
         //begin command buffer
         VkCommandBufferBeginInfo cfBeginInfo{};
         cfBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         cfBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        vkBeginCommandBuffer(commandBuffers[currentFrameIndex], &cfBeginInfo);
+        vkBeginCommandBuffer(frameResources->commandBuffers[currentFrameIndex], &cfBeginInfo);
 
         //begin render pass
         VkRenderPassBeginInfo passBeginInfo{};
         passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         passBeginInfo.renderPass = renderPass;
-        passBeginInfo.framebuffer = frameBuffers[currentImageIndex];
+        passBeginInfo.framebuffer = frameResources->frameBuffers[currentImageIndex];
         VkRect2D rect = {
             {0,0},
             swapChainExtent
@@ -707,7 +591,7 @@ namespace zidian {
         VkClearValue clearColor = {configClearColor[0],configClearColor[1],configClearColor[2],configClearColor[3]};
         passBeginInfo.clearValueCount = 1;
         passBeginInfo.pClearValues = &clearColor;
-        vkCmdBeginRenderPass(commandBuffers[currentFrameIndex], &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(frameResources->commandBuffers[currentFrameIndex], &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
         drawCallCount = 0;
         //清理命令列表
@@ -719,7 +603,7 @@ namespace zidian {
         recordCommands();
 
         // Log::i("render", "end render frame");
-        VkCommandBuffer& cmd = commandBuffers[currentFrameIndex];
+        VkCommandBuffer& cmd = frameResources->commandBuffers[currentFrameIndex];
 
         //end renderpass
         vkCmdEndRenderPass(cmd);
@@ -731,7 +615,7 @@ namespace zidian {
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         VkSemaphore waitSemaphores[] ={
-            imageAvailableSemaphores[currentFrameIndex]
+            frameResources->imageAvailableSemaphores[currentFrameIndex]
         };
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
@@ -742,11 +626,11 @@ namespace zidian {
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &cmd;
         VkSemaphore signalSemaphores[] = {
-            renderFinishSemaphores[currentImageIndex]
+            frameResources->renderFinishSemaphores[currentImageIndex]
         };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
-        vkQueueSubmit(graphQueue, 1 , &submitInfo, inFlightFences[currentFrameIndex]);
+        vkQueueSubmit(graphQueue, 1 , &submitInfo, frameResources->inFlightFences[currentFrameIndex]);
 
         //present
         VkPresentInfoKHR presentInfo{};
@@ -775,10 +659,10 @@ namespace zidian {
         }
 
         auto& primitivePipeline = pipelineManager->primitivePipe;
-        VkCommandBuffer& cmdBuffer = commandBuffers[currentFrameIndex];
+        VkCommandBuffer& cmdBuffer = frameResources->commandBuffers[currentFrameIndex];
 
         vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, primitivePipeline->pipeline);
-        pushConstData.proj = {
+        frameResources->pushConstDatas[currentFrameIndex].proj = {
             glm::vec4(2.0f / swapChainExtent.width, 0.0f, 0.0f, 0.0f),
             glm::vec4(0.0f, 2.0f / swapChainExtent.height, 0.0f, 0.0f),
             glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
@@ -788,26 +672,26 @@ namespace zidian {
         vkCmdPushConstants(cmdBuffer,
                 primitivePipeline->pipelineLayout, 
                 VK_SHADER_STAGE_VERTEX_BIT,0, 
-                sizeof(PushConstantData), &pushConstData);//set push constant
+                sizeof(PushConstantData), &frameResources->pushConstDatas[currentFrameIndex]);//set push constant
 
         const uint32_t vertexCount = commandList.getPrimitiveVertices().size();
 
         auto& allVertices = commandList.getPrimitiveVertices();
 
         // 如果当前 primitive buffer 不够大，动态扩容
-        if(vertexCount > primitiveVertexMaxCount){
-            vkUnmapMemory(device, primitiveVertexMemory);
-            vkDestroyBuffer(device, primitiveVertexBuffer, nullptr);
-            vkFreeMemory(device, primitiveVertexMemory, nullptr);
+        if(vertexCount > frameResources->primitiveVertexMaxCounts[currentFrameIndex]){
+            vkUnmapMemory(device, frameResources->primitiveVertexMemorys[currentFrameIndex]);
+            vkDestroyBuffer(device, frameResources->primitiveVertexBuffers[currentFrameIndex], nullptr);
+            vkFreeMemory(device, frameResources->primitiveVertexMemorys[currentFrameIndex], nullptr);
 
-            primitiveVertexMaxCount = vertexCount;
-            createPrimitiveVertexBuffer();
+            frameResources->primitiveVertexMaxCounts[currentFrameIndex] = vertexCount;
+            frameResources->createPrimitiveVertexBuffer(currentFrameIndex);
         }
 
         // 一次性拷贝所有顶点并绘制
-        memcpy(primitiveMemoryMapped, allVertices.data(), vertexCount * sizeof(PrimitiveVertex));
+        memcpy(frameResources->primitiveMemoryMappeds[currentFrameIndex], allVertices.data(), vertexCount * sizeof(PrimitiveVertex));
         VkDeviceSize offset[] = {0};
-        vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &primitiveVertexBuffer, offset);
+        vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &frameResources->primitiveVertexBuffers[currentFrameIndex], offset);
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
         drawCallCount++;
         // std::cout << "vertex Count = " << vertexCount << std::endl;
@@ -818,34 +702,9 @@ namespace zidian {
             vkDeviceWaitIdle(device);
         }
 
-        vkUnmapMemory(device, primitiveVertexMemory);
-
-        if(primitiveVertexBuffer != VK_NULL_HANDLE){
-            vkDestroyBuffer(device, primitiveVertexBuffer, nullptr);
-        }
-        if(primitiveVertexMemory != VK_NULL_HANDLE){
-            vkFreeMemory(device, primitiveVertexMemory, nullptr);
-        }
-
+        frameResources->destroy();
+        
         memoryAllocator.destroy();
-
-        for(auto &fence : inFlightFences){
-            vkDestroyFence(device, fence, nullptr);
-        }
-        inFlightFences.clear();
-
-        for(auto &sema : imageAvailableSemaphores){
-            vkDestroySemaphore(device, sema, nullptr);
-        }
-        imageAvailableSemaphores.clear();
-        for(auto &sema : renderFinishSemaphores){
-            vkDestroySemaphore(device, sema, nullptr);
-        }
-        renderFinishSemaphores.clear();
-
-        for(auto &fb : frameBuffers){
-            vkDestroyFramebuffer(device, fb, nullptr);
-        }//end for each
 
         if(commandPool != VK_NULL_HANDLE){
             vkDestroyCommandPool(device, commandPool, nullptr);

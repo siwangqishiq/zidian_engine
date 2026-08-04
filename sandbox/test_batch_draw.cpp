@@ -15,11 +15,11 @@ public:
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
         
-        float width = 2.0f;
-        float height = 2.0f;
+        float width = 5.0f;
+        float height = 5.0f;
         int vCount = 0;
-        for(int i = 0; i < canvas->getHeight(); i+= 5.0f){
-            for(int j = 0; j < canvas->getWidth(); j+= 5.0f){
+        for(int i = 0; i < canvas->getHeight(); i+= width){
+            for(int j = 0; j < canvas->getWidth(); j+= height){
                 glm::vec4 color = {
                     zidian::RandomUtil::randomFloat(0.0f, 1.0f),
                     zidian::RandomUtil::randomFloat(0.0f, 1.0f),
