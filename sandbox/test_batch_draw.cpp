@@ -45,6 +45,7 @@ void TestBatchDraw(){
     config.windowHeight = 800;
     config.clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
     config.vsync = true;
+    config.isFullScreen = false;
 
     std::string content = zidian::AssetManager::getInstance()->readAssetFileAsString("test.txt");
     zidian::Log::green("test", "text:%s",content.c_str());

@@ -54,8 +54,12 @@ namespace zidian{
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
+        if(config.isFullScreen){
+            monitor = glfwGetPrimaryMonitor();
+        }
+
         window = glfwCreateWindow(config.windowWidth, config.windowHeight, 
-            config.name.c_str(), nullptr, nullptr);
+            config.name.c_str(), monitor, nullptr);
         glfwSetWindowPos(window, 32, 64);
         glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods){
             if(key == GLFW_KEY_ESCAPE){

@@ -8,6 +8,7 @@
 #include "glm/glm.hpp"
 
 class GLFWwindow;
+class GLFWmonitor;
 
 namespace zidian{
     struct AppConfig{
@@ -15,6 +16,7 @@ namespace zidian{
         uint32_t windowWidth;
         uint32_t windowHeight;
         bool vsync = true;
+        bool isFullScreen = false;
         glm::vec4 clearColor = {0.1f, 0.1f , 0.1f, 1.0f};
     };
 
@@ -49,6 +51,7 @@ namespace zidian{
         AppConfig& getAppConfig();
         
         GLFWwindow *window;
+        GLFWmonitor *monitor = nullptr;
 
         VkSurfaceKHR createSurfaceFromInstance(VkInstance instance);
 
