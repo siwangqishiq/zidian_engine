@@ -6,6 +6,9 @@ public:
         zidian::Log::brown("game", "GameApp init");
         auto &render = zidian::Instance->getRender();
         zidian::RandomUtil::setRandomSeed(0);
+
+        zidian::AudioManager::getInstance()->loadAudio("sound/ci.mp3","bgm");
+        zidian::AudioManager::getInstance()->playAudio("bgm");
     }
 
     void drawOneCircle(){
@@ -37,6 +40,7 @@ public:
 
     virtual void onDispose() override {
         zidian::Log::brown("game", "game dispose");
+        zidian::AudioManager::getInstance()->dispose();
     }
 };
 

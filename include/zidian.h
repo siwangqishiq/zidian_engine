@@ -8,11 +8,12 @@
 #include "resource/asset_manager.h"
 #include "widget/task_schedule.h"
 #include "input/input_manager.h"
+#include "audio/audio_manager.h"
 
 namespace zidian{
     std::string Version();
     std::string Name();
-    
+
     extern Application* Instance;
 }
 

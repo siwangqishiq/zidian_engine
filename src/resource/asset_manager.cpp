@@ -10,7 +10,7 @@
 #include "stb_image.h"
 
 namespace zidian{
-    std::unique_ptr<uint8_t[]> ReadFileAsBinary(std::string& path , long &length){
+    std::unique_ptr<uint8_t[]> ReadFileAsBinary(std::string path , long &length){
         std::string filePath = path;
         Log::i("asset_manager" , "read bin file path %s" , filePath.c_str());
         try{

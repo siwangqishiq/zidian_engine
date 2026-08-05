@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "utils/json.h"
+#include <cstdint>
 
 namespace zidian{
 
@@ -13,7 +14,7 @@ namespace zidian{
     }
 
     //二进制方式读取文件 
-    std::unique_ptr<uint8_t[]> ReadFileAsBinary(std::string &path , long &length);
+    std::unique_ptr<uint8_t[]> ReadFileAsBinary(std::string path , long &length);
     
     //从任意路径读取文本文件
     std::wstring ReadFileAsWstring(std::string path);
