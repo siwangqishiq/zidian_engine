@@ -8,6 +8,8 @@
 #include "widget/task_schedule.h"
 #include "renderer/render.h"
 
+#include <iostream>
+
 namespace zidian{
     std::string Application::TAG = "app_tag";
 
@@ -110,6 +112,7 @@ namespace zidian{
         }
 
         while(!glfwWindowShouldClose(window)){
+            checkWindowInvalidate();
             glfwPollEvents();
             tick();
             // glfwSwapBuffers(window);
@@ -126,11 +129,19 @@ namespace zidian{
         }
 
         onDrawFrame();
-        
+
         taskSchedule->tick();
         
         render->endRenderFrame();
         fps++;
+    }
+
+    void Application::checkWindowInvalidate(){
+        glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+        while (windowWidth == 0 || windowHeight == 0){
+            glfwWaitEvents();
+            glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+        }
     }
 
     void Application::onDrawFrame(){

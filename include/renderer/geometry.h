@@ -4,6 +4,8 @@
 #include "glm/glm.hpp"
 
 namespace zidian{
+    constexpr float PI = 3.14159265358979323846f;
+
     class Geometry{
     public:
         std::vector<glm::vec2> genRectVertices(float left, float top, float width, float height) const;

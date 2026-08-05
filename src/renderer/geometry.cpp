@@ -1,8 +1,6 @@
 #include "renderer/geometry.h"
 
 namespace zidian {
-    constexpr float PI = 3.14159265358979323846f;
-
     std::vector<glm::vec2> Geometry::genRectVertices(float left, float top, float width, float height) const{
         std::vector<glm::vec2> vertices = {
             {left + width, top},

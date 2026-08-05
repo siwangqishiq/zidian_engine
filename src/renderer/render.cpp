@@ -555,11 +555,21 @@ namespace zidian {
 
     bool Render::beginRenderFrame(){
         // Log::i("render", "begin render frame");
-        //
+        if(appCtx.windowWidth == 0 || appCtx.windowHeight == 0){
+            Log::w("render", "begin render frame but window size %d x %d", appCtx.windowWidth, appCtx.windowHeight);
+            return false;
+        }
+
         vkWaitForFences(device, 1, &frameResources->inFlightFences[currentFrameIndex], VK_TRUE, UINT64_MAX);
         uint32_t imageIdx = UINT32_MAX;
-        auto result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, frameResources->imageAvailableSemaphores[currentFrameIndex], VK_NULL_HANDLE, &imageIdx);
-        if(result != VK_SUCCESS && imageIdx != UINT32_MAX){
+        VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, frameResources->imageAvailableSemaphores[currentFrameIndex], VK_NULL_HANDLE, &imageIdx);
+        if(result == VK_SUBOPTIMAL_KHR){
+            // Log::w("render", "vkAcquireNextImageKHR VK_SUBOPTIMAL_KHR");
+        }else if (result == VK_ERROR_OUT_OF_DATE_KHR){
+            Log::e("render" , "acquire image index failed VK_ERROR_OUT_OF_DATE_KHR");
+            recreateSwapchain();
+            return false;
+        } else if((result != VK_SUCCESS)){
             Log::e("render" , "acquire image index failed.");
             return false;
         }
@@ -645,7 +655,11 @@ namespace zidian {
         presentInfo.pImageIndices = &currentImageIndex;
 
         VkResult presentResult = vkQueuePresentKHR(graphQueue, &presentInfo);
-        if(presentResult != VK_SUCCESS){
+
+        if(presentResult == VK_SUBOPTIMAL_KHR){
+            // Log::w("render", "present queue VK_SUBOPTIMAL_KHR need recreate swapchain!");
+        }else if (presentResult == VK_ERROR_OUT_OF_DATE_KHR){
+        }else if((presentResult != VK_SUCCESS)){
             Log::e("render", "present queue error!");
         }
         
@@ -683,7 +697,7 @@ namespace zidian {
             vkUnmapMemory(device, frameResources->primitiveVertexMemorys[currentFrameIndex]);
             vkDestroyBuffer(device, frameResources->primitiveVertexBuffers[currentFrameIndex], nullptr);
             vkFreeMemory(device, frameResources->primitiveVertexMemorys[currentFrameIndex], nullptr);
-            
+
             frameResources->primitiveVertexMaxCounts[currentFrameIndex] = vertexCount;
             frameResources->createPrimitiveVertexBuffer(currentFrameIndex);
         }
@@ -738,6 +752,12 @@ namespace zidian {
             vkDestroyInstance(instance, nullptr);
             instance = VK_NULL_HANDLE;
         }
+    }
+
+    void Render::recreateSwapchain() {
+        Log::w("render", "recreate swapchain.");
+        vkDestroySwapchainKHR(device, swapChain, nullptr);
+        createSwapchain();
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(

@@ -48,6 +48,8 @@ namespace zidian{
 
         void endRenderFrame();
 
+        void recreateSwapchain();
+
         std::unique_ptr<ICanvas>& getCanvas();
 
         CommandList commandList;
@@ -98,6 +100,7 @@ namespace zidian{
         void createCommandPool();
 
         void printMemoryInfo();
+
 
         // void uploadCommands();
         // void uploadPrimitive();

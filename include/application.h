@@ -53,6 +53,9 @@ namespace zidian{
         GLFWwindow *window;
         GLFWmonitor *monitor = nullptr;
 
+        int windowWidth;
+        int windowHeight;
+
         VkSurfaceKHR createSurfaceFromInstance(VkInstance instance);
 
         void getFramebufferSize(int &width, int &height);
@@ -66,6 +69,8 @@ namespace zidian{
     private:
         void initWindow();
         void tick();
+
+        void checkWindowInvalidate();
 
         int fps = 0;
         std::vector<const char*> findGlfwExtension();
