@@ -66,10 +66,6 @@ namespace zidian{
                 glfwSetWindowShouldClose(window, true);
             }   
         });
-
-        // 设置opengl上下文
-        // glfwMakeContextCurrent(window);
-        // glfwSwapInterval(config.vsync?1:0);//启动垂直同步
     }
 
     // std::unique_ptr<Render>& Application::getRender(){
@@ -130,7 +126,7 @@ namespace zidian{
         }
 
         onDrawFrame();
-
+        
         taskSchedule->tick();
         
         render->endRenderFrame();

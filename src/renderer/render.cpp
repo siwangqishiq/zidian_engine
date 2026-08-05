@@ -677,13 +677,13 @@ namespace zidian {
         const uint32_t vertexCount = commandList.getPrimitiveVertices().size();
 
         auto& allVertices = commandList.getPrimitiveVertices();
-
+        
         // 如果当前 primitive buffer 不够大，动态扩容
         if(vertexCount > frameResources->primitiveVertexMaxCounts[currentFrameIndex]){
             vkUnmapMemory(device, frameResources->primitiveVertexMemorys[currentFrameIndex]);
             vkDestroyBuffer(device, frameResources->primitiveVertexBuffers[currentFrameIndex], nullptr);
             vkFreeMemory(device, frameResources->primitiveVertexMemorys[currentFrameIndex], nullptr);
-
+            
             frameResources->primitiveVertexMaxCounts[currentFrameIndex] = vertexCount;
             frameResources->createPrimitiveVertexBuffer(currentFrameIndex);
         }

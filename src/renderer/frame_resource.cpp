@@ -102,8 +102,10 @@ namespace zidian {
         primitiveVertexMemorys.resize(MAX_FRAME_IN_FLIGHT);
         primitiveMemoryMappeds.resize(MAX_FRAME_IN_FLIGHT);
 
+        const uint32_t MAX_VERTEX_SIZE = 1024 * 1024;
+
         for(uint32_t i = 0 ;i < MAX_FRAME_IN_FLIGHT; i++){
-            primitiveVertexMaxCounts.push_back(8 * 1024);
+            primitiveVertexMaxCounts.push_back(MAX_VERTEX_SIZE);
 
             if(!createPrimitiveVertexBuffer(i)){
                 Log::e("render", "createPrimitiveVertexBuffer failed! index : %u", i);
@@ -150,7 +152,7 @@ namespace zidian {
             Log::e("render", "map the primitive memory failed!");
             return false;
         }
-
+        
         return true;
     }
 

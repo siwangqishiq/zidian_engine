@@ -2,6 +2,7 @@
 
 #include "renderer/canvas.h"
 #include "renderer/render.h"
+#include "renderer/geometry.h"
 
 namespace zidian {
     class VkCanvas : public ICanvas{
@@ -14,6 +15,8 @@ namespace zidian {
 
         virtual void drawRect(float left, float top, float width, float height, const glm::vec4 color) override;
 
+        virtual void drawCircle(float cx, float cy, float radius, const glm::vec4 color) override;
+
         virtual void flush() override;
 
         virtual ~VkCanvas();
@@ -22,6 +25,8 @@ namespace zidian {
         virtual int getHeight() override;
     private:
         Render &ctx;
+
+        Geometry geometry;
     };
 }
 

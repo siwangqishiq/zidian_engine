@@ -13,6 +13,8 @@ namespace zidian{
 
         virtual void drawRect(float left, float top, float width, float height, const glm::vec4 color) = 0;
 
+        virtual void drawCircle(float cx, float cy, float radius, const glm::vec4 color) = 0;
+
         virtual ~ICanvas(){}
 
         virtual int getWidth() = 0;

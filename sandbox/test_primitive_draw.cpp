@@ -1,35 +1,38 @@
 #include "zidian.h"
 
-class BatchDraw : public zidian::IGame {
+class TestPrimitiveDraw : public zidian::IGame {
 public:
     virtual void onInit() override{
-        zidian::Log::brown("game", "GameApp TestDraw init");
+        zidian::Log::brown("game", "GameApp init");
         auto &render = zidian::Instance->getRender();
-        zidian::Log::brown("game", "canvas size %d x %d", 
-                render->getCanvas()->getWidth(), 
-                render->getCanvas()->getHeight());
         zidian::RandomUtil::setRandomSeed(0);
+    }
+
+    void drawOneCircle(){
+        auto &render = zidian::Instance->getRender();
+        auto &canvas = render->getCanvas();
+        
+        float cx = canvas->getWidth() / 2.0f;
+        float cy = canvas->getHeight() / 2.0f;
+        float radius = canvas->getHeight() / 4.0f;
+        glm::vec4 color = {0.0f, 0.0f , 1.0f, 1.0f};
+        canvas->drawCircle(cx,cy, radius, color);
     }
     
     virtual void onTick() override{
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
         
-        float width = 10.0f;
-        float height = 10.0f;
-        int vCount = 0;
-        for(int i = 0; i < canvas->getHeight(); i+= width){
-            for(int j = 0; j < canvas->getWidth(); j+= height){
+        const float radius = 40.0f;
+        for(int i = 0; i < canvas->getHeight(); i+= 2.0f * radius){
+            for(int j = 0; j < canvas->getWidth(); j+= 2.0f * radius){
                 glm::vec4 color = {
                     zidian::RandomUtil::randomFloat(0.0f, 1.0f),
                     zidian::RandomUtil::randomFloat(0.0f, 1.0f),
                     zidian::RandomUtil::randomFloat(0.0f, 1.0f),  1.0f};
-                canvas->drawRect(j, i, width, height, color);
-                vCount++;
+                canvas->drawCircle(j + radius, i + radius, radius, color);
             }//
         }
-        
-        // std::cout << "vCount :" << vCount << std::endl;
     }
 
     virtual void onDispose() override {
@@ -38,7 +41,7 @@ public:
 };
 
 
-void TestBatchDraw(){
+void TestCircleDraw(){
     zidian::AppConfig config;
     config.name = "Test BatchDraw Canvas";
     config.windowWidth = 1280;
@@ -47,11 +50,8 @@ void TestBatchDraw(){
     config.vsync = true;
     config.isFullScreen = false;
 
-    std::string content = zidian::AssetManager::getInstance()->readAssetFileAsString("test.txt");
-    zidian::Log::green("test", "text:%s",content.c_str());
-
     zidian::Application app;
-    app.setGameObject(std::make_shared<BatchDraw>());
+    app.setGameObject(std::make_shared<TestPrimitiveDraw>());
     app.init(config);
     app.execute();
 }
