@@ -48,6 +48,7 @@ namespace zidian {
 
         memoryAllocator.init(physicalDevice, device); //初始化内存分配器
         createCommandPool();
+        createDscriptorSetPool();
 
         frameResources = std::make_unique<FrameResource>(*this);
         frameResources->init();
@@ -437,6 +438,10 @@ namespace zidian {
         Log::i("render", "Create command pool success");
     }
 
+    void Render::createDscriptorSetPool(){
+        Log::i("render", "Create descriptor set pool");
+    }
+
     SwapChainSupportDetails Render::querySwapChainSupport(VkPhysicalDevice device){
         SwapChainSupportDetails details{};
 
@@ -592,7 +597,7 @@ namespace zidian {
         }else if (result == VK_ERROR_OUT_OF_DATE_KHR){
             Log::e("render" , "acquire image index failed VK_ERROR_OUT_OF_DATE_KHR");
             needRecreateSwapchain = true;
-            return;
+            return false;
         } else if((result != VK_SUCCESS)){
             Log::e("render" , "acquire image index failed.");
             return false;

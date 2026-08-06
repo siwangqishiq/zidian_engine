@@ -98,6 +98,7 @@ namespace zidian{
         void createRenderPass();
         void createPipelines();
         void createCommandPool();
+        void createDscriptorSetPool();
 
         void printMemoryInfo();
 

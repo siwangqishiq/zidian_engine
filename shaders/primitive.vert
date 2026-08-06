@@ -3,6 +3,10 @@
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec4 inColor;
 
+layout(binding = 0) uniform UB {
+    int type;
+} ub;
+
 layout(push_constant) uniform PushConstant {
     mat4 proj;
 } pc;

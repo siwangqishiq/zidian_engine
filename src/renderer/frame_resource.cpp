@@ -182,7 +182,7 @@ namespace zidian {
             vkDestroySemaphore(device, sema, nullptr);
         }
         imageAvailableSemaphores.clear();
-        
+
         for(auto &sema : renderFinishSemaphores){
             vkDestroySemaphore(device, sema, nullptr);
         }

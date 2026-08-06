@@ -93,10 +93,17 @@ namespace zidian{
     void PrimitivePipeline::dispose(){
         if(pipeline != VK_NULL_HANDLE) {
             vkDestroyPipeline(ctx.device, pipeline, nullptr);
+            pipeline = VK_NULL_HANDLE;
         }
 
         if(pipelineLayout != VK_NULL_HANDLE){
             vkDestroyPipelineLayout(ctx.device, pipelineLayout, nullptr);
+            pipelineLayout = VK_NULL_HANDLE;
+        }
+
+        if(descriptorSetLayout != VK_NULL_HANDLE){
+            vkDestroyDescriptorSetLayout(ctx.device, descriptorSetLayout, nullptr);
+            descriptorSetLayout = VK_NULL_HANDLE;
         }
     }
 
@@ -215,9 +222,11 @@ namespace zidian{
     }
 
     bool PrimitivePipeline::createPipelineLayout(){
+        createDescriptorSetLayout();
+
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        // layoutCreateInfo.setLayoutCount = 1;
-        // layoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+        layoutCreateInfo.setLayoutCount = 1;
+        layoutCreateInfo.pSetLayouts = &descriptorSetLayout;
         layoutCreateInfo.setLayoutCount = 0;
         layoutCreateInfo.pSetLayouts = nullptr;
 
@@ -230,9 +239,27 @@ namespace zidian{
         layoutCreateInfo.pPushConstantRanges = &pushConstantRange;
         
         if(vkCreatePipelineLayout(ctx.device, &layoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS){
-            Log::e("pipeline", "create pipeline layout failed!");
+            Log::e("primitive_pipeline", "create pipeline layout failed!");
             return false;
         }
         return true;
+    }
+
+    void PrimitivePipeline::createDescriptorSetLayout(){
+        VkDescriptorSetLayoutBinding uboLayoutBinding{};
+        uboLayoutBinding.binding = 0;
+        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        uboLayoutBinding.descriptorCount = 1;
+        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+        VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
+        layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutCreateInfo.bindingCount = 1;
+        layoutCreateInfo.pBindings = &uboLayoutBinding;
+
+        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS){
+            Log::e("primitive_pipeline", "create descriptor set layout failed!");
+            return;
+        }
     }
 }

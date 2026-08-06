@@ -17,6 +17,7 @@ namespace zidian {
 
         VkPipeline pipeline = VK_NULL_HANDLE;
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+        VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
     private:
         Render& ctx;
 
@@ -37,6 +38,8 @@ namespace zidian {
         VkPipelineInputAssemblyStateCreateInfo inputAssembleCreateInfo{};
 
         bool createPipelineLayout();
+
+        void createDescriptorSetLayout();
 
         void populateVertexInputState();
 

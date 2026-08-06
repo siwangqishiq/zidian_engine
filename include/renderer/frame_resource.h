@@ -26,12 +26,18 @@ namespace zidian{
         std::vector<VkSemaphore> renderFinishSemaphores;
         //CPU -> GPU 同步对象
         std::vector<VkFence> inFlightFences;
+
+        //primitive vertices buffer 
         std::vector<uint32_t> primitiveVertexMaxCounts;
         std::vector<VkBuffer> primitiveVertexBuffers;
         std::vector<VkDeviceMemory> primitiveVertexMemorys;
         std::vector<void *> primitiveMemoryMappeds;
 
+        // push constant data
         std::vector<PushConstantData> pushConstDatas;
+
+        //primitive uniform buffer
+        
     private:
         Render &ctx;
 
