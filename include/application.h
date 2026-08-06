@@ -44,6 +44,8 @@ namespace zidian{
 
         void onDrawFrame();
 
+        void waitEvents();
+
         ~Application();
 
         std::unique_ptr<Render>& getRender();

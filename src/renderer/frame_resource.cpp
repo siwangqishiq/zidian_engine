@@ -182,14 +182,20 @@ namespace zidian {
             vkDestroySemaphore(device, sema, nullptr);
         }
         imageAvailableSemaphores.clear();
+        
         for(auto &sema : renderFinishSemaphores){
             vkDestroySemaphore(device, sema, nullptr);
         }
         renderFinishSemaphores.clear();
 
+        destroyFramebuffers();
+    }
+
+    void FrameResource::destroyFramebuffers(){
         for(auto &fb : frameBuffers){
-            vkDestroyFramebuffer(device, fb, nullptr);
+            vkDestroyFramebuffer(ctx.device, fb, nullptr);
         }//end for each
+        frameBuffers.clear();
     }
 }
 

@@ -496,12 +496,29 @@ namespace zidian {
     }
 
     VkExtent2D Render::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities){
-        int width = 0;
-        int height = 0;
-        appCtx.getFramebufferSize(width, height);
+        const int width = appCtx.windowWidth;
+        const int height = appCtx.windowHeight;
+        // appCtx.getFramebufferSize(width, height);
         Log::i("render", "Get framebuffer size %d x %d", width, height);
+
+        Log::i("render",
+            "currentExtent : %u x %u",
+            capabilities.currentExtent.width,
+            capabilities.currentExtent.height);
+
+        Log::i("render",
+            "minExtent : %u x %u",
+            capabilities.minImageExtent.width,
+            capabilities.minImageExtent.height);
+
+        Log::i("render",
+            "maxExtent : %u x %u",
+            capabilities.maxImageExtent.width,
+            capabilities.maxImageExtent.height);
         
-        if(capabilities.currentExtent.width != UINT32_MAX){
+        if(capabilities.currentExtent.width != UINT32_MAX && capabilities.currentExtent.width != 0){
+            Log::i("render", "extent size %d x %d use currentExtent", capabilities.currentExtent.width, 
+                    capabilities.currentExtent.height);
             return capabilities.currentExtent;
         }
 
@@ -516,6 +533,7 @@ namespace zidian {
             capabilities.minImageExtent.height,
             capabilities.maxImageExtent.height);
 
+        Log::i("render", "extent size %d x %d", extent.width, extent.height);
         return extent;
     }
 
@@ -560,15 +578,21 @@ namespace zidian {
             return false;
         }
 
+        if(needRecreateSwapchain){
+            recreateSwapchain();
+            needRecreateSwapchain = false;
+        }
+
         vkWaitForFences(device, 1, &frameResources->inFlightFences[currentFrameIndex], VK_TRUE, UINT64_MAX);
         uint32_t imageIdx = UINT32_MAX;
         VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, frameResources->imageAvailableSemaphores[currentFrameIndex], VK_NULL_HANDLE, &imageIdx);
         if(result == VK_SUBOPTIMAL_KHR){
-            // Log::w("render", "vkAcquireNextImageKHR VK_SUBOPTIMAL_KHR");
+            Log::w("render", "vkAcquireNextImageKHR VK_SUBOPTIMAL_KHR");
+            needRecreateSwapchain = true;
         }else if (result == VK_ERROR_OUT_OF_DATE_KHR){
             Log::e("render" , "acquire image index failed VK_ERROR_OUT_OF_DATE_KHR");
-            recreateSwapchain();
-            return false;
+            needRecreateSwapchain = true;
+            return;
         } else if((result != VK_SUCCESS)){
             Log::e("render" , "acquire image index failed.");
             return false;
@@ -656,9 +680,9 @@ namespace zidian {
 
         VkResult presentResult = vkQueuePresentKHR(graphQueue, &presentInfo);
 
-        if(presentResult == VK_SUBOPTIMAL_KHR){
-            // Log::w("render", "present queue VK_SUBOPTIMAL_KHR need recreate swapchain!");
-        }else if (presentResult == VK_ERROR_OUT_OF_DATE_KHR){
+        if(presentResult == VK_SUBOPTIMAL_KHR || presentResult == VK_ERROR_OUT_OF_DATE_KHR){
+            Log::w("render", "present queue VK_SUBOPTIMAL_KHR need recreate swapchain!");
+            needRecreateSwapchain = true;
         }else if((presentResult != VK_SUCCESS)){
             Log::e("render", "present queue error!");
         }
@@ -730,19 +754,14 @@ namespace zidian {
             vkDestroyRenderPass(device, renderPass, nullptr);
         }
 
-        for (int i = 0; i < swapChainImageViews.size(); i++) {
-            vkDestroyImageView(device, swapChainImageViews[i], nullptr);
-        }//end for i
-
+        destroyImageViews();
         vkDestroySwapchainKHR(device, swapChain, nullptr);
 
         if(device != VK_NULL_HANDLE){
             vkDestroyDevice(device, nullptr);
         }
 
-        if(surface != VK_NULL_HANDLE) {
-            vkDestroySurfaceKHR(instance, surface, nullptr);
-        }
+        destroySurface();
 
         if(debugMessenger != VK_NULL_HANDLE){
             DestroyDebugUtilsMessengerEXT(instance, debugMessenger);
@@ -754,10 +773,41 @@ namespace zidian {
         }
     }
 
+    void Render::destroySurface(){
+        if(surface != VK_NULL_HANDLE) {
+            vkDestroySurfaceKHR(instance, surface, nullptr);
+        }
+        surface = VK_NULL_HANDLE;
+    }
+
+    void Render::destroyImageViews(){
+        for (int i = 0; i < swapChainImageViews.size(); i++) {
+            vkDestroyImageView(device, swapChainImageViews[i], nullptr);
+        }//end for i
+        swapChainImageViews.clear();
+    }
+
     void Render::recreateSwapchain() {
-        Log::w("render", "recreate swapchain.");
+        Log::w("render", "recreate swapchain. viewSize (%d x %d)", appCtx.windowWidth, appCtx.windowHeight);
+
+        VkSurfaceCapabilitiesKHR capabilities;
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice,surface,&capabilities);
+        while(capabilities.maxImageExtent.width == 0 ||capabilities.maxImageExtent.height == 0){
+            appCtx.waitEvents();
+            vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice,surface,&capabilities);
+        }//end while
+
+        if (device != VK_NULL_HANDLE) {
+            vkDeviceWaitIdle(device);
+        }
+
+        frameResources->destroyFramebuffers();
+        destroyImageViews();
         vkDestroySwapchainKHR(device, swapChain, nullptr);
+
         createSwapchain();
+        createImageViews();
+        frameResources->createFramebuffers();
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(

@@ -101,6 +101,9 @@ namespace zidian{
 
         void printMemoryInfo();
 
+        void destroyImageViews();
+        void destroySurface();
+
 
         // void uploadCommands();
         // void uploadPrimitive();
@@ -123,5 +126,7 @@ namespace zidian{
         std::unique_ptr<ICanvas> canvas;
 
         uint32_t drawCallCount = 0;
+
+        bool needRecreateSwapchain = false;
     };
 }

@@ -125,7 +125,7 @@ namespace zidian{
         descs[1].location = 1;
         descs[1].offset = offsetof(PrimitiveVertex, color);
         descs[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-
+        
         return descs;
     }
 
@@ -228,7 +228,7 @@ namespace zidian{
         pushConstantRange.size = sizeof(PushConstantData);
         layoutCreateInfo.pushConstantRangeCount = 1;
         layoutCreateInfo.pPushConstantRanges = &pushConstantRange;
-
+        
         if(vkCreatePipelineLayout(ctx.device, &layoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS){
             Log::e("pipeline", "create pipeline layout failed!");
             return false;

@@ -93,6 +93,7 @@ namespace zidian{
             Log::e(TAG, "create surface error %d",ret);
             return VK_NULL_HANDLE;            
         }
+        Log::i(TAG, "create surface success");
         return surface;
     }
 
@@ -142,6 +143,8 @@ namespace zidian{
             glfwWaitEvents();
             glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
         }
+
+        // render->recreateSwapchain();
     }
 
     void Application::onDrawFrame(){
@@ -157,6 +160,10 @@ namespace zidian{
 
         Log::i(TAG,"Application onDispose");
         render->onDispose();
+    }
+
+    void Application::waitEvents(){
+        glfwWaitEvents();
     }
 
     Application::~Application(){
