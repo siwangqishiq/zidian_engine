@@ -7,6 +7,7 @@
 
 #include "widget/task_schedule.h"
 #include "renderer/render.h"
+#include "widget/task_schedule.h"
 
 #include <iostream>
 
@@ -32,6 +33,8 @@ namespace zidian{
             Log::w("fps", "current fps : %d", fps);
             fps = 0;
         },1000);
+
+        threadPool = std::make_unique<ThreadPool>(4);
 
         render = std::make_unique<Render>(*this);
 
@@ -84,6 +87,10 @@ namespace zidian{
 
     std::unique_ptr<TaskSchedule>& Application::getTaskSchedule(){
         return taskSchedule;
+    }
+
+    std::unique_ptr<ThreadPool>& Application::getThreadPool(){
+        return threadPool;
     }
 
     VkSurfaceKHR Application::createSurfaceFromInstance(VkInstance instance){
@@ -160,6 +167,7 @@ namespace zidian{
 
         Log::i(TAG,"Application onDispose");
         render->onDispose();
+        threadPool->shutdown();
     }
 
     void Application::waitEvents(){

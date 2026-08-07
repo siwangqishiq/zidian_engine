@@ -9,6 +9,10 @@ public:
 
         // zidian::AudioManager::getInstance()->loadAudio("sound/ci.mp3","bgm");
         // zidian::AudioManager::getInstance()->playAudio("bgm");
+        zidian::Instance->getThreadPool()->enqueue([](){
+            zidian::AudioManager::getInstance()->loadAudio("sound/ci.mp3","bgm", true);
+            zidian::AudioManager::getInstance()->playAudio("bgm");
+        });
     }
 
     void drawOneCircle(){
@@ -50,7 +54,7 @@ void TestCircleDraw(){
     config.name = "Test BatchDraw Canvas";
     config.windowWidth = 1280;
     config.windowHeight = 800;
-    config.clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+    config.clearColor = {1.0f, 1.0f, 1.0f, 1.0f};
     config.vsync = true;
     config.isFullScreen = false;
 

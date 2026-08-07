@@ -9,7 +9,7 @@ namespace zidian{
 
     class FrameResource{
     public:
-        uint32_t MAX_FRAME_IN_FLIGHT = 2;
+        static uint32_t MAX_FRAME_IN_FLIGHT;
 
         FrameResource(Render &context);
 
@@ -37,7 +37,8 @@ namespace zidian{
         std::vector<PushConstantData> pushConstDatas;
 
         //primitive uniform buffer
-        
+        std::vector<VkDeviceMemory> primitiveUniformMemorys;
+        std::vector<VkBuffer> primitiveUniformBuffers;
     private:
         Render &ctx;
 
@@ -45,6 +46,7 @@ namespace zidian{
         void createSyncObjects();
         void createPushConstantDatas();
 
+        void createPrimitiveUniformBuffers();
     public:
         void createPrimitiveVertexBuffers();
         bool createPrimitiveVertexBuffer(const uint32_t index);

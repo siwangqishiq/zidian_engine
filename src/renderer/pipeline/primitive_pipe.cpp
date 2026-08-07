@@ -4,10 +4,12 @@
 #include "renderer/shader/shader_manager.h"
 #include "utils/log.h"
 #include "renderer/pipeline/push_constant_data.h"
+#include "renderer/pipeline/primitive_uniform_data.h"
 
 
 namespace zidian{
-    PrimitivePipeline::PrimitivePipeline(Render &context) : ctx(context){
+    PrimitivePipeline::PrimitivePipeline(Render &context, PipelineManager &pipelineManager) 
+        : ctx(context), pipelineMgr(pipelineManager){
     }
 
     void PrimitivePipeline::create() {
@@ -246,20 +248,58 @@ namespace zidian{
     }
 
     void PrimitivePipeline::createDescriptorSetLayout(){
-        VkDescriptorSetLayoutBinding uboLayoutBinding{};
-        uboLayoutBinding.binding = 0;
-        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uboLayoutBinding.descriptorCount = 1;
-        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
+        auto uboLayoutBindings = PrimitiveUniformData::bindingDescs();
+        
         VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutCreateInfo.bindingCount = 1;
-        layoutCreateInfo.pBindings = &uboLayoutBinding;
+        layoutCreateInfo.bindingCount = uboLayoutBindings.size();
+        layoutCreateInfo.pBindings = uboLayoutBindings.data();
 
         if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS){
             Log::e("primitive_pipeline", "create descriptor set layout failed!");
             return;
         }
+
+        //分配 DescriptorSet
+        std::vector<VkDescriptorSetLayout> layouts(FrameResource::MAX_FRAME_IN_FLIGHT, descriptorSetLayout);
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = pipelineMgr.descriptorPool;
+        allocInfo.descriptorSetCount = layouts.size();
+        allocInfo.pSetLayouts = layouts.data();
+
+        descriptorSets.resize(layouts.size());
+        if(vkAllocateDescriptorSets(ctx.device, &allocInfo, descriptorSets.data()) != VK_SUCCESS){
+            Log::e("primitive_pipeline", "create descriptor set objects failed!");
+            return;
+        }
+
+       
+    }
+
+    //更新DescriptorSet
+    void PrimitivePipeline::updateDescriptorSet(){
+        if(ctx.frameResource->primitiveUniformBuffers.empty()){
+            Log::e("primitive_pipeline", "updateDescriptorSet but uniform buffer is empty");
+            return;
+        }
+
+        for(uint32_t i = 0 ; i < descriptorSets.size() ; i++){
+            VkDescriptorBufferInfo bufferInfo{};
+            bufferInfo.buffer = ctx.frameResource->primitiveUniformBuffers[i];
+            bufferInfo.offset = 0;
+            bufferInfo.range = sizeof(PrimitiveUniformData);
+
+            VkWriteDescriptorSet write{};
+            write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            write.dstSet = descriptorSets[i];
+            write.dstBinding = 0;
+            write.dstArrayElement = 0;
+            write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            write.descriptorCount = 1;
+            write.pBufferInfo = &bufferInfo;
+
+            vkUpdateDescriptorSets(ctx.device, 1, &write, 0, nullptr);
+        }//end for i
     }
 }

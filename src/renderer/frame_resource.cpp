@@ -1,8 +1,12 @@
 #include "renderer/render.h"
 #include "renderer/frame_resource.h"
 #include "utils/log.h"
+#include "renderer/pipeline/primitive_uniform_data.h"
+
 
 namespace zidian {
+    uint32_t FrameResource::MAX_FRAME_IN_FLIGHT = 2;
+
     FrameResource::FrameResource(Render &context) : ctx(context){
     }
 
@@ -14,7 +18,11 @@ namespace zidian {
         createCommandBuffers();
         createSyncObjects();
         createPrimitiveVertexBuffers();
+        createPrimitiveUniformBuffers();
         createPushConstantDatas();
+
+        //创建完buffer后  更新descriptorSet
+        ctx.pipelineManager->updateDescriptorSets();
     }
 
     void FrameResource::createFramebuffers(){
@@ -164,6 +172,40 @@ namespace zidian {
         }//end for i;
     }
 
+    void FrameResource::createPrimitiveUniformBuffers(){
+        primitiveUniformBuffers.resize(MAX_FRAME_IN_FLIGHT);
+        primitiveUniformMemorys.resize(MAX_FRAME_IN_FLIGHT);
+
+        for(uint32_t i = 0 ;i < MAX_FRAME_IN_FLIGHT; i++){
+            VkDeviceSize bufferSize = sizeof(PrimitiveUniformData);
+            VkBufferCreateInfo bufferCreateInfo{};
+            bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            bufferCreateInfo.size = bufferSize;
+            bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+            bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            if(vkCreateBuffer(ctx.device, &bufferCreateInfo, nullptr, &primitiveUniformBuffers[i]) != VK_SUCCESS){
+                Log::e("render", "Create primitive uniform buffer failed!");
+                continue;
+            }
+
+            VkMemoryRequirements memRequirements{};
+            vkGetBufferMemoryRequirements(ctx.device, primitiveUniformBuffers[i], &memRequirements);
+
+            VkMemoryAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+            allocInfo.allocationSize = memRequirements.size;
+            allocInfo.memoryTypeIndex = ctx.memoryAllocator.findMemoryType(memRequirements.memoryTypeBits, 
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+            if(vkAllocateMemory(ctx.device,&allocInfo,nullptr,&primitiveUniformMemorys[i]) != VK_SUCCESS){
+                Log::e("render", "allocte uniform memory failed!");
+                continue;
+            }
+
+            vkBindBufferMemory(ctx.device, primitiveUniformBuffers[i], primitiveUniformMemorys[i], 0);
+        }//end for i
+    }
+
 
     void FrameResource::destroy(){
         VkDevice &device = ctx.device;
@@ -171,6 +213,12 @@ namespace zidian {
             vkUnmapMemory(ctx.device, primitiveVertexMemorys[i]);
             vkDestroyBuffer(device, primitiveVertexBuffers[i], nullptr);
             vkFreeMemory(device, primitiveVertexMemorys[i], nullptr);
+        }//end for i;
+
+        for(uint32_t i = 0 ; i < primitiveUniformMemorys.size(); i++){
+            // vkUnmapMemory(ctx.device, primitiveUniformMemorys[i]);
+            vkDestroyBuffer(device, primitiveUniformBuffers[i], nullptr);
+            vkFreeMemory(device, primitiveUniformMemorys[i], nullptr);
         }//end for i;
 
         for(auto &fence : inFlightFences){

@@ -1,6 +1,6 @@
 #include "renderer/render.h"
 #include "renderer/vk_canvas.h"
-#include "renderer/vertex/primitive_vertex.h"
+#include "renderer/pipeline/primitive_vertex.h"
 
 
 namespace zidian {

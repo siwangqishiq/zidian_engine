@@ -6,6 +6,7 @@
 #include <vector>
 #include "vulkan/vulkan.h"
 #include "glm/glm.hpp"
+#include "widget/thread_pool.h"
 
 class GLFWwindow;
 class GLFWmonitor;
@@ -50,6 +51,7 @@ namespace zidian{
 
         std::unique_ptr<Render>& getRender();
         std::unique_ptr<TaskSchedule>& getTaskSchedule();
+        std::unique_ptr<ThreadPool>& getThreadPool();
         AppConfig& getAppConfig();
         
         GLFWwindow *window;
@@ -66,6 +68,8 @@ namespace zidian{
     protected:
         std::unique_ptr<Render> render;
         std::unique_ptr<TaskSchedule> taskSchedule;
+        std::unique_ptr<ThreadPool> threadPool;
+
         AppConfig config;
         std::shared_ptr<IGame> game = nullptr;
     private:

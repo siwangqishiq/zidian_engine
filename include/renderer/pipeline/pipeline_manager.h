@@ -13,10 +13,16 @@ namespace zidian{
         PipelineManager(Render &context);
 
         void createPipelines();
+
         void clearPipelines();
 
         ~PipelineManager();
 
+        void updateDescriptorSets();
+
+        void createDescriptorPool();
+
+        VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
         std::unique_ptr<PrimitivePipeline> primitivePipe;
     private:
         Render &ctx;

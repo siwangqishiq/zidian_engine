@@ -8,8 +8,8 @@
 #include "renderer/vk_canvas.h"
 #include "renderer/pipeline/pipeline_manager.h"
 #include "renderer/pipeline/primitive_pipe.h"
+#include "renderer/pipeline/primitive_vertex.h"
 #include "renderer/shader/shader_manager.h"
-#include "renderer/vertex/primitive_vertex.h"
 
 namespace zidian {
     Render::Render(Application &appContext):appCtx(appContext) {
@@ -44,14 +44,13 @@ namespace zidian {
         createSwapchain();
         createImageViews();
         createRenderPass();
-        createPipelines();
 
         memoryAllocator.init(physicalDevice, device); //初始化内存分配器
-        createCommandPool();
-        createDscriptorSetPool();
+        createPipelines();
 
-        frameResources = std::make_unique<FrameResource>(*this);
-        frameResources->init();
+        createCommandPool();
+        frameResource = std::make_unique<FrameResource>(*this);
+        frameResource->init();
     }
 
     void Render::createInstance() {
@@ -588,9 +587,9 @@ namespace zidian {
             needRecreateSwapchain = false;
         }
 
-        vkWaitForFences(device, 1, &frameResources->inFlightFences[currentFrameIndex], VK_TRUE, UINT64_MAX);
+        vkWaitForFences(device, 1, &frameResource->inFlightFences[currentFrameIndex], VK_TRUE, UINT64_MAX);
         uint32_t imageIdx = UINT32_MAX;
-        VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, frameResources->imageAvailableSemaphores[currentFrameIndex], VK_NULL_HANDLE, &imageIdx);
+        VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, frameResource->imageAvailableSemaphores[currentFrameIndex], VK_NULL_HANDLE, &imageIdx);
         if(result == VK_SUBOPTIMAL_KHR){
             Log::w("render", "vkAcquireNextImageKHR VK_SUBOPTIMAL_KHR");
             needRecreateSwapchain = true;
@@ -605,22 +604,22 @@ namespace zidian {
 
         currentImageIndex = imageIdx;
 
-        vkResetFences(device, 1, &frameResources->inFlightFences[currentFrameIndex]);
+        vkResetFences(device, 1, &frameResource->inFlightFences[currentFrameIndex]);
 
         //重置commandbuffer
-        vkResetCommandBuffer(frameResources->commandBuffers[currentFrameIndex], 0);
+        vkResetCommandBuffer(frameResource->commandBuffers[currentFrameIndex], 0);
 
         //begin command buffer
         VkCommandBufferBeginInfo cfBeginInfo{};
         cfBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         cfBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        vkBeginCommandBuffer(frameResources->commandBuffers[currentFrameIndex], &cfBeginInfo);
+        vkBeginCommandBuffer(frameResource->commandBuffers[currentFrameIndex], &cfBeginInfo);
 
         //begin render pass
         VkRenderPassBeginInfo passBeginInfo{};
         passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         passBeginInfo.renderPass = renderPass;
-        passBeginInfo.framebuffer = frameResources->frameBuffers[currentImageIndex];
+        passBeginInfo.framebuffer = frameResource->frameBuffers[currentImageIndex];
         VkRect2D rect = {
             {0,0},
             swapChainExtent
@@ -630,7 +629,7 @@ namespace zidian {
         VkClearValue clearColor = {configClearColor[0],configClearColor[1],configClearColor[2],configClearColor[3]};
         passBeginInfo.clearValueCount = 1;
         passBeginInfo.pClearValues = &clearColor;
-        vkCmdBeginRenderPass(frameResources->commandBuffers[currentFrameIndex], &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(frameResource->commandBuffers[currentFrameIndex], &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
         drawCallCount = 0;
         //清理命令列表
@@ -642,7 +641,7 @@ namespace zidian {
         recordCommands();
 
         // Log::i("render", "end render frame");
-        VkCommandBuffer& cmd = frameResources->commandBuffers[currentFrameIndex];
+        VkCommandBuffer& cmd = frameResource->commandBuffers[currentFrameIndex];
 
         //end renderpass
         vkCmdEndRenderPass(cmd);
@@ -654,7 +653,7 @@ namespace zidian {
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         VkSemaphore waitSemaphores[] ={
-            frameResources->imageAvailableSemaphores[currentFrameIndex]
+            frameResource->imageAvailableSemaphores[currentFrameIndex]
         };
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
@@ -665,11 +664,11 @@ namespace zidian {
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &cmd;
         VkSemaphore signalSemaphores[] = {
-            frameResources->renderFinishSemaphores[currentImageIndex]
+            frameResource->renderFinishSemaphores[currentImageIndex]
         };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
-        vkQueueSubmit(graphQueue, 1 , &submitInfo, frameResources->inFlightFences[currentFrameIndex]);
+        vkQueueSubmit(graphQueue, 1 , &submitInfo, frameResource->inFlightFences[currentFrameIndex]);
 
         //present
         VkPresentInfoKHR presentInfo{};
@@ -702,10 +701,10 @@ namespace zidian {
         }
 
         auto& primitivePipeline = pipelineManager->primitivePipe;
-        VkCommandBuffer& cmdBuffer = frameResources->commandBuffers[currentFrameIndex];
+        VkCommandBuffer& cmdBuffer = frameResource->commandBuffers[currentFrameIndex];
 
         vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, primitivePipeline->pipeline);
-        frameResources->pushConstDatas[currentFrameIndex].proj = {
+        frameResource->pushConstDatas[currentFrameIndex].proj = {
             glm::vec4(2.0f / swapChainExtent.width, 0.0f, 0.0f, 0.0f),
             glm::vec4(0.0f, 2.0f / swapChainExtent.height, 0.0f, 0.0f),
             glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
@@ -715,26 +714,26 @@ namespace zidian {
         vkCmdPushConstants(cmdBuffer,
                 primitivePipeline->pipelineLayout, 
                 VK_SHADER_STAGE_VERTEX_BIT,0, 
-                sizeof(PushConstantData), &frameResources->pushConstDatas[currentFrameIndex]);//set push constant
+                sizeof(PushConstantData), &frameResource->pushConstDatas[currentFrameIndex]);//set push constant
 
         const uint32_t vertexCount = commandList.getPrimitiveVertices().size();
 
         auto& allVertices = commandList.getPrimitiveVertices();
         
         // 如果当前 primitive buffer 不够大，动态扩容
-        if(vertexCount > frameResources->primitiveVertexMaxCounts[currentFrameIndex]){
-            vkUnmapMemory(device, frameResources->primitiveVertexMemorys[currentFrameIndex]);
-            vkDestroyBuffer(device, frameResources->primitiveVertexBuffers[currentFrameIndex], nullptr);
-            vkFreeMemory(device, frameResources->primitiveVertexMemorys[currentFrameIndex], nullptr);
+        if(vertexCount > frameResource->primitiveVertexMaxCounts[currentFrameIndex]){
+            vkUnmapMemory(device, frameResource->primitiveVertexMemorys[currentFrameIndex]);
+            vkDestroyBuffer(device, frameResource->primitiveVertexBuffers[currentFrameIndex], nullptr);
+            vkFreeMemory(device, frameResource->primitiveVertexMemorys[currentFrameIndex], nullptr);
 
-            frameResources->primitiveVertexMaxCounts[currentFrameIndex] = vertexCount;
-            frameResources->createPrimitiveVertexBuffer(currentFrameIndex);
+            frameResource->primitiveVertexMaxCounts[currentFrameIndex] = vertexCount;
+            frameResource->createPrimitiveVertexBuffer(currentFrameIndex);
         }
 
         // 一次性拷贝所有顶点并绘制
-        memcpy(frameResources->primitiveMemoryMappeds[currentFrameIndex], allVertices.data(), vertexCount * sizeof(PrimitiveVertex));
+        memcpy(frameResource->primitiveMemoryMappeds[currentFrameIndex], allVertices.data(), vertexCount * sizeof(PrimitiveVertex));
         VkDeviceSize offset[] = {0};
-        vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &frameResources->primitiveVertexBuffers[currentFrameIndex], offset);
+        vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &frameResource->primitiveVertexBuffers[currentFrameIndex], offset);
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
         drawCallCount++;
         // std::cout << "vertex Count = " << vertexCount << std::endl;
@@ -745,7 +744,7 @@ namespace zidian {
             vkDeviceWaitIdle(device);
         }
 
-        frameResources->destroy();
+        frameResource->destroy();
         
         memoryAllocator.destroy();
 
@@ -806,13 +805,13 @@ namespace zidian {
             vkDeviceWaitIdle(device);
         }
 
-        frameResources->destroyFramebuffers();
+        frameResource->destroyFramebuffers();
         destroyImageViews();
         vkDestroySwapchainKHR(device, swapChain, nullptr);
 
         createSwapchain();
         createImageViews();
-        frameResources->createFramebuffers();
+        frameResource->createFramebuffers();
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(

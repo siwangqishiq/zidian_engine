@@ -1,14 +1,14 @@
 #pragma once
 
 #include "vulkan/vulkan.h"
-#include "renderer/vertex/primitive_vertex.h"
+#include "renderer/pipeline/primitive_vertex.h"
 
 namespace zidian {
     class Render;
 
     class PrimitivePipeline{
     public:
-        PrimitivePipeline(Render &context);
+        PrimitivePipeline(Render &context, PipelineManager &pipelineManager);
 
         void create();
         void dispose();
@@ -18,8 +18,13 @@ namespace zidian {
         VkPipeline pipeline = VK_NULL_HANDLE;
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
         VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+
+        std::vector<VkDescriptorSet> descriptorSets;
+
+        void updateDescriptorSet();
     private:
         Render& ctx;
+        PipelineManager& pipelineMgr;
 
         VkVertexInputBindingDescription vertexInputBind{};
         std::array<VkVertexInputAttributeDescription , 2> vertexInputDescs{};
@@ -38,7 +43,7 @@ namespace zidian {
         VkPipelineInputAssemblyStateCreateInfo inputAssembleCreateInfo{};
 
         bool createPipelineLayout();
-
+        
         void createDescriptorSetLayout();
 
         void populateVertexInputState();
