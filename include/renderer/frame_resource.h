@@ -3,6 +3,7 @@
 #include <vector>
 #include "vulkan/vulkan.h"
 #include "renderer/pipeline/push_constant_data.h"
+#include "renderer/pipeline/primitive_uniform_data.h"
 
 namespace zidian{
     class Render;
@@ -39,12 +40,16 @@ namespace zidian{
         //primitive uniform buffer
         std::vector<VkDeviceMemory> primitiveUniformMemorys;
         std::vector<VkBuffer> primitiveUniformBuffers;
+        std::vector<void *> primitiveUniformMemoryMappeds;
+
+        std::vector<PrimitiveUniformData> primitiveUniformDatas;
     private:
         Render &ctx;
 
         void createCommandBuffers();
         void createSyncObjects();
         void createPushConstantDatas();
+        void createUniformDatas();
 
         void createPrimitiveUniformBuffers();
     public:

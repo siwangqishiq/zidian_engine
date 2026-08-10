@@ -23,6 +23,7 @@ namespace zidian {
 
         //创建完buffer后  更新descriptorSet
         ctx.pipelineManager->updateDescriptorSets();
+        createUniformDatas();
     }
 
     void FrameResource::createFramebuffers(){
@@ -172,9 +173,19 @@ namespace zidian {
         }//end for i;
     }
 
+    void FrameResource::createUniformDatas(){
+        primitiveUniformDatas.resize(MAX_FRAME_IN_FLIGHT);
+        for(uint32_t i = 0 ; i < MAX_FRAME_IN_FLIGHT; i++){
+           primitiveUniformDatas.push_back(
+            { glm::mat4()}
+           );
+        }//end for i;
+    }
+
     void FrameResource::createPrimitiveUniformBuffers(){
         primitiveUniformBuffers.resize(MAX_FRAME_IN_FLIGHT);
         primitiveUniformMemorys.resize(MAX_FRAME_IN_FLIGHT);
+        primitiveUniformMemoryMappeds.resize(MAX_FRAME_IN_FLIGHT);
 
         for(uint32_t i = 0 ;i < MAX_FRAME_IN_FLIGHT; i++){
             VkDeviceSize bufferSize = sizeof(PrimitiveUniformData);
@@ -203,6 +214,13 @@ namespace zidian {
             }
 
             vkBindBufferMemory(ctx.device, primitiveUniformBuffers[i], primitiveUniformMemorys[i], 0);
+
+            //map memory
+            auto memoryMapResult = vkMapMemory(ctx.device, primitiveUniformMemorys[i], 0, bufferSize, 0, &primitiveUniformMemoryMappeds[i]);
+            if(memoryMapResult != VK_SUCCESS){
+                Log::e("render", "map the uniform memory failed!");
+                continue;
+            }
         }//end for i
     }
 
@@ -211,15 +229,24 @@ namespace zidian {
         VkDevice &device = ctx.device;
         for(uint32_t i = 0 ; i < MAX_FRAME_IN_FLIGHT; i++){
             vkUnmapMemory(ctx.device, primitiveVertexMemorys[i]);
+
             vkDestroyBuffer(device, primitiveVertexBuffers[i], nullptr);
             vkFreeMemory(device, primitiveVertexMemorys[i], nullptr);
         }//end for i;
+        primitiveMemoryMappeds.clear();
+        primitiveVertexBuffers.clear();
+        primitiveVertexMemorys.clear();
+
 
         for(uint32_t i = 0 ; i < primitiveUniformMemorys.size(); i++){
-            // vkUnmapMemory(ctx.device, primitiveUniformMemorys[i]);
+            vkUnmapMemory(ctx.device, primitiveUniformMemorys[i]);
+
             vkDestroyBuffer(device, primitiveUniformBuffers[i], nullptr);
             vkFreeMemory(device, primitiveUniformMemorys[i], nullptr);
         }//end for i;
+        primitiveUniformMemoryMappeds.clear();
+        primitiveUniformBuffers.clear();
+        primitiveUniformMemorys.clear();
 
         for(auto &fence : inFlightFences){
             vkDestroyFence(device, fence, nullptr);

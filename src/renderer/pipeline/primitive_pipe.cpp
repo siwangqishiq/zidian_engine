@@ -229,9 +229,7 @@ namespace zidian{
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         layoutCreateInfo.setLayoutCount = 1;
         layoutCreateInfo.pSetLayouts = &descriptorSetLayout;
-        layoutCreateInfo.setLayoutCount = 0;
-        layoutCreateInfo.pSetLayouts = nullptr;
-
+        
         //set push constant
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;

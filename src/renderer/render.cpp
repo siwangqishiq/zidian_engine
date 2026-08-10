@@ -10,6 +10,8 @@
 #include "renderer/pipeline/primitive_pipe.h"
 #include "renderer/pipeline/primitive_vertex.h"
 #include "renderer/shader/shader_manager.h"
+#include "renderer/pipeline/primitive_uniform_data.h"
+#include "input/input_manager.h"
 
 namespace zidian {
     Render::Render(Application &appContext):appCtx(appContext) {
@@ -638,6 +640,7 @@ namespace zidian {
     }
 
     void Render::endRenderFrame(){
+        //record commands
         recordCommands();
 
         // Log::i("render", "end render frame");
@@ -704,20 +707,18 @@ namespace zidian {
         VkCommandBuffer& cmdBuffer = frameResource->commandBuffers[currentFrameIndex];
 
         vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, primitivePipeline->pipeline);
-        frameResource->pushConstDatas[currentFrameIndex].proj = {
-            glm::vec4(2.0f / swapChainExtent.width, 0.0f, 0.0f, 0.0f),
-            glm::vec4(0.0f, 2.0f / swapChainExtent.height, 0.0f, 0.0f),
-            glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
-            glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
-        };
-
-        vkCmdPushConstants(cmdBuffer,
-                primitivePipeline->pipelineLayout, 
-                VK_SHADER_STAGE_VERTEX_BIT,0, 
-                sizeof(PushConstantData), &frameResource->pushConstDatas[currentFrameIndex]);//set push constant
+        // frameResource->pushConstDatas[currentFrameIndex].proj = {
+        //     glm::vec4(2.0f / swapChainExtent.width, 0.0f, 0.0f, 0.0f),
+        //     glm::vec4(0.0f, 2.0f / swapChainExtent.height, 0.0f, 0.0f),
+        //     glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
+        //     glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
+        // };
+        // vkCmdPushConstants(cmdBuffer,
+        //         primitivePipeline->pipelineLayout, 
+        //         VK_SHADER_STAGE_VERTEX_BIT,0, 
+        //         sizeof(PushConstantData), &frameResource->pushConstDatas[currentFrameIndex]);//set push constant
 
         const uint32_t vertexCount = commandList.getPrimitiveVertices().size();
-
         auto& allVertices = commandList.getPrimitiveVertices();
         
         // 如果当前 primitive buffer 不够大，动态扩容
@@ -734,6 +735,19 @@ namespace zidian {
         memcpy(frameResource->primitiveMemoryMappeds[currentFrameIndex], allVertices.data(), vertexCount * sizeof(PrimitiveVertex));
         VkDeviceSize offset[] = {0};
         vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &frameResource->primitiveVertexBuffers[currentFrameIndex], offset);
+
+        frameResource->primitiveUniformDatas[currentFrameIndex].proj = {
+            glm::vec4(2.0f / swapChainExtent.width, 0.0f, 0.0f, 0.0f),
+            glm::vec4(0.0f, 2.0f / swapChainExtent.height, 0.0f, 0.0f),
+            glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
+            glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
+        };
+
+        memcpy(frameResource->primitiveUniformMemoryMappeds[currentFrameIndex], &frameResource->primitiveUniformDatas[currentFrameIndex], 
+                sizeof(PrimitiveUniformData));
+        
+        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, 
+                primitivePipeline->pipelineLayout, 0, 1, primitivePipeline->descriptorSets.data(), 0, nullptr);
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
         drawCallCount++;
         // std::cout << "vertex Count = " << vertexCount << std::endl;

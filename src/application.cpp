@@ -8,6 +8,7 @@
 #include "widget/task_schedule.h"
 #include "renderer/render.h"
 #include "widget/task_schedule.h"
+#include "input/input_manager.h"
 
 #include <iostream>
 
@@ -71,6 +72,7 @@ namespace zidian{
                 glfwSetWindowShouldClose(window, true);
             }   
         });
+        InputManager::getInstance()->setWindowInstance(window);
     }
 
     // std::unique_ptr<Render>& Application::getRender(){

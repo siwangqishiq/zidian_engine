@@ -6,7 +6,7 @@
 
 namespace zidian{
     struct PrimitiveUniformData{
-        int type;
+        glm::mat4 proj;
         
         static std::array<VkDescriptorSetLayoutBinding, 1> bindingDescs();
     };

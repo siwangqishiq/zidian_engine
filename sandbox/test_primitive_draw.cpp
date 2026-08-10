@@ -7,12 +7,10 @@ public:
         auto &render = zidian::Instance->getRender();
         zidian::RandomUtil::setRandomSeed(0);
 
-        // zidian::AudioManager::getInstance()->loadAudio("sound/ci.mp3","bgm");
-        // zidian::AudioManager::getInstance()->playAudio("bgm");
-        zidian::Instance->getThreadPool()->enqueue([](){
-            zidian::AudioManager::getInstance()->loadAudio("sound/ci.mp3","bgm", true);
-            zidian::AudioManager::getInstance()->playAudio("bgm");
-        });
+        // zidian::Instance->getThreadPool()->enqueue([](){
+        //     zidian::AudioManager::getInstance()->loadAudio("sound/ci.mp3","bgm", true);
+        //     zidian::AudioManager::getInstance()->playAudio("bgm");
+        // });
     }
 
     void drawOneCircle(){
