@@ -19,6 +19,9 @@ namespace zidian{
         bool vsync = true;
         bool isFullScreen = false;
         glm::vec4 clearColor = {0.1f, 0.1f , 0.1f, 1.0f};
+        
+        bool isRecordLog = false;
+        std::string logFilePath;
     };
 
     class IGame{

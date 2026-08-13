@@ -23,6 +23,11 @@ namespace zidian{
     }
 
     void Application::init(AppConfig cfg){
+        if(cfg.isRecordLog){
+            std::string logFilePath = cfg.logFilePath.empty()?Log::DEFAULT_LOG_FILE_PATH:cfg.logFilePath;
+            Log::setLogFile(logFilePath);
+        }
+
         Log::i(TAG,"Application init");
         config = cfg;
 
@@ -178,5 +183,6 @@ namespace zidian{
 
     Application::~Application(){
         Log::i(TAG,"Application deconstructed");
+        Log::closeLogFile();
     }
 }

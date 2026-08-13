@@ -12,7 +12,7 @@ public:
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
 
-
+        
     }
 
     virtual void onDispose() override {
@@ -21,15 +21,12 @@ public:
     }
 };
 
-
 void TestSpriteDraw1(){
     zidian::AppConfig config;
     config.name = "TestSpriteDraw";
     config.windowWidth = 1280;
     config.windowHeight = 720;
-    config.clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
-    config.vsync = true;
-    config.isFullScreen = false;
+    config.isRecordLog = true;
 
     zidian::Application app;
     app.setGameObject(std::make_shared<TestSpriteDraw>());
