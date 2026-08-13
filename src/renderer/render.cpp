@@ -742,8 +742,9 @@ namespace zidian {
             glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
             glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
         };
-
-        memcpy(frameResource->primitiveUniformMemoryMappeds[currentFrameIndex], &frameResource->primitiveUniformDatas[currentFrameIndex], 
+        
+        memcpy(frameResource->primitiveUniformMemoryMappeds[currentFrameIndex], 
+                &frameResource->primitiveUniformDatas[currentFrameIndex], 
                 sizeof(PrimitiveUniformData));
         
         vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, 
