@@ -180,6 +180,7 @@ namespace zidian {
         }
        
         printMemoryInfo();
+        findMaxSampleCount();
     }
 
     std::string Render::heapMemoryFlagsToStr(VkMemoryHeap &heap){
@@ -251,6 +252,36 @@ namespace zidian {
             Log::green("render", "\t properties: %s",memoryPropertiesToStr(type.propertyFlags).c_str());
             Log::green("render", "\t==========================================");
         }//end for i
+    }
+
+    void Render::findMaxSampleCount(){
+        VkPhysicalDeviceProperties physicalDeviceProperties;
+        vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+
+        VkSampleCountFlags sampleCount = physicalDeviceProperties.limits.framebufferColorSampleCounts
+            & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+
+        if(sampleCount & VK_SAMPLE_COUNT_64_BIT){
+            Log::i("render","support sampleCount : 64");
+        }
+        if(sampleCount & VK_SAMPLE_COUNT_32_BIT){
+            Log::i("render","support sampleCount : 32");
+        }
+        if(sampleCount & VK_SAMPLE_COUNT_16_BIT){
+            Log::i("render","support sampleCount : 16");
+        }
+        if(sampleCount & VK_SAMPLE_COUNT_8_BIT){
+            Log::i("render","support sampleCount : 8");
+        }
+        if(sampleCount & VK_SAMPLE_COUNT_4_BIT){
+            Log::i("render","support sampleCount : 4");
+        }
+        if(sampleCount & VK_SAMPLE_COUNT_2_BIT){
+            Log::i("render","support sampleCount : 2");
+        }
+        if(sampleCount & VK_SAMPLE_COUNT_1_BIT){
+            Log::i("render","support sampleCount : 1");
+        }
     }
 
     bool Render::isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props){

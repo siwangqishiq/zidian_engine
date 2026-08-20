@@ -89,6 +89,7 @@ namespace zidian{
         std::unique_ptr<FrameResource> frameResource;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
+        
         void createInstance();
         void createSurface();
         void pickPhysicalDevice();
@@ -101,6 +102,8 @@ namespace zidian{
         void createDscriptorSetPool();
 
         void printMemoryInfo();
+
+        void findMaxSampleCount();
 
         void destroyImageViews();
         void destroySurface();

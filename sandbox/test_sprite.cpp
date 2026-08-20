@@ -35,5 +35,3 @@ void TestSpriteDraw1(){
 }
 
 
-
-

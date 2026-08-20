@@ -78,6 +78,9 @@ namespace zidian{
             }   
         });
         InputManager::getInstance()->setWindowInstance(window);
+
+        glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+        Log::i("fps", "first glfwGetFramebufferSize : %d x %d", windowWidth , windowHeight);
     }
 
     // std::unique_ptr<Render>& Application::getRender(){
