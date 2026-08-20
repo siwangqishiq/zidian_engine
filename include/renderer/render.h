@@ -39,7 +39,7 @@ namespace zidian{
         uint32_t currentFrameIndex = 0;
 
         Render(Application &appContext);
-
+        
         void init(std::vector<const char *> &glfwExtenstinList);
 
         void onDispose();
@@ -89,7 +89,7 @@ namespace zidian{
         std::unique_ptr<FrameResource> frameResource;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
-        
+
         void createInstance();
         void createSurface();
         void pickPhysicalDevice();

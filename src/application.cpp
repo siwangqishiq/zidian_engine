@@ -68,7 +68,7 @@ namespace zidian{
         if(config.isFullScreen){
             monitor = glfwGetPrimaryMonitor();
         }
-
+        
         window = glfwCreateWindow(config.windowWidth, config.windowHeight, 
             config.name.c_str(), monitor, nullptr);
         glfwSetWindowPos(window, 32, 64);

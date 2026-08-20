@@ -127,9 +127,7 @@ namespace zidian{
         return ReadFileAsBinary(file_path, length);
     }
 
-    uint8_t* AssetManager::loadImageFileFromPath(std::string path, 
-                        int &width, int &height,
-                        int &channel, bool need_flip){
+    uint8_t* AssetManager::loadImageFileFromPath(std::string path, int &width, int &height,int &channel, bool need_flip){
         std::ifstream file(path);
         if(!file.is_open()){
             Log::e("asset_manager" , "read image file %s is not existed!", path.c_str());
@@ -138,17 +136,18 @@ namespace zidian{
         file.close();
 
         stbi_set_flip_vertically_on_load(need_flip);
-        uint8_t *data = stbi_load(path.c_str(), &width, &height, &channel, 0);
+        uint8_t *data = stbi_load(path.c_str(), &width, &height, &channel, STBI_rgb_alpha);
         Log::i("asset" , "read image file %s  size : %d , %d , %d" ,
             path.c_str(), width , height, channel);
         
         if(data && width > 0 && height > 0  && channel > 0){
-            const size_t data_len = width * height * channel;
+            const size_t data_len = width * height * STBI_rgb_alpha;
             uint8_t *result = new uint8_t[data_len * sizeof(uint8_t)];
             memcpy(result , data, data_len);
             stbi_image_free(data);
             return result;
         }
+
         return nullptr;
     }
     

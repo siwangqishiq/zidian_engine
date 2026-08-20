@@ -39,7 +39,7 @@ namespace zidian {
     int VkCanvas::getHeight() {
         return ctx.swapChainExtent.height;
     }
-
+    
     void VkCanvas::drawRect(float left, float top, float width, float height, const glm::vec4 color) {
         auto vertices = geometry.genRectVertices(left, top, width , height);
         const uint32_t vertexCount = vertices.size();
