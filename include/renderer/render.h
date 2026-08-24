@@ -9,6 +9,7 @@
 #include "renderer/mem/memory_allocator.h"
 #include "renderer/pipeline/push_constant_data.h"
 #include "renderer/frame_resource.h"
+#include "renderer/texture/texture_manager.h"
 
 namespace zidian{
     class Application;
@@ -87,6 +88,8 @@ namespace zidian{
         std::unique_ptr<PipelineManager> pipelineManager;
         std::unique_ptr<ShaderManager> shaderManager;
         std::unique_ptr<FrameResource> frameResource;
+
+        std::unique_ptr<TextureManager> textureManager;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
 

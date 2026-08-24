@@ -25,6 +25,9 @@ namespace zidian {
 
         //init canvas
         canvas = std::make_unique<VkCanvas>(*this);
+
+        //纹理载入
+        textureManager = std::make_unique<TextureManager>(*this);
     }
 
     void Render::initVulkan(std::vector<const char *> &glfwExtenstinList) {
@@ -790,8 +793,9 @@ namespace zidian {
             vkDeviceWaitIdle(device);
         }
 
-        frameResource->destroy();
+        textureManager->clear();
         
+        frameResource->destroy();
         memoryAllocator.destroy();
 
         if(commandPool != VK_NULL_HANDLE){

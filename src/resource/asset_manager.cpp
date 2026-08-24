@@ -158,4 +158,10 @@ namespace zidian{
         return loadImageFileFromPath(file_path, width, height, channel, need_flip);
     }
     
+
+    void AssetManager::freePixels(uint8_t *ptr){
+        if(ptr != nullptr){
+            stbi_image_free(ptr);
+        }
+    }
 }

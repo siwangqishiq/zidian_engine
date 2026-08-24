@@ -6,6 +6,8 @@ public:
         zidian::Log::brown("game", "TestSprite init");
         auto &render = zidian::Instance->getRender();
         zidian::RandomUtil::setRandomSeed(0);
+
+        bool loadSuccess = render->textureManager->loadImageByPath("images/test1.jpg",nullptr);
     }
 
     virtual void onTick() override{

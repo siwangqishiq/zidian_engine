@@ -46,6 +46,8 @@ namespace zidian{
 
         virtual uint8_t* readAssetImageFile(std::string path, int &width, int &height,
                             int &channel, bool need_flip = false);
+        
+        virtual void freePixels(uint8_t *ptr);
     private:
         static std::unique_ptr<AssetManager> m_instance;
 

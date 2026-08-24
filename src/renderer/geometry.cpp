@@ -21,7 +21,7 @@ namespace zidian {
 
         vertices.reserve(step * 3);
         float delta = 2.0f * PI / static_cast<float>(step);
-
+        
         glm::vec2 center(cx, cy);
         for (uint32_t i = 0; i < step; i++){
             float angle0 = i * delta;
