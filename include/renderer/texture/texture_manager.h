@@ -2,6 +2,8 @@
 
 #include "vulkan/vulkan.h"
 #include "renderer/texture/image.h"
+#include <map>
+#include <memory>
 
 namespace zidian{
     class Render;
@@ -18,12 +20,19 @@ namespace zidian{
     private:
         Render &ctx;
 
-        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-        void create2DImage(uint32_t texWidth,uint32_t texHeight);
+        void createImage(uint32_t texWidth,uint32_t texHeight,VkImageUsageFlags usage, VkMemoryPropertyFlags properties,VkImage& image, VkDeviceMemory& imageMemory);
+        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+
+        void transitionImageLayoutFromUndefToTransdst(VkCommandBuffer &cmdBuffer,VkImage &image);
+        void transitionImageLayoutFromTransdstToShadeReadOnly(VkCommandBuffer &cmdBuffer,VkImage &image);
 
         VkCommandBuffer beginSingleTimeCommands();
         void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+        std::string genLocalMapKey(std::string path);
+
+        std::map<std::string, std::shared_ptr<Image>> textureMaps;
     };
 }

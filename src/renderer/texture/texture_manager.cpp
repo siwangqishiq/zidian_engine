@@ -10,6 +10,10 @@ namespace zidian {
     TextureManager::~TextureManager(){
     }
 
+    std::string TextureManager::genLocalMapKey(std::string path){
+        return "local_path:" + path;
+    }
+
     bool TextureManager::loadImageByPath(std::string path, Image *image){
         Log::i("texture_manager","load file %s",path.c_str());
         int width, height;
@@ -21,11 +25,12 @@ namespace zidian {
         }
         Log::i("texture_manager","read %s success size %d x %d   channel %d", path.c_str(), width , height , channel);
 
-        VkDeviceSize imageSize = width * height * 4;
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
-        createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+        VkDeviceSize imageSize = width * height * 4;
+        createBuffer(imageSize, 
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
             stagingBuffer, stagingBufferMemory);
 
@@ -35,11 +40,51 @@ namespace zidian {
         vkUnmapMemory(ctx.device, stagingBufferMemory);
         
         AssetManager::getInstance()->freePixels(pixels);
+
+        std::string key = genLocalMapKey(path);
+        textureMaps[key] = std::make_shared<Image>(ctx.device, key);
+        
+        createImage(width, height, 
+            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureMaps[key]->textureImage, textureMaps[key]->textureMemory);
+
+        auto commandBuffer = beginSingleTimeCommands();
+        
+        //image 布局转换 undef -> trans_dst
+        transitionImageLayoutFromUndefToTransdst(commandBuffer, textureMaps[key]->textureImage);
+        
+        VkBufferImageCopy region{};
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = 1;
+        region.imageOffset = {0, 0, 0};
+        region.imageExtent = {
+            static_cast<uint32_t>(width),
+            static_cast<uint32_t>(height),
+            1
+        };
+        vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, textureMaps[key]->textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL , 1, &region);
+
+        //image 布局二次转换 trans_dst -> shader read
+        transitionImageLayoutFromTransdstToShadeReadOnly(commandBuffer , textureMaps[key]->textureImage);
+
+        endSingleTimeCommands(commandBuffer);
+
+        vkDestroyBuffer(ctx.device, stagingBuffer, nullptr);
+        vkFreeMemory(ctx.device, stagingBufferMemory, nullptr);
+
+        if(image != nullptr){
+            image->name = textureMaps[key]->name;
+        }
         
         return true;
     }
 
-    void TextureManager::create2DImage(uint32_t texWidth,uint32_t texHeight){
+    void TextureManager::createImage(uint32_t texWidth,uint32_t texHeight,VkImageUsageFlags usage, VkMemoryPropertyFlags properties,VkImage &image, VkDeviceMemory &imageMemory){
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -51,16 +96,31 @@ namespace zidian {
         imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
         imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        imageInfo.usage = usage;
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imageInfo.flags = 0; // Optional
 
-        VkImage textureImage;
-        VkDeviceMemory textureImageMemory;
+        if (vkCreateImage(ctx.device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+            Log::e("texture_manager","failed to create image!");
+            throw std::runtime_error("failed to create image!");
+        }
+        
+        VkMemoryRequirements memRequirements;
+        vkGetImageMemoryRequirements(ctx.device, image, &memRequirements);
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
 
+        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+        if (vkAllocateMemory(ctx.device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+            Log::e("texture_manager","failed to allocate image memory!");
+            throw std::runtime_error("failed to allocate image memory!");
+        }
+
+        vkBindImageMemory(ctx.device, image, imageMemory, 0);
     }
-
+    
     void TextureManager::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory){
         VkBufferCreateInfo bufferInfo{};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -86,6 +146,46 @@ namespace zidian {
             throw std::runtime_error("failed to allocate buffer memory!");
         }
         vkBindBufferMemory(ctx.device, buffer, bufferMemory, 0);      
+    }
+
+    void TextureManager::transitionImageLayoutFromUndefToTransdst(VkCommandBuffer &cmdBuffer, VkImage &image){
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = image;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+        vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 
+            0, 0, nullptr, 0, nullptr, 1, &barrier);
+    }
+
+    void TextureManager::transitionImageLayoutFromTransdstToShadeReadOnly(VkCommandBuffer &cmdBuffer,VkImage &image){
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = image;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
+            0, 0, nullptr, 0, nullptr, 1, &barrier);
     }
 
     VkCommandBuffer TextureManager::beginSingleTimeCommands(){
@@ -134,5 +234,6 @@ namespace zidian {
 
     void TextureManager::clear(){
         Log::i("texture_manager","clear all textures");
+        textureMaps.clear();
     }
 }
