@@ -77,6 +77,21 @@ namespace zidian {
         vkDestroyBuffer(ctx.device, stagingBuffer, nullptr);
         vkFreeMemory(ctx.device, stagingBufferMemory, nullptr);
 
+        //create imageview
+        VkImageViewCreateInfo imageViewCreateInfo{};
+        imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        imageViewCreateInfo.image = textureMaps[key]->textureImage;
+        imageViewCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+        imageViewCreateInfo.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0 , 1 , 0 ,1};
+        imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+
+        if(vkCreateImageView(ctx.device, &imageViewCreateInfo, nullptr, &(textureMaps[key]->textureImageView)) != VK_SUCCESS){
+            Log::e("texture_manager","create image view failed!");
+            return false;
+        }
+        
+        // textureMaps[key]->textureImageView
+
         if(image != nullptr){
             image->name = textureMaps[key]->name;
         }

@@ -6,12 +6,19 @@ namespace zidian {
     }
 
     Image::~Image(){
+        if(textureImageView != VK_NULL_HANDLE){
+            vkDestroyImageView(device, textureImageView, nullptr);
+            textureImageView = VK_NULL_HANDLE;
+        }
+
         if(textureImage != VK_NULL_HANDLE){
             vkDestroyImage(device, textureImage, nullptr);
+            textureImage = VK_NULL_HANDLE;
         }
 
         if(textureMemory != VK_NULL_HANDLE){
             vkFreeMemory(device, textureMemory, nullptr);
+            textureMemory = VK_NULL_HANDLE;
         }
 
         Log::i("image", "image %s is free" , name.c_str());
