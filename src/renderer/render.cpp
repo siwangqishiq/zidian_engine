@@ -184,6 +184,7 @@ namespace zidian {
        
         printMemoryInfo();
         findMaxSampleCount();
+        checkPhysicalDeviceFeatures();
     }
 
     std::string Render::heapMemoryFlagsToStr(VkMemoryHeap &heap){
@@ -255,6 +256,17 @@ namespace zidian {
             Log::green("render", "\t properties: %s",memoryPropertiesToStr(type.propertyFlags).c_str());
             Log::green("render", "\t==========================================");
         }//end for i
+    }
+
+    void Render::checkPhysicalDeviceFeatures(){
+        VkPhysicalDeviceFeatures features;
+        vkGetPhysicalDeviceFeatures(physicalDevice, &features);
+        
+        if(features.tessellationShader){
+            Log::i("render" , "tessellation : true");
+        }else{
+            Log::i("render" , "tessellation : false");
+        }
     }
 
     void Render::findMaxSampleCount(){

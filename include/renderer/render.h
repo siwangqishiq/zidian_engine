@@ -108,6 +108,8 @@ namespace zidian{
 
         void findMaxSampleCount();
 
+        void checkPhysicalDeviceFeatures();
+
         void destroyImageViews();
         void destroySurface();
 
