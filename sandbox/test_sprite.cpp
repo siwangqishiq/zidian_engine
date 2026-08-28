@@ -7,14 +7,15 @@ public:
         auto &render = zidian::Instance->getRender();
         zidian::RandomUtil::setRandomSeed(0);
 
-        bool loadSuccess = render->textureManager->loadImageByPath("images/test1.jpg",nullptr);
+        std::shared_ptr<zidian::Image> image1 = render->textureManager->loadImageByPath("images/test1.jpg");
+        std::shared_ptr<zidian::Image> image2 = render->textureManager->loadImageByPath("images/test2.jpg");
+
     }
 
     virtual void onTick() override{
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
-
-        
+          
     }
 
     virtual void onDispose() override {

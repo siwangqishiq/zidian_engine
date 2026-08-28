@@ -12,6 +12,7 @@ namespace zidian {
         VkImage textureImage = VK_NULL_HANDLE;
         VkDeviceMemory textureMemory = VK_NULL_HANDLE;
         VkImageView textureImageView = VK_NULL_HANDLE;
+        VkSampler textureSampler = VK_NULL_HANDLE;
     private:
         VkDevice &device;
     };

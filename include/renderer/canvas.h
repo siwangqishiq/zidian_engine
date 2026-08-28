@@ -1,8 +1,12 @@
 #pragma once
 
 #include "glm/glm.hpp"
+#include "renderer/geometry.h"
+#include <memory>
 
 namespace zidian{
+    class Image;
+    
     class ICanvas{
     public:
         virtual void flush() = 0;
@@ -15,9 +19,11 @@ namespace zidian{
 
         virtual void drawCircle(float cx, float cy, float radius, const glm::vec4 color) = 0;
 
+        virtual void drawImage(Image &image, Rect &srcRect, Rect &dstRect) = 0;
+
         virtual ~ICanvas(){}
 
         virtual int getWidth() = 0;
         virtual int getHeight() = 0;
-    };
+    };//end canvas
 }

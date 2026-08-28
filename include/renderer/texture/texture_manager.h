@@ -14,7 +14,7 @@ namespace zidian{
 
         ~TextureManager();
 
-        bool loadImageByPath(std::string path, Image *image);
+        std::shared_ptr<Image> loadImageByPath(std::string path);
 
         void clear();
     private:
@@ -24,6 +24,9 @@ namespace zidian{
 
         void createImage(uint32_t texWidth,uint32_t texHeight,VkImageUsageFlags usage, VkMemoryPropertyFlags properties,VkImage& image, VkDeviceMemory& imageMemory);
         void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+
+        void createSampler(VkSampler &sampler);
+        void createImageView(VkImageView &imageView , VkImage &image);
 
         void transitionImageLayoutFromUndefToTransdst(VkCommandBuffer &cmdBuffer,VkImage &image);
         void transitionImageLayoutFromTransdstToShadeReadOnly(VkCommandBuffer &cmdBuffer,VkImage &image);

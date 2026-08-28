@@ -14,14 +14,14 @@ namespace zidian {
         return "local_path:" + path;
     }
 
-    bool TextureManager::loadImageByPath(std::string path, Image *image){
+    std::shared_ptr<Image> TextureManager::loadImageByPath(std::string path){
         Log::i("texture_manager","load file %s",path.c_str());
         int width, height;
         int channel;
         auto pixels = AssetManager::getInstance()->readAssetImageFile(path, width, height, channel);
         if(!pixels || width == 0 || height == 0){
             Log::e("texture_manager","load %s failed", path.c_str());
-            return false;
+            return nullptr;
         }
         Log::i("texture_manager","read %s success size %d x %d   channel %d", path.c_str(), width , height , channel);
 
@@ -40,7 +40,7 @@ namespace zidian {
         vkUnmapMemory(ctx.device, stagingBufferMemory);
         
         AssetManager::getInstance()->freePixels(pixels);
-
+        
         std::string key = genLocalMapKey(path);
         textureMaps[key] = std::make_shared<Image>(ctx.device, key);
         
@@ -78,25 +78,44 @@ namespace zidian {
         vkFreeMemory(ctx.device, stagingBufferMemory, nullptr);
 
         //create imageview
+        createImageView(textureMaps[key]->textureImageView, textureMaps[key]->textureImage);
+
+        // textureMaps[key]->textureImageView
+        createSampler(textureMaps[key]->textureSampler);
+        
+        return textureMaps[key];
+    }
+
+    void TextureManager::createSampler(VkSampler &sampler){
+        VkSamplerCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+
+        createInfo.magFilter = VK_FILTER_LINEAR;
+        createInfo.minFilter = VK_FILTER_LINEAR;
+
+        if(vkCreateSampler(ctx.device, &createInfo, nullptr, &sampler) != VK_SUCCESS){
+            Log::e("texture_manager","create image sampler failed!");
+            return;
+        }
+    }
+
+    void TextureManager::createImageView(VkImageView &imageView , VkImage &image){
         VkImageViewCreateInfo imageViewCreateInfo{};
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        imageViewCreateInfo.image = textureMaps[key]->textureImage;
+        imageViewCreateInfo.image = image;
         imageViewCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
         imageViewCreateInfo.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0 , 1 , 0 ,1};
         imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
-        if(vkCreateImageView(ctx.device, &imageViewCreateInfo, nullptr, &(textureMaps[key]->textureImageView)) != VK_SUCCESS){
+        if(vkCreateImageView(ctx.device, &imageViewCreateInfo, nullptr, &imageView) != VK_SUCCESS){
             Log::e("texture_manager","create image view failed!");
-            return false;
         }
-        
-        // textureMaps[key]->textureImageView
-
-        if(image != nullptr){
-            image->name = textureMaps[key]->name;
-        }
-        
-        return true;
     }
 
     void TextureManager::createImage(uint32_t texWidth,uint32_t texHeight,VkImageUsageFlags usage, VkMemoryPropertyFlags properties,VkImage &image, VkDeviceMemory &imageMemory){

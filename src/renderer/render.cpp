@@ -263,9 +263,15 @@ namespace zidian {
         vkGetPhysicalDeviceFeatures(physicalDevice, &features);
         
         if(features.tessellationShader){
-            Log::i("render" , "tessellation : true");
+            Log::i("render" , "tessellation shader : true");
         }else{
-            Log::i("render" , "tessellation : false");
+            Log::i("render" , "tessellation shader : false");
+        }
+
+        if(features.geometryShader){
+            Log::i("render" , "geometry shader : true");
+        }else{
+            Log::i("render" , "geometry shader : false");
         }
     }
 

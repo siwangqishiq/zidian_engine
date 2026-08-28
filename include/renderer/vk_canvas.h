@@ -17,6 +17,8 @@ namespace zidian {
 
         virtual void drawCircle(float cx, float cy, float radius, const glm::vec4 color) override;
 
+        virtual void drawImage(Image &image, Rect &srcRect, Rect &dstRect) override;
+        
         virtual void flush() override;
 
         virtual ~VkCanvas();

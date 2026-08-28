@@ -54,6 +54,10 @@ namespace zidian {
         drawTriangles(vertices.data(), colors.data(), vertexCount);
     }
 
+    void VkCanvas::drawImage(Image &image, Rect &srcRect, Rect &dstRect){
+        //todo 
+    }
+
     void VkCanvas::flush(){
     }
 }

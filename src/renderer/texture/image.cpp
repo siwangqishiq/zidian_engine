@@ -6,6 +6,11 @@ namespace zidian {
     }
 
     Image::~Image(){
+        if(textureSampler != VK_NULL_HANDLE){
+            vkDestroySampler(device, textureSampler, nullptr);
+            textureSampler = VK_NULL_HANDLE;
+        }
+
         if(textureImageView != VK_NULL_HANDLE){
             vkDestroyImageView(device, textureImageView, nullptr);
             textureImageView = VK_NULL_HANDLE;

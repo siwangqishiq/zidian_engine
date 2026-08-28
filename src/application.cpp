@@ -159,9 +159,7 @@ namespace zidian{
         while (windowWidth == 0 || windowHeight == 0){
             glfwWaitEvents();
             glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
-        }
-
-        // render->recreateSwapchain();
+        }// end while
     }
 
     void Application::onDrawFrame(){
