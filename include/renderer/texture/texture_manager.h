@@ -27,6 +27,7 @@ namespace zidian{
 
         void createSampler(VkSampler &sampler);
         void createImageView(VkImageView &imageView , VkImage &image);
+        void createDescriptorSet();
 
         void transitionImageLayoutFromUndefToTransdst(VkCommandBuffer &cmdBuffer,VkImage &image);
         void transitionImageLayoutFromTransdstToShadeReadOnly(VkCommandBuffer &cmdBuffer,VkImage &image);

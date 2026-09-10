@@ -1,28 +1,29 @@
 #pragma once
 
-#include "vulkan/vulkan.h"
-#include "renderer/pipeline/primitive_vertex.h"
+#include "renderer/pipeline/pipeline_manager.h"
+#include <vector>
+#include <array>
 
-namespace zidian {
+namespace zidian{
     class Render;
 
-    class PrimitivePipeline{
+    class BasePipeline{
     public:
-        PrimitivePipeline(Render &context, PipelineManager &pipelineManager);
+        BasePipeline(Render &context, PipelineManager &pipelineManager);
 
-        void create();
-        void dispose();
+        virtual void create();
+        virtual void dispose();
 
-        ~PrimitivePipeline();
+        virtual ~BasePipeline();
 
         VkPipeline pipeline = VK_NULL_HANDLE;
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
         VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 
         std::vector<VkDescriptorSet> descriptorSets;
-
-        void updateDescriptorSet();
-    private:
+        
+        virtual void updateDescriptorSet();
+    protected:
         Render& ctx;
         PipelineManager& pipelineMgr;
 
@@ -42,22 +43,14 @@ namespace zidian {
         VkPipelineRasterizationStateCreateInfo rasterCreateInfo{};
         VkPipelineInputAssemblyStateCreateInfo inputAssembleCreateInfo{};
 
-        bool createPipelineLayout();
-        
-        void createDescriptorSetLayout();
-
-        void populateVertexInputState();
-
-        void populateInputAssemblyState();
-
-        void populateRasterizationState();
-
-        void populateColorBlendState();
-
-        void populateMultisampleState();
-
-        void populateDepthStencilState();
-
-        void populateViewportState();
+        virtual bool createPipelineLayout();
+        virtual void createDescriptorSetLayout();
+        virtual void populateVertexInputState();
+        virtual void populateInputAssemblyState();
+        virtual void populateRasterizationState();
+        virtual void populateColorBlendState();
+        virtual void populateMultisampleState();
+        virtual void populateDepthStencilState();
+        virtual void populateViewportState();
     };
 }

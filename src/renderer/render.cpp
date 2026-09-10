@@ -7,7 +7,7 @@
 #include "config.h"
 #include "renderer/vk_canvas.h"
 #include "renderer/pipeline/pipeline_manager.h"
-#include "renderer/pipeline/primitive_pipe.h"
+#include "renderer/pipeline/pipe_primitive.h"
 #include "renderer/pipeline/primitive_vertex.h"
 #include "renderer/shader/shader_manager.h"
 #include "renderer/pipeline/primitive_uniform_data.h"

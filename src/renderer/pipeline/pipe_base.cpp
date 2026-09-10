@@ -1,18 +1,18 @@
 #include "renderer/pipeline/pipeline_manager.h"
-#include "renderer/pipeline/primitive_pipe.h"
 #include "renderer/render.h"
 #include "renderer/shader/shader_manager.h"
 #include "utils/log.h"
 #include "renderer/pipeline/push_constant_data.h"
 #include "renderer/pipeline/primitive_uniform_data.h"
+#include "renderer/pipeline/pipe_base.h"
 
 
 namespace zidian{
-    PrimitivePipeline::PrimitivePipeline(Render &context, PipelineManager &pipelineManager) 
+    BasePipeline::BasePipeline(Render &context, PipelineManager &pipelineManager) 
         : ctx(context), pipelineMgr(pipelineManager){
     }
 
-    void PrimitivePipeline::create() {
+    void BasePipeline::create() {
         VkShaderModule vertShaderModule = ctx.shaderManager->createShaderModule("shaders/primitive.vert.spv");
         VkShaderModule fragShaderModule = ctx.shaderManager->createShaderModule("shaders/primitive.frag.spv");
 
@@ -92,7 +92,7 @@ namespace zidian{
         Log::green("pipeline", "create primitive pipeline success.");
     }
 
-    void PrimitivePipeline::dispose(){
+    void BasePipeline::dispose(){
         if(pipeline != VK_NULL_HANDLE) {
             vkDestroyPipeline(ctx.device, pipeline, nullptr);
             pipeline = VK_NULL_HANDLE;
@@ -109,7 +109,7 @@ namespace zidian{
         }
     }
 
-    PrimitivePipeline::~PrimitivePipeline(){
+    BasePipeline::~BasePipeline(){
     }
 
     VkVertexInputBindingDescription PrimitiveVertex::bindingDesc(){
@@ -139,7 +139,7 @@ namespace zidian{
     }
 
     //顶点描述
-    void PrimitivePipeline::populateVertexInputState(){
+    void BasePipeline::populateVertexInputState(){
         vertexInputBind = PrimitiveVertex::bindingDesc();
         vertexInputDescs = PrimitiveVertex::attributeDesc();
         vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -150,13 +150,13 @@ namespace zidian{
     }
 
 
-    void PrimitivePipeline::populateInputAssemblyState(){
+    void BasePipeline::populateInputAssemblyState(){
         inputAssembleCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         inputAssembleCreateInfo.primitiveRestartEnable = VK_FALSE;
         inputAssembleCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     }
 
-    void PrimitivePipeline::populateRasterizationState(){
+    void BasePipeline::populateRasterizationState(){
         rasterCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
         rasterCreateInfo.depthClampEnable = VK_FALSE;
         rasterCreateInfo.rasterizerDiscardEnable = VK_FALSE;
@@ -167,7 +167,7 @@ namespace zidian{
         rasterCreateInfo.depthBiasEnable = VK_FALSE;
     }
 
-    void PrimitivePipeline::populateColorBlendState() {
+    void BasePipeline::populateColorBlendState() {
         colorBlendAttach.colorWriteMask = VK_COLOR_COMPONENT_R_BIT 
             | VK_COLOR_COMPONENT_G_BIT 
             | VK_COLOR_COMPONENT_B_BIT 
@@ -191,13 +191,13 @@ namespace zidian{
         colorBlendCreateInfo.blendConstants[3] = 0.0f;
     }
 
-    void PrimitivePipeline::populateMultisampleState(){
+    void BasePipeline::populateMultisampleState(){
         multisampleCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         multisampleCreateInfo.sampleShadingEnable = VK_FALSE;
         multisampleCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
     }
 
-    void PrimitivePipeline::populateDepthStencilState(){
+    void BasePipeline::populateDepthStencilState(){
         depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthStencilInfo.depthTestEnable = VK_FALSE;
         depthStencilInfo.depthWriteEnable = VK_FALSE;
@@ -206,7 +206,7 @@ namespace zidian{
         depthStencilInfo.stencilTestEnable = VK_FALSE;
     }
 
-    void PrimitivePipeline::populateViewportState() {
+    void BasePipeline::populateViewportState() {
         viewportCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
@@ -223,7 +223,7 @@ namespace zidian{
         viewportCreateInfo.pScissors = &scissor;
     }
 
-    bool PrimitivePipeline::createPipelineLayout(){
+    bool BasePipeline::createPipelineLayout(){
         createDescriptorSetLayout();
 
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -245,7 +245,7 @@ namespace zidian{
         return true;
     }
 
-    void PrimitivePipeline::createDescriptorSetLayout(){
+    void BasePipeline::createDescriptorSetLayout(){
         auto uboLayoutBindings = PrimitiveUniformData::bindingDescs();
         
         VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
@@ -276,7 +276,7 @@ namespace zidian{
     }
 
     //更新DescriptorSet
-    void PrimitivePipeline::updateDescriptorSet(){
+    void BasePipeline::updateDescriptorSet(){
         if(ctx.frameResource->primitiveUniformBuffers.empty()){
             Log::e("primitive_pipeline", "updateDescriptorSet but uniform buffer is empty");
             return;

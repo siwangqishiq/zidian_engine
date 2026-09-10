@@ -33,7 +33,7 @@ namespace zidian {
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
             stagingBuffer, stagingBufferMemory);
-
+            
         void* data;
         vkMapMemory(ctx.device, stagingBufferMemory, 0, imageSize, 0, &data);
         memcpy(data, pixels, static_cast<size_t>(imageSize));
@@ -43,10 +43,13 @@ namespace zidian {
         
         std::string key = genLocalMapKey(path);
         textureMaps[key] = std::make_shared<Image>(ctx.device, key);
+        textureMaps[key]->width = width;
+        textureMaps[key]->height = height;
         
         createImage(width, height, 
             VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureMaps[key]->textureImage, textureMaps[key]->textureMemory);
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+            textureMaps[key]->textureImage, textureMaps[key]->textureMemory);
 
         auto commandBuffer = beginSingleTimeCommands();
         
@@ -84,6 +87,11 @@ namespace zidian {
         createSampler(textureMaps[key]->textureSampler);
         
         return textureMaps[key];
+    }
+
+    void TextureManager::createDescriptorSet(){
+        Log::i("texture_manager","create texture descriptor set");
+        
     }
 
     void TextureManager::createSampler(VkSampler &sampler){

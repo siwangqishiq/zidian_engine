@@ -15,7 +15,7 @@ public:
     virtual void onTick() override{
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
-          
+        
     }
 
     virtual void onDispose() override {
