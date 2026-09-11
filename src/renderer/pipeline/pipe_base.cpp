@@ -13,8 +13,8 @@ namespace zidian{
     }
 
     void BasePipeline::create() {
-        VkShaderModule vertShaderModule = ctx.shaderManager->createShaderModule("shaders/primitive.vert.spv");
-        VkShaderModule fragShaderModule = ctx.shaderManager->createShaderModule("shaders/primitive.frag.spv");
+        VkShaderModule vertShaderModule = getVertexShaderModule();
+        VkShaderModule fragShaderModule = getFragmentShaderModule();
 
         if(vertShaderModule == VK_NULL_HANDLE || fragShaderModule == VK_NULL_HANDLE){
             Log::e("pipeline", "shader module create failed, abort pipeline creation.");
@@ -90,6 +90,14 @@ namespace zidian{
         ctx.shaderManager->destroyShaderModule(fragShaderModule);
 
         Log::green("pipeline", "create primitive pipeline success.");
+    }
+
+    VkShaderModule BasePipeline::getVertexShaderModule(){
+        return ctx.shaderManager->createShaderModule("shaders/primitive.vert.spv");
+    }
+    
+    VkShaderModule BasePipeline::getFragmentShaderModule(){
+        return ctx.shaderManager->createShaderModule("shaders/primitive.frag.spv");
     }
 
     void BasePipeline::dispose(){
@@ -271,8 +279,6 @@ namespace zidian{
             Log::e("primitive_pipeline", "create descriptor set objects failed!");
             return;
         }
-
-       
     }
 
     //更新DescriptorSet

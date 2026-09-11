@@ -24,6 +24,8 @@ namespace zidian {
         command.firstVertex = startVertex;
         command.vertexCount = vertexCount;
         ctx.commandList.getPrimitiveCommands().push_back(command);
+
+        
     }
 
     void VkCanvas::drawTriangle(const glm::vec2 *vertices,const glm::vec4 color){

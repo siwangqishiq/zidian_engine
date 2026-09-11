@@ -5,7 +5,5 @@ namespace zidian {
     public:
         VertexBuffer() = default;
         ~VertexBuffer() = default;
-
-        
     };
 }

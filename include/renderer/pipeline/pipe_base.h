@@ -21,12 +21,15 @@ namespace zidian{
         VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 
         std::vector<VkDescriptorSet> descriptorSets;
+
+        virtual VkShaderModule getVertexShaderModule();
+        virtual VkShaderModule getFragmentShaderModule();
         
         virtual void updateDescriptorSet();
-    protected:
+
         Render& ctx;
         PipelineManager& pipelineMgr;
-
+    protected:
         VkVertexInputBindingDescription vertexInputBind{};
         std::array<VkVertexInputAttributeDescription , 2> vertexInputDescs{};
 
