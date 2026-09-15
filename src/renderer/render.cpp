@@ -28,6 +28,8 @@ namespace zidian {
 
         //纹理载入
         textureManager = std::make_unique<TextureManager>(*this);
+
+        renderQueue = std::make_unique<RenderQueue>(*this);
     }
 
     void Render::initVulkan(std::vector<const char *> &glfwExtenstinList) {

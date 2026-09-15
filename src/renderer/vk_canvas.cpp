@@ -1,7 +1,8 @@
 #include "renderer/render.h"
 #include "renderer/vk_canvas.h"
 #include "renderer/pipeline/primitive_vertex.h"
-
+#include "renderer/command/cmd.h"
+#include "renderer/command/render_queue.h"
 
 namespace zidian {
     VkCanvas::VkCanvas(Render &context) : ctx(context) {
@@ -54,6 +55,39 @@ namespace zidian {
         const uint32_t vertexCount = vertices.size();
         std::vector<glm::vec4> colors(vertexCount, color);
         drawTriangles(vertices.data(), colors.data(), vertexCount);
+    }
+
+    void VkCanvas::drawSimpleRect(float left, float top, float width, float height, const glm::vec4 color){
+        Cmd cmd;
+        cmd.type = CmdType::DrawSimpleRect;
+        cmd.rectData.color = color;
+        cmd.rectData.left = left;
+        cmd.rectData.top = top;
+        cmd.rectData.width = width;
+        cmd.rectData.height = height;
+
+        ctx.renderQueue->addCmd(cmd);
+    }
+    
+    void VkCanvas::drawSimpleTriangle(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, const glm::vec4 color){
+        Cmd cmd;
+        cmd.type = CmdType::DrawSimpleTriangle;
+        cmd.triangleData.color = color;
+        cmd.triangleData.p1 = p1;
+        cmd.triangleData.p2 = p2;
+        cmd.triangleData.p3 = p3;
+        
+        ctx.renderQueue->addCmd(cmd);
+    }
+
+    void VkCanvas::drawSimpleCircle(glm::vec2 center, float radius, const glm::vec4 color){
+        Cmd cmd;
+        cmd.type = CmdType::DrawSimpleCircle;
+        cmd.circleData.color = color;
+        cmd.circleData.center = center;
+        cmd.circleData.radius = radius;
+        
+        ctx.renderQueue->addCmd(cmd);
     }
 
     void VkCanvas::drawImage(Image &image, Rect &srcRect, Rect &dstRect){

@@ -10,11 +10,12 @@
 #include "renderer/pipeline/push_constant_data.h"
 #include "renderer/frame_resource.h"
 #include "renderer/texture/texture_manager.h"
+#include "renderer/command/render_queue.h"
 
 namespace zidian{
     class Application;
     class ShaderManager;
-
+    class RenderQueue;
 
     VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT severity,
@@ -88,8 +89,9 @@ namespace zidian{
         std::unique_ptr<PipelineManager> pipelineManager;
         std::unique_ptr<ShaderManager> shaderManager;
         std::unique_ptr<FrameResource> frameResource;
-
         std::unique_ptr<TextureManager> textureManager;
+        
+        std::unique_ptr<RenderQueue> renderQueue;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
 

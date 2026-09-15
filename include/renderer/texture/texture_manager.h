@@ -21,7 +21,7 @@ namespace zidian{
         Render &ctx;
 
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-
+        
         void createImage(uint32_t texWidth,uint32_t texHeight,VkImageUsageFlags usage, VkMemoryPropertyFlags properties,VkImage& image, VkDeviceMemory& imageMemory);
         void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 

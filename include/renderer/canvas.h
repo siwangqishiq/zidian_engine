@@ -21,6 +21,12 @@ namespace zidian{
 
         virtual void drawImage(Image &image, Rect &srcRect, Rect &dstRect) = 0;
 
+
+        //
+        virtual void drawSimpleRect(float left, float top, float width, float height, const glm::vec4 color) = 0;
+        virtual void drawSimpleTriangle(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, const glm::vec4 color) = 0;
+        virtual void drawSimpleCircle(glm::vec2 center, float radius, const glm::vec4 color) = 0;
+
         virtual ~ICanvas(){}
 
         virtual int getWidth() = 0;

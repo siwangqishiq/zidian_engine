@@ -8,6 +8,7 @@ namespace zidian {
     }
 
     TextureManager::~TextureManager(){
+        Log::i("texture_manager","texture manager destroyed");
     }
 
     std::string TextureManager::genLocalMapKey(std::string path){
