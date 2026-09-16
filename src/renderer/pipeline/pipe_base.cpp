@@ -233,16 +233,16 @@ namespace zidian{
 
     bool BasePipeline::createPipelineLayout(){
         createDescriptorSetLayout();
-
-        layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutCreateInfo.setLayoutCount = 1;
-        layoutCreateInfo.pSetLayouts = &descriptorSetLayout;
         
         //set push constant
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(PushConstantData);
+
+        layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        layoutCreateInfo.setLayoutCount = 1;
+        layoutCreateInfo.pSetLayouts = &descriptorSetLayout;
         layoutCreateInfo.pushConstantRangeCount = 1;
         layoutCreateInfo.pPushConstantRanges = &pushConstantRange;
         

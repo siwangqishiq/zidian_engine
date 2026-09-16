@@ -13,9 +13,11 @@ namespace zidian{
         BatchManager(Render &context);
         ~BatchManager();
 
-        
+        void registerBatch(CmdType type, std::shared_ptr<Batch> batch);
+
+        std::shared_ptr<Batch> findBatchByType(CmdType type);
     private:
         Render &ctx;
-        std::map<CmdType, std::unique_ptr<Batch>> batchMap; 
+        std::map<CmdType, std::shared_ptr<Batch>> batchMap; 
     };
 }

@@ -29,6 +29,7 @@ namespace zidian {
         //纹理载入
         textureManager = std::make_unique<TextureManager>(*this);
 
+        batchManager = std::make_unique<BatchManager>(*this);
         renderQueue = std::make_unique<RenderQueue>(*this);
     }
 
@@ -690,6 +691,8 @@ namespace zidian {
         drawCallCount = 0;
         //清理命令列表
         commandList.reset();
+
+
         return true;
     }
 
@@ -752,6 +755,31 @@ namespace zidian {
         // Log::purple("render", "currentFrameIndex = %u", currentFrameIndex);
     }
 
+    void Render::batchCmdSubmit(VkCommandBuffer& commandBuffer){
+        auto cmdList = renderQueue->getCmdList();
+        if(cmdList.empty()){
+            return;
+        }
+
+        Cmd &firstCmd = cmdList[0];
+        std::shared_ptr<Batch> batch = batchManager->findBatchByType(firstCmd.type);
+        for(Cmd& cmd : cmdList){
+            const CmdType cType = cmd.type;
+            if(batch->canBatch(cmd)){
+                batch->putCmd(cmd);
+            }else{
+                batch->commit(commandBuffer, currentFrameIndex);
+                
+                batch = batchManager->findBatchByType(cmd.type);
+                batch->putCmd(cmd);
+            }
+        }//end for each
+        if(batch != nullptr){
+            batch->commit(commandBuffer, currentFrameIndex);
+        }
+        renderQueue->reset();
+    }
+
     void Render::recordCommands(){
         if(commandList.getPrimitiveCommands().empty()){
             return;
@@ -759,6 +787,8 @@ namespace zidian {
 
         auto& primitivePipeline = pipelineManager->primitivePipe;
         VkCommandBuffer& cmdBuffer = frameResource->commandBuffers[currentFrameIndex];
+
+        batchCmdSubmit(cmdBuffer);
 
         vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, primitivePipeline->pipeline);
         // frameResource->pushConstDatas[currentFrameIndex].proj = {

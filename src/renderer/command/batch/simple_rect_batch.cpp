@@ -2,7 +2,7 @@
 
 namespace zidian{
     bool SimpleRectBatch::canBatch(const Cmd& cmd){
-
+        return false;
     }
 
     void SimpleRectBatch::putCmd(const Cmd& cmd){

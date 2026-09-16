@@ -11,6 +11,7 @@
 #include "renderer/frame_resource.h"
 #include "renderer/texture/texture_manager.h"
 #include "renderer/command/render_queue.h"
+#include "renderer/command/batch/batch_manager.h"
 
 namespace zidian{
     class Application;
@@ -91,6 +92,7 @@ namespace zidian{
         std::unique_ptr<FrameResource> frameResource;
         std::unique_ptr<TextureManager> textureManager;
         
+        std::unique_ptr<BatchManager> batchManager;
         std::unique_ptr<RenderQueue> renderQueue;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
@@ -119,6 +121,7 @@ namespace zidian{
         // void uploadCommands();
         // void uploadPrimitive();
         void recordCommands();
+        void batchCmdSubmit(VkCommandBuffer& commandBuffer);
         
         bool isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props);
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
