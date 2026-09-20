@@ -32,7 +32,7 @@ namespace zidian{
     protected:
         VkVertexInputBindingDescription vertexInputBind{};
         std::array<VkVertexInputAttributeDescription , 2> vertexInputDescs{};
-
+        
         VkViewport viewport{};
         VkRect2D scissor{};
 

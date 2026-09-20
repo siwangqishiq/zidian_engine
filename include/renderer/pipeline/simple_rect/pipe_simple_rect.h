@@ -10,6 +10,8 @@ namespace zidian{
 
         virtual VkShaderModule getVertexShaderModule() override;
         virtual VkShaderModule getFragmentShaderModule() override;
+
+        virtual void populateVertexInputState() override;
     };
 }
 

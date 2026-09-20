@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glm/glm.hpp"
+#include "vulkan/vulkan.h"
 
 namespace zidian{
     struct DrawSimpleRectData{
@@ -10,5 +11,13 @@ namespace zidian{
         float height;
         
         glm::vec4 color;
+    };
+
+    struct SimpleRectVertex{
+        glm::vec3 position;
+        glm::vec2 size;
+        glm::vec4 color;
+
+        
     };
 }

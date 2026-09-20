@@ -1,4 +1,6 @@
 #include "renderer/command/batch/batch_manager.h"
+#include "utils/log.h"
+
 
 namespace zidian{
     BatchManager::BatchManager(Render &context) : ctx(context){
@@ -18,5 +20,9 @@ namespace zidian{
             return it->second;
         }
         return nullptr;
+    }
+
+    void BatchManager::freeAllBatch(){
+        Log::i("batch_manager", "freeAllBatch");
     }
 }

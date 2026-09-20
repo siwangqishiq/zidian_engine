@@ -16,6 +16,8 @@ namespace zidian{
         void registerBatch(CmdType type, std::shared_ptr<Batch> batch);
 
         std::shared_ptr<Batch> findBatchByType(CmdType type);
+
+        void freeAllBatch();
     private:
         Render &ctx;
         std::map<CmdType, std::shared_ptr<Batch>> batchMap; 

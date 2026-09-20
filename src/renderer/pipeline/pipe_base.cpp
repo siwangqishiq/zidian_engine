@@ -18,8 +18,15 @@ namespace zidian{
 
         if(vertShaderModule == VK_NULL_HANDLE || fragShaderModule == VK_NULL_HANDLE){
             Log::e("pipeline", "shader module create failed, abort pipeline creation.");
-            if(vertShaderModule != VK_NULL_HANDLE) ctx.shaderManager->destroyShaderModule(vertShaderModule);
-            if(fragShaderModule != VK_NULL_HANDLE) ctx.shaderManager->destroyShaderModule(fragShaderModule);
+            
+            if(vertShaderModule != VK_NULL_HANDLE) {
+                ctx.shaderManager->destroyShaderModule(vertShaderModule);
+            }
+                
+            if(fragShaderModule != VK_NULL_HANDLE) {
+                ctx.shaderManager->destroyShaderModule(fragShaderModule);
+            }
+
             return;
         }
 

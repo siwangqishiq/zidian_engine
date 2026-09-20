@@ -755,25 +755,35 @@ namespace zidian {
         // Log::purple("render", "currentFrameIndex = %u", currentFrameIndex);
     }
 
+    //批量渲染命令提交  在commit里真正执行Vulkan的绘制操作
     void Render::batchCmdSubmit(VkCommandBuffer& commandBuffer){
         auto cmdList = renderQueue->getCmdList();
         if(cmdList.empty()){
             return;
         }
-
         Cmd &firstCmd = cmdList[0];
         std::shared_ptr<Batch> batch = batchManager->findBatchByType(firstCmd.type);
-        for(Cmd& cmd : cmdList){
+        for(int i = 0; i < cmdList.size() ; i++){
+            if(batch == nullptr){
+                continue;
+            }
+
+            auto &cmd = cmdList[i];
             const CmdType cType = cmd.type;
             if(batch->canBatch(cmd)){
                 batch->putCmd(cmd);
             }else{
                 batch->commit(commandBuffer, currentFrameIndex);
-                
+
+                if(batch == nullptr){
+                    continue;
+                }
+
                 batch = batchManager->findBatchByType(cmd.type);
                 batch->putCmd(cmd);
             }
-        }//end for each
+        }//end for i
+
         if(batch != nullptr){
             batch->commit(commandBuffer, currentFrameIndex);
         }

@@ -10,7 +10,7 @@ namespace zidian{
     }
 
     void SimpleRectBatch::commit(VkCommandBuffer &cmdBuffer,uint32_t frameIndex){
-
+        
     }
 
     void SimpleRectBatch::reset(){
@@ -18,6 +18,6 @@ namespace zidian{
     }
 
     SimpleRectBatch::~SimpleRectBatch(){
-
+        
     }
 }

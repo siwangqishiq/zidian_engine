@@ -19,4 +19,14 @@ namespace zidian{
     VkShaderModule SimpleRectPipeline::getFragmentShaderModule(){
         return ctx.shaderManager->createShaderModule("shaders/simple_rect.frag.spv");
     }
+
+    void SimpleRectPipeline::populateVertexInputState(){
+        vertexInputBind = PrimitiveVertex::bindingDesc();
+        vertexInputDescs = PrimitiveVertex::attributeDesc();
+        vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        vertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
+        vertexInputStateCreateInfo.pVertexBindingDescriptions = &vertexInputBind;
+        vertexInputStateCreateInfo.vertexAttributeDescriptionCount = vertexInputDescs.size();
+        vertexInputStateCreateInfo.pVertexAttributeDescriptions = vertexInputDescs.data();
+    }
 }
