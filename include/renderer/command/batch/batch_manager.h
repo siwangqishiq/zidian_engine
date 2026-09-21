@@ -7,7 +7,6 @@
 
 namespace zidian{
     class Render;
-    class Batch;
 
     class BatchManager{
     public:

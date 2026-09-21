@@ -1,7 +1,5 @@
 #include "renderer/command/batch/batch_manager.h"
 #include "utils/log.h"
-
-#include "renderer/command/batch/batch.h"
 #include "renderer/command/batch/simple_rect_batch.h"
 
 
