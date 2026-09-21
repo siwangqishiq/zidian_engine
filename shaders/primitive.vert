@@ -14,9 +14,6 @@ layout(binding = 0) uniform UB {
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-    // gl_Position = vec4(pc.proj * inPosition, 1.0f);
-    // gl_Position = vec4(inPosition, 1.0f);
     gl_Position = ub.proj * vec4(inPosition , 1.0f);
-    
     fragColor = inColor;
 }

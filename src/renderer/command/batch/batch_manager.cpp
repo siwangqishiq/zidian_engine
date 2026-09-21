@@ -1,12 +1,20 @@
 #include "renderer/command/batch/batch_manager.h"
 #include "utils/log.h"
 
+#include "renderer/command/batch/batch.h"
+#include "renderer/command/batch/simple_rect_batch.h"
+
 
 namespace zidian{
     BatchManager::BatchManager(Render &context) : ctx(context){
     }
 
     BatchManager::~BatchManager(){
+    }
+
+    void BatchManager::autoRegisterBatchs(){
+        std::shared_ptr<Batch> simpleRectBatch = std::make_shared<SimpleRectBatch>(ctx);
+        registerBatch(CmdType::DrawSimpleRect, simpleRectBatch);
     }
 
     //将type与batch注册
@@ -23,6 +31,7 @@ namespace zidian{
     }
 
     void BatchManager::freeAllBatch(){
+        batchMap.clear();
         Log::i("batch_manager", "freeAllBatch");
     }
 }

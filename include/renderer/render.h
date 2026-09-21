@@ -11,12 +11,12 @@
 #include "renderer/frame_resource.h"
 #include "renderer/texture/texture_manager.h"
 #include "renderer/command/render_queue.h"
-#include "renderer/command/batch/batch_manager.h"
 
 namespace zidian{
     class Application;
     class ShaderManager;
     class RenderQueue;
+    class BatchManager;
 
     VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT severity,
@@ -96,6 +96,8 @@ namespace zidian{
         std::unique_ptr<RenderQueue> renderQueue;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
+
+        void initBatchManager();
 
         void createInstance();
         void createSurface();

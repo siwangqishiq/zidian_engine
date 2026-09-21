@@ -18,7 +18,6 @@ namespace zidian{
 
         if(vertShaderModule == VK_NULL_HANDLE || fragShaderModule == VK_NULL_HANDLE){
             Log::e("pipeline", "shader module create failed, abort pipeline creation.");
-            
             if(vertShaderModule != VK_NULL_HANDLE) {
                 ctx.shaderManager->destroyShaderModule(vertShaderModule);
             }
@@ -26,7 +25,6 @@ namespace zidian{
             if(fragShaderModule != VK_NULL_HANDLE) {
                 ctx.shaderManager->destroyShaderModule(fragShaderModule);
             }
-
             return;
         }
 
@@ -62,6 +60,7 @@ namespace zidian{
         if(!createLayoutSuccess){
             ctx.shaderManager->destroyShaderModule(vertShaderModule);
             ctx.shaderManager->destroyShaderModule(fragShaderModule);
+            Log::e("BasePipeline", "create pipeline layout error");
             return;
         }
 
@@ -80,7 +79,11 @@ namespace zidian{
         pipelineCreateInfo.pColorBlendState = &colorBlendCreateInfo;
         pipelineCreateInfo.pDynamicState = nullptr;
         pipelineCreateInfo.pDepthStencilState = &depthStencilInfo;
-        pipelineCreateInfo.layout = pipelineLayout;
+        if(pipelineLayout != VK_NULL_HANDLE){
+            pipelineCreateInfo.layout = pipelineLayout;
+        }else{
+            pipelineCreateInfo.layout = VK_NULL_HANDLE;
+        }
         pipelineCreateInfo.renderPass = ctx.renderPass;
         pipelineCreateInfo.subpass = 0;
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -135,7 +138,7 @@ namespace zidian{
         return bindingDesc;
     }
     
-    std::array<VkVertexInputAttributeDescription , 2> PrimitiveVertex::attributeDesc(){
+    std::vector<VkVertexInputAttributeDescription> PrimitiveVertex::attributeDesc(){
         std::array<VkVertexInputAttributeDescription , 2> descs;
 
         //position
@@ -150,7 +153,7 @@ namespace zidian{
         descs[1].offset = offsetof(PrimitiveVertex, color);
         descs[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
         
-        return descs;
+        return std::vector<VkVertexInputAttributeDescription>(descs.begin(), descs.end());
     }
 
     //顶点描述
@@ -261,7 +264,7 @@ namespace zidian{
     }
 
     void BasePipeline::createDescriptorSetLayout(){
-        auto uboLayoutBindings = PrimitiveUniformData::bindingDescs();
+        std::array<VkDescriptorSetLayoutBinding, 1> uboLayoutBindings = PrimitiveUniformData::bindingDescs();
         
         VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

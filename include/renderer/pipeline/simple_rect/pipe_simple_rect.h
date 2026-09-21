@@ -12,6 +12,12 @@ namespace zidian{
         virtual VkShaderModule getFragmentShaderModule() override;
 
         virtual void populateVertexInputState() override;
+
+        virtual void populateInputAssemblyState() override;
+
+        virtual bool createPipelineLayout() override;
+
+        virtual void createDescriptorSetLayout() override;
     };
 }
 

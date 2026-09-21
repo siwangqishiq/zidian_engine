@@ -18,6 +18,7 @@ namespace zidian{
         glm::vec2 size;
         glm::vec4 color;
 
-        
+        static VkVertexInputBindingDescription bindingDesc();
+        static std::vector<VkVertexInputAttributeDescription> attributeDesc();
     };
 }

@@ -5,13 +5,16 @@
 #include "utils/format.h"
 #include "application.h"
 #include "config.h"
+
+#include "input/input_manager.h"
+
 #include "renderer/vk_canvas.h"
 #include "renderer/pipeline/pipeline_manager.h"
 #include "renderer/pipeline/pipe_primitive.h"
 #include "renderer/pipeline/primitive_vertex.h"
 #include "renderer/shader/shader_manager.h"
 #include "renderer/pipeline/primitive_uniform_data.h"
-#include "input/input_manager.h"
+#include "renderer/command/batch/batch_manager.h"
 
 namespace zidian {
     Render::Render(Application &appContext):appCtx(appContext) {
@@ -28,9 +31,15 @@ namespace zidian {
 
         //纹理载入
         textureManager = std::make_unique<TextureManager>(*this);
-
-        batchManager = std::make_unique<BatchManager>(*this);
+        //命令队列
         renderQueue = std::make_unique<RenderQueue>(*this);
+
+        initBatchManager();
+    }
+
+    void Render::initBatchManager(){
+        batchManager = std::make_unique<BatchManager>(*this);
+        batchManager->autoRegisterBatchs();
     }
 
     void Render::initVulkan(std::vector<const char *> &glfwExtenstinList) {
@@ -853,6 +862,7 @@ namespace zidian {
             vkDeviceWaitIdle(device);
         }
 
+        batchManager->freeAllBatch();
         textureManager->clear();
         
         frameResource->destroy();

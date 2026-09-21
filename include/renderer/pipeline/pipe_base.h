@@ -17,6 +17,7 @@ namespace zidian{
         virtual ~BasePipeline();
 
         VkPipeline pipeline = VK_NULL_HANDLE;
+        
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
         VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 
@@ -31,7 +32,7 @@ namespace zidian{
         PipelineManager& pipelineMgr;
     protected:
         VkVertexInputBindingDescription vertexInputBind{};
-        std::array<VkVertexInputAttributeDescription , 2> vertexInputDescs{};
+        std::vector<VkVertexInputAttributeDescription> vertexInputDescs{};
         
         VkViewport viewport{};
         VkRect2D scissor{};

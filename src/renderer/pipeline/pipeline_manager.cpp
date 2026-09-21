@@ -20,10 +20,11 @@ namespace zidian {
     }
 
     void PipelineManager::createDescriptorPool(){
+        int pipelineTotalCount = 3;
         VkDescriptorPoolSize poolSizes[] = {
             {
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                FrameResource::MAX_FRAME_IN_FLIGHT
+                pipelineTotalCount * FrameResource::MAX_FRAME_IN_FLIGHT
             }
         };
 
@@ -31,7 +32,7 @@ namespace zidian {
         poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         poolCreateInfo.poolSizeCount =  sizeof(poolSizes) / sizeof(VkDescriptorPoolSize);
         poolCreateInfo.pPoolSizes = poolSizes;
-        poolCreateInfo.maxSets = FrameResource::MAX_FRAME_IN_FLIGHT;
+        poolCreateInfo.maxSets = pipelineTotalCount * FrameResource::MAX_FRAME_IN_FLIGHT;
 
         if(vkCreateDescriptorPool(ctx.device, &poolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS){
             Log::e("pipeline","create descriptor pool error!");
@@ -47,7 +48,7 @@ namespace zidian {
     
     void PipelineManager::clearPipelines(){
         primitivePipe->dispose();
-
+        
         if(descriptorPool != VK_NULL_HANDLE){
             vkDestroyDescriptorPool(ctx.device, descriptorPool, nullptr);
         }

@@ -7,11 +7,14 @@
 
 namespace zidian{
     class Render;
+    class Batch;
 
     class BatchManager{
     public:
         BatchManager(Render &context);
         ~BatchManager();
+
+        void autoRegisterBatchs();
 
         void registerBatch(CmdType type, std::shared_ptr<Batch> batch);
 

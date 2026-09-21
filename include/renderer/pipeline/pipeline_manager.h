@@ -18,9 +18,9 @@ namespace zidian{
 
         ~PipelineManager();
 
-        void updateDescriptorSets();
-
         void createDescriptorPool();
+
+        void updateDescriptorSets();
 
         VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
         std::unique_ptr<PrimitivePipeline> primitivePipe;
