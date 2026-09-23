@@ -780,16 +780,15 @@ namespace zidian {
             auto &cmd = cmdList[i];
             const CmdType cType = cmd.type;
             if(batch->canBatch(cmd)){
-                batch->putCmd(cmd);
+                batch->putCmd(cmd, currentFrameIndex);
             }else{
                 batch->commit(commandBuffer, currentFrameIndex);
-
                 if(batch == nullptr){
                     continue;
                 }
 
                 batch = batchManager->findBatchByType(cmd.type);
-                batch->putCmd(cmd);
+                batch->putCmd(cmd, currentFrameIndex);
             }
         }//end for i
 

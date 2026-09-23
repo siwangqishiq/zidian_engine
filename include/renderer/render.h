@@ -94,6 +94,8 @@ namespace zidian{
         
         std::unique_ptr<BatchManager> batchManager;
         std::unique_ptr<RenderQueue> renderQueue;
+
+        uint32_t drawCallCount = 0;
     private:
         void initVulkan(std::vector<const char *> &glfwExtenstinList);
 
@@ -140,8 +142,6 @@ namespace zidian{
 
         Application &appCtx;
         std::unique_ptr<ICanvas> canvas;
-
-        uint32_t drawCallCount = 0;
 
         bool needRecreateSwapchain = false;
     };

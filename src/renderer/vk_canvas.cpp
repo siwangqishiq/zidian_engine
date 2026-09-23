@@ -65,7 +65,7 @@ namespace zidian {
         cmd.rectData.top = top;
         cmd.rectData.width = width;
         cmd.rectData.height = height;
-
+        
         ctx.renderQueue->addCmd(cmd);
     }
     
