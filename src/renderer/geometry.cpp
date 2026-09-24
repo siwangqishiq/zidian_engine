@@ -40,4 +40,40 @@ namespace zidian {
         }//end for i
         return vertices;
     }
+
+    std::array<glm::vec2, 2> Geometry::buildAABB(glm::vec2 &pA , glm::vec2 &pB, glm::vec2 &pC){
+        float minX = pA[0];
+        if(pB[0] < minX){
+            minX = pB[0];
+        }
+        if(pC[0] < minX){
+            minX = pC[0];
+        }
+
+        float minY = pA[1];
+        if(pB[1] < minY){
+            minY = pB[1];
+        }
+        if(pC[1] < minY){
+            minY = pC[1];
+        }
+
+        float maxX = pA[0];
+        if(pB[0] > maxX){
+            maxX = pB[0];
+        }
+        if(pC[0] > maxX){
+            maxX = pC[0];
+        }
+
+        float maxY = pA[1];
+        if(pB[1] > maxY){
+            maxY = pB[1];
+        }
+        if(pC[1] > maxY){
+            maxY = pC[1];
+        }
+        
+        return {glm::vec2{minX, minY},glm::vec2{maxX, maxY}};
+    }
 }

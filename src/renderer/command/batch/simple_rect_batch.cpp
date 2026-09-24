@@ -100,6 +100,8 @@ namespace zidian{
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
 
         vertexData.clear();
+
+        ctx.drawCallCount++;
     }
 
     void SimpleRectBatch::reset(uint32_t frameIndex){

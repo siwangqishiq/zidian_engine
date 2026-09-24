@@ -3,6 +3,10 @@
 // 接收顶点着色器插值后的颜色
 layout(location = 0) in vec4 fragColor;
 
+layout(location = 1) in vec2 outPa;
+layout(location = 2) in vec2 outPb;
+layout(location = 3) in vec2 outPc;
+
 // 输出颜色
 layout(location = 0) out vec4 OutColor;
 
@@ -14,9 +18,9 @@ float edge(vec2 a, vec2 b, vec2 p) {
 void main(){
     vec2 p = gl_PointCoord;
     // 等边三角形三个顶点
-    vec2 A = vec2(0.5f, 0.05f);
-    vec2 B = vec2(0.05f, 0.95f);
-    vec2 C = vec2(0.95f, 0.95f);
+    vec2 A = outPa;
+    vec2 B = outPb;
+    vec2 C = outPc;
     
     float e1 = edge(A, B, p);
     float e2 = edge(B, C, p);

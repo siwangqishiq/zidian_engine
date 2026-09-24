@@ -22,7 +22,7 @@ namespace zidian {
         descs[0].location = 0;
         descs[0].offset = offsetof(SimpleCircleVertex, position);
         descs[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-
+        
         //size
         descs[1].binding = 0;
         descs[1].location = 1;

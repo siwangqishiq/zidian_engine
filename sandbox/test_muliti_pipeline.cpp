@@ -6,7 +6,6 @@ public:
         zidian::Log::brown("game", "TestMultiPipeline init");
         auto &render = zidian::Instance->getRender();
         zidian::RandomUtil::setRandomSeed(0);
-
     }
 
     virtual void onTick() override{
@@ -38,6 +37,13 @@ public:
 
         x += size;
         canvas->drawSimpleRect(x, 0.0f, size, size, glm::vec4(0.0f, 1.0f , 0.0f, 1.0f));
+
+        x += size;
+        canvas->drawSimpleCircle(glm::vec2(x + radius, radius) , radius, glm::vec4(0.0f, 1.0f , 1.0f, 1.0f));
+
+
+        float y = size;
+        // canvas->drawSimpleTriangle()
     }
 
     virtual void onDispose() override {

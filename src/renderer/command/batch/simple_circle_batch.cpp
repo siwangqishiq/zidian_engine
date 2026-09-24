@@ -96,8 +96,10 @@ namespace zidian{
         vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
         
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
-        
+
         vertexData.clear();
+
+        ctx.drawCallCount++;
     }
 
     void SimpleCircleBatch::reset(uint32_t frameIndex){
