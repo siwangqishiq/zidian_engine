@@ -14,7 +14,8 @@
 namespace zidian{
     std::string Version();
     std::string Name();
-    
+    std::string Author();
+
     extern Application* Instance;
 }
 
