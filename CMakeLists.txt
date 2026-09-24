@@ -99,3 +99,34 @@ target_include_directories(${PROJECT_NAME}
 )
 
 add_dependencies(${PROJECT_NAME} Shaders)
+
+
+# 导出include目录
+# file(GLOB_RECURSE ZIDIAN_HEADERS CONFIGURE_DEPENDS
+#     "${CMAKE_SOURCE_DIR}/src/*.h"
+# )
+
+# set(EXPORT_INCLUDE_DIR "${CMAKE_BINARY_DIR}/include")
+
+# add_custom_target(ExportHeaders ALL)
+
+# foreach(HEADER ${ZIDIAN_HEADERS})
+#     file(RELATIVE_PATH REL_PATH
+#         "${CMAKE_SOURCE_DIR}/src"
+#         "${HEADER}"
+#     )
+
+#     get_filename_component(REL_DIR
+#         "${REL_PATH}"
+#         DIRECTORY
+#     )
+
+#     add_custom_command(TARGET ExportHeaders POST_BUILD
+#         COMMAND ${CMAKE_COMMAND} -E make_directory
+#             "${EXPORT_INCLUDE_DIR}/${REL_DIR}"
+
+#         COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#             "${HEADER}"
+#             "${EXPORT_INCLUDE_DIR}/${REL_PATH}"
+#     )
+# endforeach()
