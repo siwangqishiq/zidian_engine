@@ -19,6 +19,8 @@ namespace zidian{
 
         std::shared_ptr<Batch> findBatchByType(CmdType type);
 
+        void resetAllBatch(uint32_t frameIndex);
+
         void freeAllBatch();
     private:
         Render &ctx;

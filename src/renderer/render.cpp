@@ -759,7 +759,10 @@ namespace zidian {
         }else if((presentResult != VK_SUCCESS)){
             Log::e("render", "present queue error!");
         }
-        
+
+        //reset All Batchs
+        batchManager->resetAllBatch(currentFrameIndex);
+
         currentFrameIndex = (currentFrameIndex + 1) % MAX_FRAME_IN_FLIGHT;
         // Log::purple("render", "currentFrameIndex = %u", currentFrameIndex);
     }
@@ -799,16 +802,15 @@ namespace zidian {
     }
 
     void Render::recordCommands(){
-        if(commandList.getPrimitiveCommands().empty()){
-            return;
-        }
+        // if(commandList.getPrimitiveCommands().empty()){
+        //     return;
+        // }
+        // auto& primitivePipeline = pipelineManager->primitivePipe;
 
-        auto& primitivePipeline = pipelineManager->primitivePipe;
         VkCommandBuffer& cmdBuffer = frameResource->commandBuffers[currentFrameIndex];
-
         batchCmdSubmit(cmdBuffer);
 
-        vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, primitivePipeline->pipeline);
+        // vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, primitivePipeline->pipeline);
         // frameResource->pushConstDatas[currentFrameIndex].proj = {
         //     glm::vec4(2.0f / swapChainExtent.width, 0.0f, 0.0f, 0.0f),
         //     glm::vec4(0.0f, 2.0f / swapChainExtent.height, 0.0f, 0.0f),
@@ -820,39 +822,39 @@ namespace zidian {
         //         VK_SHADER_STAGE_VERTEX_BIT,0, 
         //         sizeof(PushConstantData), &frameResource->pushConstDatas[currentFrameIndex]);//set push constant
 
-        const uint32_t vertexCount = commandList.getPrimitiveVertices().size();
-        auto& allVertices = commandList.getPrimitiveVertices();
+        // const uint32_t vertexCount = commandList.getPrimitiveVertices().size();
+        // auto& allVertices = commandList.getPrimitiveVertices();
         
-        // 如果当前 primitive buffer 不够大，动态扩容
-        if(vertexCount > frameResource->primitiveVertexMaxCounts[currentFrameIndex]){
-            vkUnmapMemory(device, frameResource->primitiveVertexMemorys[currentFrameIndex]);
-            vkDestroyBuffer(device, frameResource->primitiveVertexBuffers[currentFrameIndex], nullptr);
-            vkFreeMemory(device, frameResource->primitiveVertexMemorys[currentFrameIndex], nullptr);
+        // // 如果当前 primitive buffer 不够大，动态扩容
+        // if(vertexCount > frameResource->primitiveVertexMaxCounts[currentFrameIndex]){
+        //     vkUnmapMemory(device, frameResource->primitiveVertexMemorys[currentFrameIndex]);
+        //     vkDestroyBuffer(device, frameResource->primitiveVertexBuffers[currentFrameIndex], nullptr);
+        //     vkFreeMemory(device, frameResource->primitiveVertexMemorys[currentFrameIndex], nullptr);
 
-            frameResource->primitiveVertexMaxCounts[currentFrameIndex] = vertexCount;
-            frameResource->createPrimitiveVertexBuffer(currentFrameIndex);
-        }
+        //     frameResource->primitiveVertexMaxCounts[currentFrameIndex] = vertexCount;
+        //     frameResource->createPrimitiveVertexBuffer(currentFrameIndex);
+        // }
 
-        // 一次性拷贝所有顶点并绘制
-        memcpy(frameResource->primitiveMemoryMappeds[currentFrameIndex], allVertices.data(), vertexCount * sizeof(PrimitiveVertex));
-        VkDeviceSize offset[] = {0};
-        vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &frameResource->primitiveVertexBuffers[currentFrameIndex], offset);
+        // // 一次性拷贝所有顶点并绘制
+        // memcpy(frameResource->primitiveMemoryMappeds[currentFrameIndex], allVertices.data(), vertexCount * sizeof(PrimitiveVertex));
+        // VkDeviceSize offset[] = {0};
+        // vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &frameResource->primitiveVertexBuffers[currentFrameIndex], offset);
 
-        frameResource->primitiveUniformDatas[currentFrameIndex].proj = {
-            glm::vec4(2.0f / swapChainExtent.width, 0.0f, 0.0f, 0.0f),
-            glm::vec4(0.0f, 2.0f / swapChainExtent.height, 0.0f, 0.0f),
-            glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
-            glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
-        };
+        // frameResource->primitiveUniformDatas[currentFrameIndex].proj = {
+        //     glm::vec4(2.0f / swapChainExtent.width, 0.0f, 0.0f, 0.0f),
+        //     glm::vec4(0.0f, 2.0f / swapChainExtent.height, 0.0f, 0.0f),
+        //     glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
+        //     glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
+        // };
         
-        memcpy(frameResource->primitiveUniformMemoryMappeds[currentFrameIndex], 
-                &frameResource->primitiveUniformDatas[currentFrameIndex], 
-                sizeof(PrimitiveUniformData));
+        // memcpy(frameResource->primitiveUniformMemoryMappeds[currentFrameIndex], 
+        //         &frameResource->primitiveUniformDatas[currentFrameIndex], 
+        //         sizeof(PrimitiveUniformData));
         
-        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, 
-                primitivePipeline->pipelineLayout, 0, 1, primitivePipeline->descriptorSets.data(), 0, nullptr);
-        vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
-        drawCallCount++;
+        // vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, 
+        //         primitivePipeline->pipelineLayout, 0, 1, primitivePipeline->descriptorSets.data(), 0, nullptr);
+        // vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
+        // drawCallCount++;
         // std::cout << "vertex Count = " << vertexCount << std::endl;
     }
 

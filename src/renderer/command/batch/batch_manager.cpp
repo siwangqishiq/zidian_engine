@@ -28,6 +28,12 @@ namespace zidian{
         return nullptr;
     }
 
+    void BatchManager::resetAllBatch(uint32_t frameIndex){
+        for(auto &p : batchMap){
+            p.second->reset(frameIndex);
+        }
+    }
+
     void BatchManager::freeAllBatch(){
         batchMap.clear();
         Log::i("batch_manager", "freeAllBatch");

@@ -9,12 +9,15 @@ namespace zidian{
 
         Log::green("pipeline", "create simple_rect pipeline success!");
         createBuffers();
+        Log::green("pipeline", "create simple_rect buffer success~");
     }
 
     void SimpleRectBatch::createBuffers(){
         vertexBuffers.resize(FrameResource::MAX_FRAME_IN_FLIGHT);
         vertexMemorys.resize(FrameResource::MAX_FRAME_IN_FLIGHT);
         vertexMemoryMappeds.resize(FrameResource::MAX_FRAME_IN_FLIGHT);
+        pushConstantDatas.resize(FrameResource::MAX_FRAME_IN_FLIGHT);
+
         offsets.resize(FrameResource::MAX_FRAME_IN_FLIGHT, 0);
 
         const uint32_t MAX_VERTEX_SIZE = 16 * 1024;
@@ -68,7 +71,8 @@ namespace zidian{
 
     void SimpleRectBatch::putCmd(const Cmd& cmd,uint32_t frameIndex){
         SimpleRectVertex item{};
-        item.position = glm::vec3(cmd.rectData.left - cmd.rectData.width/2.0f, cmd.rectData.top - cmd.rectData.height/2.0f, 0.0f);
+        float size = cmd.rectData.width / 2.0f;
+        item.position = glm::vec3(cmd.rectData.left + size, cmd.rectData.top + size, 0.0f);
         item.size = glm::vec2(cmd.rectData.width, cmd.rectData.height);
         item.color = cmd.rectData.color;
         vertexData.emplace_back(item);
@@ -76,12 +80,30 @@ namespace zidian{
 
     void SimpleRectBatch::commit(VkCommandBuffer &cmdBuffer,uint32_t frameIndex){
         vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, attachPipeline->pipeline);
+
+        const uint32_t vertexCount = vertexData.size();
+        auto* dst = static_cast<std::byte*>(vertexMemoryMappeds[frameIndex]) + offsets[frameIndex];
+        memcpy(dst, vertexData.data(), vertexCount * sizeof(SimpleRectVertex));
+        VkDeviceSize offset[] = {offsets[frameIndex]};
+        vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffers[frameIndex], offset);
+        offsets[frameIndex] += vertexCount * sizeof(SimpleRectVertex);
+
+        pushConstantDatas[frameIndex].proj = {
+            glm::vec4(2.0f / ctx.swapChainExtent.width, 0.0f, 0.0f, 0.0f),
+            glm::vec4(0.0f, 2.0f / ctx.swapChainExtent.height, 0.0f, 0.0f),
+            glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
+            glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
+        };
+        vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
         
+        // Log::green("pipeline", "commit simple rect batch!");
+        vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
+
         vertexData.clear();
     }
 
-    void SimpleRectBatch::reset(){
-
+    void SimpleRectBatch::reset(uint32_t frameIndex){
+        offsets[frameIndex] = 0;
     }
 
     SimpleRectBatch::~SimpleRectBatch(){

@@ -6,6 +6,7 @@ extern void TestDraw();
 extern void TestBatchDraw();
 extern void TestCircleDraw();
 extern void TestSpriteDraw1();
+extern void TestTestMultiPipeline();
 
 int main() {
     // TestLogs();
@@ -13,6 +14,7 @@ int main() {
     // TestDraw();
     // TestBatchDraw();
     // TestCircleDraw();
-    TestSpriteDraw1();
+    // TestSpriteDraw1();
+    TestTestMultiPipeline();
     return 0;
 }//end main

@@ -1,6 +1,7 @@
 #include "renderer/command/batch/batch.h"
 #include "renderer/pipeline/simple_rect/pipe_simple_rect.h"
 #include "renderer/command/data/data_simple_rect.h"
+#include "renderer/command/data/common_uniform.h"
 #include <memory>
 
 namespace zidian{
@@ -12,7 +13,7 @@ namespace zidian{
         virtual bool canBatch(const Cmd& cmd) override;
         virtual void putCmd(const Cmd& cmd, uint32_t frameIndex) override;
         virtual void commit(VkCommandBuffer &cmdBuffer,uint32_t frameIndex) override;
-        virtual void reset() override;
+        virtual void reset(uint32_t frameIndex) override;
         virtual ~SimpleRectBatch();
 
         void createBuffers();
@@ -23,6 +24,7 @@ namespace zidian{
         std::vector<VkDeviceMemory> vertexMemorys;
         std::vector<void *> vertexMemoryMappeds;
         std::vector<uint32_t> offsets;
+        std::vector<CommonUniform> pushConstantDatas;
 
         std::vector<SimpleRectVertex> vertexData;
     };

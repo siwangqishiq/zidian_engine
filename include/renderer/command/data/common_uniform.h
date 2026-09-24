@@ -6,10 +6,8 @@
 
 namespace zidian{
     struct CommonUniform{
-        glm::vec3 position;
-        glm::vec2 size;
-        glm::vec4 color;
-
+        glm::mat4 proj;
+        
         static std::array<VkDescriptorSetLayoutBinding, 1> bindingDesc();
     };
 }

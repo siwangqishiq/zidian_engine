@@ -50,11 +50,16 @@ namespace zidian{
     bool SimpleRectPipeline::createPipelineLayout(){
         createDescriptorSetLayout();
         
+        VkPushConstantRange range{};
+        range.offset = 0;
+        range.size = sizeof(CommonUniform);
+        range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutCreateInfo.setLayoutCount = 1;
-        layoutCreateInfo.pSetLayouts = &descriptorSetLayout;
-        layoutCreateInfo.pushConstantRangeCount = 0;
-        layoutCreateInfo.pPushConstantRanges = nullptr;
+        layoutCreateInfo.setLayoutCount = 0;
+        layoutCreateInfo.pSetLayouts = nullptr;
+        layoutCreateInfo.pushConstantRangeCount = 1;
+        layoutCreateInfo.pPushConstantRanges = &range;
         
         if(vkCreatePipelineLayout(ctx.device, &layoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS){
             Log::e("primitive_pipeline", "create pipeline layout failed!");
