@@ -1,6 +1,7 @@
 #include "renderer/command/batch/batch_manager.h"
 #include "utils/log.h"
 #include "renderer/command/batch/simple_rect_batch.h"
+#include "renderer/command/batch/simple_circle_batch.h"
 
 
 namespace zidian{
@@ -13,6 +14,9 @@ namespace zidian{
     void BatchManager::autoRegisterBatchs(){
         std::shared_ptr<Batch> simpleRectBatch = std::make_shared<SimpleRectBatch>(ctx);
         registerBatch(CmdType::DrawSimpleRect, simpleRectBatch);
+
+        std::shared_ptr<Batch> simpleCircleBatch = std::make_shared<SimpleCircleBatch>(ctx);
+        registerBatch(CmdType::DrawSimpleCircle, simpleCircleBatch);
     }
 
     //将type与batch注册

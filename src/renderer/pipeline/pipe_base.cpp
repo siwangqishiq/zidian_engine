@@ -99,7 +99,7 @@ namespace zidian{
         ctx.shaderManager->destroyShaderModule(vertShaderModule);
         ctx.shaderManager->destroyShaderModule(fragShaderModule);
 
-        Log::green("pipeline", "create primitive pipeline success.");
+        Log::green("pipeline", "create pipeline success.");
     }
 
     VkShaderModule BasePipeline::getVertexShaderModule(){

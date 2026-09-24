@@ -1,4 +1,4 @@
-#include "renderer/pipeline/simple_rect/pipe_simple_rect.h"
+#include "renderer/pipeline/simple/pipe_simple_rect.h"
 
 #include "renderer/pipeline/pipeline_manager.h"
 #include "renderer/render.h"

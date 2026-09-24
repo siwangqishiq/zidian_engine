@@ -25,6 +25,19 @@ public:
         x += size;
 
         canvas->drawSimpleRect(x, 0.0f, size, size, glm::vec4(1.0f, 1.0f , 0.0f, 1.0f));
+
+        x += size;
+        float radius = size / 2.0f;
+        canvas->drawSimpleCircle(glm::vec2(x +  radius, radius) , radius, glm::vec4(1.0f, 0.0f , 0.0f, 1.0f));
+
+        x += size;
+        canvas->drawSimpleCircle(glm::vec2(x + radius, radius) , radius, glm::vec4(0.0f, 1.0f , 0.0f, 1.0f));
+
+        x += size;
+        canvas->drawSimpleCircle(glm::vec2(x + radius, radius) , radius, glm::vec4(0.0f, 0.0f , 1.0f, 1.0f));
+
+        x += size;
+        canvas->drawSimpleRect(x, 0.0f, size, size, glm::vec4(0.0f, 1.0f , 0.0f, 1.0f));
     }
 
     virtual void onDispose() override {
@@ -40,6 +53,8 @@ void TestTestMultiPipeline(){
     config.windowHeight = 720;
     config.isRecordLog = true;
     config.vsync = true;
+    config.isFullScreen = false;
+    config.clearColor = glm::vec4(0.0f, 0.0f , 0.0f , 1.0f);
 
     zidian::Application app;
     app.setGameObject(std::make_shared<TestMultiPipeline>());
