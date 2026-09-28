@@ -21,6 +21,7 @@ void main() {
     gl_PointSize = inSize;
 
     fragColor = inColor;
+    
     outPa = inPa;
     outPb = inPb;
     outPc = inPc;

@@ -1,24 +1,25 @@
 #include "renderer/command/batch/batch.h"
-#include "renderer/pipeline/simple/pipe_simple_rect.h"
+#include "renderer/pipeline/simple/pipe_simple_triangle.h"
 #include "renderer/command/data/data_simple_rect.h"
 #include "renderer/command/data/common_uniform.h"
+#include "renderer/geometry.h"
 #include <memory>
 
 namespace zidian{
-    class SimpleRectBatch : public Batch{
+    class SimpleTriangleBatch : public Batch{
     public:
-        SimpleRectBatch(Render &ctx_);
+        SimpleTriangleBatch(Render &ctx_);
 
         virtual void init() override;
         virtual bool canBatch(const Cmd& cmd) override;
         virtual void putCmd(const Cmd& cmd, uint32_t frameIndex) override;
         virtual void commit(VkCommandBuffer &cmdBuffer,uint32_t frameIndex) override;
         virtual void reset(uint32_t frameIndex) override;
-        virtual ~SimpleRectBatch();
+        virtual ~SimpleTriangleBatch();
 
         void createBuffers();
     private:
-        std::unique_ptr<SimpleRectPipeline> attachPipeline;
+        std::unique_ptr<SimpleTrianglePipeline> attachPipeline;
 
         std::vector<VkBuffer> vertexBuffers;
         std::vector<VkDeviceMemory> vertexMemorys;
@@ -26,7 +27,9 @@ namespace zidian{
         std::vector<uint32_t> offsets;
         std::vector<CommonUniform> pushConstantDatas;
         
-        std::vector<SimpleRectVertex> vertexData;
+        std::vector<SimpleTriangleVertex> vertexData;
+
+        Geometry geometry;
     };
 }
 

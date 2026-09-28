@@ -21,13 +21,20 @@ void main(){
     vec2 A = outPa;
     vec2 B = outPb;
     vec2 C = outPc;
+
+    float area = edge(A, B, C);
     
     float e1 = edge(A, B, p);
     float e2 = edge(B, C, p);
     float e3 = edge(C, A, p);
 
-    if (e1 < 0.0f || e2 < 0.0f || e3 < 0.0f) {
-        discard;
+    if (area > 0.0) {// 逆时针
+        if (e1 < 0.0 || e2 < 0.0 || e3 < 0.0)
+            discard;
+    } else { // 顺时针
+        if (e1 > 0.0 || e2 > 0.0 || e3 > 0.0)
+            discard;
     }
+    
     OutColor = fragColor;
 }

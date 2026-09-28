@@ -41,9 +41,15 @@ public:
         x += size;
         canvas->drawSimpleCircle(glm::vec2(x + radius, radius) , radius, glm::vec4(0.0f, 1.0f , 1.0f, 1.0f));
 
-
         float y = size;
-        // canvas->drawSimpleTriangle()
+
+        canvas->drawSimpleTriangle(glm::vec2(size + size / 2.0f, y), glm::vec2(size, y + size), glm::vec2(size + size, y + size) , glm::vec4(1.0f, 1.0f , 0.0f, 1.0f));
+        
+        canvas->drawSimpleTriangle(glm::vec2(150.0f, 200.0f), 
+            glm::vec2(150.0f + 0.0f, 200.0f + 100.0f), 
+            glm::vec2(150.0f + 150.0f, 200.0f + 100.0f), 
+            glm::vec4(0.0f, 0.0f , 1.0f, 1.0f));
+        
     }
 
     virtual void onDispose() override {

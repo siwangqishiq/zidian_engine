@@ -114,7 +114,7 @@ namespace zidian{
 
         void printMemoryInfo();
 
-        void findMaxSampleCount();
+        void findLimitsInfo();
 
         void checkPhysicalDeviceFeatures();
 

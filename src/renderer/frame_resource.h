@@ -22,6 +22,7 @@ namespace zidian{
 
         std::vector<VkCommandBuffer> commandBuffers;
         std::vector<VkFramebuffer> frameBuffers;
+        
         //GPU同步对象
         std::vector<VkSemaphore> imageAvailableSemaphores;
         std::vector<VkSemaphore> renderFinishSemaphores;

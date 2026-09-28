@@ -2,6 +2,7 @@
 #include "utils/log.h"
 #include "renderer/command/batch/simple_rect_batch.h"
 #include "renderer/command/batch/simple_circle_batch.h"
+#include "renderer/command/batch/simple_triangle_batch.h"
 
 
 namespace zidian{
@@ -17,6 +18,9 @@ namespace zidian{
 
         std::shared_ptr<Batch> simpleCircleBatch = std::make_shared<SimpleCircleBatch>(ctx);
         registerBatch(CmdType::DrawSimpleCircle, simpleCircleBatch);
+
+        std::shared_ptr<Batch> simpleTriangleBatch = std::make_shared<SimpleTriangleBatch>(ctx);
+        registerBatch(CmdType::DrawSimpleTriangle, simpleTriangleBatch);
     }
 
     //将type与batch注册

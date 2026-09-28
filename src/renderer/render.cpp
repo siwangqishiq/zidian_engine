@@ -195,7 +195,7 @@ namespace zidian {
         }
        
         printMemoryInfo();
-        findMaxSampleCount();
+        findLimitsInfo();
         checkPhysicalDeviceFeatures();
     }
 
@@ -287,7 +287,7 @@ namespace zidian {
         }
     }
 
-    void Render::findMaxSampleCount(){
+    void Render::findLimitsInfo(){
         VkPhysicalDeviceProperties physicalDeviceProperties;
         vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
 
@@ -315,6 +315,10 @@ namespace zidian {
         if(sampleCount & VK_SAMPLE_COUNT_1_BIT){
             Log::i("render","support sampleCount : 1");
         }
+
+        Log::i("render","point size range %f : %f", physicalDeviceProperties.limits.pointSizeRange[0], 
+                physicalDeviceProperties.limits.pointSizeRange[1]);
+        
     }
 
     bool Render::isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props){
