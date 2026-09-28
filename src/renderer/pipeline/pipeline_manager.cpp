@@ -20,7 +20,7 @@ namespace zidian {
     }
 
     void PipelineManager::createDescriptorPool(){
-        int pipelineTotalCount = 4;
+        int pipelineTotalCount = 5;
         VkDescriptorPoolSize poolSizes[] = {
             {
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,

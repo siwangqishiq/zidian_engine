@@ -11,7 +11,7 @@ namespace zidian{
     public:
         Batch(Render &ctx_);
         
-        virtual void init() = 0;
+        virtual void init();
         virtual bool canBatch(const Cmd& cmd) = 0;
         virtual void putCmd(const Cmd& cmd ,uint32_t frameIndex) = 0;
         virtual void commit(VkCommandBuffer &cmdBuffer,uint32_t frameIndex) = 0;

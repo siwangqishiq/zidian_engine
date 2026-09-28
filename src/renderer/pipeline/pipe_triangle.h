@@ -3,10 +3,10 @@
 #include "renderer/pipeline/pipe_base.h"
 
 namespace zidian{
-    class SimpleRectPipeline : public BasePipeline {
+    class TrianglePipeline : public BasePipeline{
     public:
-        SimpleRectPipeline(Render &context, PipelineManager &pipelineManager);
-        virtual ~SimpleRectPipeline();
+        TrianglePipeline(Render &context, PipelineManager &pipelineManager);
+        virtual ~TrianglePipeline();
 
         virtual VkShaderModule getVertexShaderModule() override;
         virtual VkShaderModule getFragmentShaderModule() override;
@@ -20,5 +20,3 @@ namespace zidian{
         virtual void createDescriptorSetLayout() override;
     };
 }
-
-

@@ -3,12 +3,14 @@
 #include "renderer/command/data/data_simple_rect.h"
 #include "renderer/command/data/data_simple_circle.h"
 #include "renderer/command/data/data_simple_triangle.h"
+#include "renderer/command/data/data_triangles.h"
 
 namespace zidian{
     enum class CmdType{
         DrawSimpleRect,
         DrawSimpleCircle,
-        DrawSimpleTriangle
+        DrawSimpleTriangle,
+        DrawTriangles
     };
 
     struct Cmd{
@@ -18,6 +20,7 @@ namespace zidian{
             DrawSimpleRectData rectData;
             DrawSimpleCircleData circleData;
             DrawSimpleTriangleData triangleData;
+            DrawTrianglesData triData;
         };
     };
 }
