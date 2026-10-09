@@ -1,7 +1,6 @@
 #include "renderer/command/batch/batch.h"
 #include "renderer/pipeline/simple/pipe_simple_triangle.h"
 #include "renderer/command/data/data_simple_rect.h"
-#include "renderer/command/data/common_uniform.h"
 #include "renderer/geometry.h"
 #include <memory>
 
@@ -17,16 +16,10 @@ namespace zidian{
         virtual void reset(uint32_t frameIndex) override;
         virtual ~SimpleTriangleBatch();
 
-        void createBuffers();
+        virtual VkDeviceSize genBufferSize() override;
     private:
         std::unique_ptr<SimpleTrianglePipeline> attachPipeline;
 
-        std::vector<VkBuffer> vertexBuffers;
-        std::vector<VkDeviceMemory> vertexMemorys;
-        std::vector<void *> vertexMemoryMappeds;
-        std::vector<uint32_t> offsets;
-        std::vector<CommonUniform> pushConstantDatas;
-        
         std::vector<SimpleTriangleVertex> vertexData;
 
         Geometry geometry;

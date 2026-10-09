@@ -11,7 +11,8 @@ namespace zidian{
     }
     
     TrianglePipeline::~TrianglePipeline(){
-
+        dispose();
+        Log::i("TrianglePipeline","TrianglePipeline::~TrianglePipeline");
     }
     
     VkShaderModule TrianglePipeline::getVertexShaderModule() {

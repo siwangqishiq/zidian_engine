@@ -25,6 +25,7 @@ namespace zidian{
 
     //将type与batch注册
     void BatchManager::registerBatch(CmdType type, std::shared_ptr<Batch> batch){
+        batch->init();
         batchMap[type] = batch;
     }
 

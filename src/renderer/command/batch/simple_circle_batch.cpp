@@ -8,58 +8,16 @@ namespace zidian{
         attachPipeline->create();
 
         Log::green("pipeline", "create simple_circle pipeline success!");
-        createBuffers();
-        Log::green("pipeline", "create simple_circle buffer success~");
     }
 
-    void SimpleCircleBatch::createBuffers(){
-        vertexBuffers.resize(FrameResource::MAX_FRAME_IN_FLIGHT);
-        vertexMemorys.resize(FrameResource::MAX_FRAME_IN_FLIGHT);
-        vertexMemoryMappeds.resize(FrameResource::MAX_FRAME_IN_FLIGHT);
-        pushConstantDatas.resize(FrameResource::MAX_FRAME_IN_FLIGHT);
-
-        offsets.resize(FrameResource::MAX_FRAME_IN_FLIGHT, 0);
-
+    VkDeviceSize SimpleCircleBatch::genBufferSize() {
         const uint32_t MAX_VERTEX_SIZE = 16 * 1024;
-
-        for(uint32_t i = 0 ;i < FrameResource::MAX_FRAME_IN_FLIGHT; i++){
-            VkDeviceSize bufferSize = sizeof(SimpleCircleVertex) * MAX_VERTEX_SIZE;
-
-            VkBufferCreateInfo bufferCreateInfo{};
-            bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            bufferCreateInfo.size = bufferSize;
-            bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-            bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            if(vkCreateBuffer(ctx.device, &bufferCreateInfo, nullptr, &vertexBuffers[i]) != VK_SUCCESS){
-                Log::e("render", "Create simple circle batch vertex buffer failed!");
-                continue;
-            }
-
-            VkMemoryRequirements memRequirements{};
-            vkGetBufferMemoryRequirements(ctx.device, vertexBuffers[i], &memRequirements);
-
-            VkMemoryAllocateInfo allocInfo{};
-            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-            allocInfo.allocationSize = memRequirements.size;
-            allocInfo.memoryTypeIndex = ctx.memoryAllocator.findMemoryType(memRequirements.memoryTypeBits, 
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-            
-            if(vkAllocateMemory(ctx.device,&allocInfo,nullptr,&vertexMemorys[i]) != VK_SUCCESS){
-                Log::e("render", "allocte simple circle batch memory failed!");
-                continue;
-            }
-
-            vkBindBufferMemory(ctx.device, vertexBuffers[i], vertexMemorys[i], 0);
-
-            auto memoryMapResult = vkMapMemory(ctx.device, vertexMemorys[i], 0, bufferSize, 0, &vertexMemoryMappeds[i]);
-            if(memoryMapResult != VK_SUCCESS){
-                Log::e("render", "map the simple circle batch memory failed!");
-                continue;
-            }
-        }//end for i
+        return sizeof(SimpleCircleVertex) * MAX_VERTEX_SIZE;
     }
 
     void SimpleCircleBatch::init(){
+        createBuffers();
+        Log::green("pipeline", "create simple_circle buffer success~");
     }
 
     bool SimpleCircleBatch::canBatch(const Cmd& cmd){
@@ -107,9 +65,6 @@ namespace zidian{
     }
 
     SimpleCircleBatch::~SimpleCircleBatch(){
-        for(int i = 0; i < FrameResource::MAX_FRAME_IN_FLIGHT; i++){
-            vkFreeMemory(ctx.device, vertexMemorys[i], nullptr);
-            vkDestroyBuffer(ctx.device, vertexBuffers[i], nullptr);
-        }//end for i
+        Log::purple("batch", "SimpleCircleBatch destroy buffer");
     }
 }

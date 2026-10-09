@@ -6,7 +6,7 @@ namespace zidian{
     class TrianglePipeline : public BasePipeline{
     public:
         TrianglePipeline(Render &context, PipelineManager &pipelineManager);
-        virtual ~TrianglePipeline();
+        virtual ~TrianglePipeline() override;
 
         virtual VkShaderModule getVertexShaderModule() override;
         virtual VkShaderModule getFragmentShaderModule() override;
@@ -18,5 +18,6 @@ namespace zidian{
         virtual bool createPipelineLayout() override;
 
         virtual void createDescriptorSetLayout() override;
+        
     };
 }
