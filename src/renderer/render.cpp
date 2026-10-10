@@ -704,8 +704,7 @@ namespace zidian {
         drawCallCount = 0;
         //清理命令列表
         commandList.reset();
-
-
+        // Log::i("render", "begin render frame END");
         return true;
     }
 

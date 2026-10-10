@@ -37,11 +37,11 @@ namespace zidian{
     }
 
     void TrianglePipeline::populateInputAssemblyState() {
-        Log::i("TrianglePipeline","TrianglePipeline::populateInputAssemblyState");
-
         inputAssembleCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         inputAssembleCreateInfo.primitiveRestartEnable = VK_FALSE;
         inputAssembleCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        
+        Log::i("TrianglePipeline","TrianglePipeline::populateInputAssemblyState");
     }
 
     bool TrianglePipeline::createPipelineLayout(){

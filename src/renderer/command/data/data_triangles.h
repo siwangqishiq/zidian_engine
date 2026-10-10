@@ -2,11 +2,13 @@
 
 #include "glm/glm.hpp"
 #include "vulkan/vulkan.h"
+#include <vector>
 
 namespace zidian{
     struct DrawTrianglesData{
-        glm::vec4 *vertices;
+        glm::vec2 *vertices;
         glm::vec4 *colors;
+        
         uint32_t vertexCount;
     };
 

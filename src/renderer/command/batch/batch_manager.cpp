@@ -3,6 +3,7 @@
 #include "renderer/command/batch/simple_rect_batch.h"
 #include "renderer/command/batch/simple_circle_batch.h"
 #include "renderer/command/batch/simple_triangle_batch.h"
+#include "renderer/command/batch/triangle_batch.h"
 
 
 namespace zidian{
@@ -21,6 +22,9 @@ namespace zidian{
 
         std::shared_ptr<Batch> simpleTriangleBatch = std::make_shared<SimpleTriangleBatch>(ctx);
         registerBatch(CmdType::DrawSimpleTriangle, simpleTriangleBatch);
+
+        std::shared_ptr<Batch> trianglesBatch = std::make_shared<TriangleBatch>(ctx);
+        registerBatch(CmdType::DrawTriangles, trianglesBatch);
     }
 
     //将type与batch注册

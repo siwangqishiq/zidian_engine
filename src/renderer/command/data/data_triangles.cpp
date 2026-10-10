@@ -10,7 +10,7 @@ namespace zidian{
     }
 
     std::vector<VkVertexInputAttributeDescription> TriangleVertex::attributeDesc(){
-        std::array<VkVertexInputAttributeDescription, 6> descs{};
+        std::array<VkVertexInputAttributeDescription, 2> descs{};
 
         //position
         descs[0].binding = 0;

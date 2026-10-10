@@ -11,25 +11,18 @@ namespace zidian {
     VkCanvas::~VkCanvas(){
     }
 
-    void VkCanvas::drawTriangles(const glm::vec2 *vertices,const glm::vec4 *colors,const uint32_t vertexCount){
-        uint32_t startVertex = ctx.commandList.getPrimitiveVertices().size();
-
-        PrimitiveVertex vert[vertexCount];
-        for(int i = 0; i < vertexCount; i++){
-            vert[i].position = glm::vec3(vertices[i][0], vertices[i][1], 0.0f);
-            vert[i].color = colors[i];
-            ctx.commandList.getPrimitiveVertices().push_back(vert[i]);
-        }//end for i
-
-        PrimitiveCommand command;
-        command.firstVertex = startVertex;
-        command.vertexCount = vertexCount;
-        ctx.commandList.getPrimitiveCommands().push_back(command);
+    void VkCanvas::drawTriangles(glm::vec2 *vertices, glm::vec4 *colors,const uint32_t vertexCount){
+        Cmd cmd;
+        cmd.type = CmdType::DrawTriangles;
+        cmd.triData.vertexCount = vertexCount;
+        cmd.triData.vertices = vertices;
+        cmd.triData.colors = colors;
+        ctx.renderQueue->addCmd(cmd);
     }
 
-    void VkCanvas::drawTriangle(const glm::vec2 *vertices,const glm::vec4 color){
+    void VkCanvas::drawTriangle(glm::vec2 *vertices,glm::vec4 color){
         const uint32_t vertexCount = 3;
-        const glm::vec4 colors[vertexCount] = {color,color,color};
+        glm::vec4 colors[vertexCount] = {color,color,color};
         drawTriangles(vertices, colors, vertexCount);
     }
 
@@ -44,7 +37,7 @@ namespace zidian {
     void VkCanvas::drawRect(float left, float top, float width, float height, const glm::vec4 color) {
         auto vertices = geometry.genRectVertices(left, top, width , height);
         const uint32_t vertexCount = vertices.size();
-        const glm::vec4 colors[vertexCount] = {color,color,color,color,color,color};
+        glm::vec4 colors[vertexCount] = {color,color,color,color,color,color};
         drawTriangles(vertices.data(), colors, vertexCount);
     }
 

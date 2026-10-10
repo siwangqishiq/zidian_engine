@@ -9,9 +9,9 @@ namespace zidian {
     public:
         VkCanvas(Render &context);
 
-        virtual void drawTriangle(const glm::vec2 *vertices,const glm::vec4 color) override;
+        virtual void drawTriangle(glm::vec2 *vertices,glm::vec4 color) override;
 
-        virtual void drawTriangles(const glm::vec2 *vertices,const glm::vec4 *colors,const uint32_t vertexCount) override;
+        virtual void drawTriangles(glm::vec2 *vertices,glm::vec4 *colors,const uint32_t vertexCount) override;
 
         virtual void drawRect(float left, float top, float width, float height, const glm::vec4 color) override;
 

@@ -20,13 +20,6 @@ namespace zidian{
         virtual VkDeviceSize genBufferSize() override;
     private:
         std::unique_ptr<TrianglePipeline> attachPipeline;
-
-        std::vector<VkBuffer> vertexBuffers;
-        std::vector<VkDeviceMemory> vertexMemorys;
-        std::vector<void *> vertexMemoryMappeds;
-        std::vector<uint32_t> offsets;
-        std::vector<CommonUniform> pushConstantDatas;
-
         std::vector<TriangleVertex> vertexData;
     };
 }
