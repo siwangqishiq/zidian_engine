@@ -7,5 +7,7 @@
 namespace zidian {
     namespace Utils{
         std::string FormatBytes(uint64_t bytes, int precision = 1);
+
+        float SrgbToLinear(float c);
     }
 }

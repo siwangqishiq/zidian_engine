@@ -11,7 +11,7 @@ namespace zidian {
         std::string FormatBytes(uint64_t bytes, int precision){
             double size = static_cast<double>(bytes);
             int unit = 0;
-
+            
             while (size >= 1024.0f && unit < 5){
                 size /= 1024.0f;
                 ++unit;
@@ -33,7 +33,13 @@ namespace zidian {
             return oss.str();
         }
 
+        float SrgbToLinear(float c) {
+            if (c <= 0.04045f) {
+                return c / 12.92f;
+            }
 
+            return std::pow((c + 0.055f) / 1.055f,2.4f);
+        }
     }
 }
 

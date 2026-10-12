@@ -17,7 +17,7 @@ namespace zidian{
     }
 
     VkDeviceSize TriangleBatch::genBufferSize(){
-        const uint32_t MAX_VERTEX_SIZE = 16 * 1024;
+        const uint32_t MAX_VERTEX_SIZE = 2 * 1024 * 1024;
         return sizeof(TriangleVertex) * MAX_VERTEX_SIZE;
     }
 

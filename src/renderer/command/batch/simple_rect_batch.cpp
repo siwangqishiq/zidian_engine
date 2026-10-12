@@ -12,7 +12,7 @@ namespace zidian{
     }
 
     VkDeviceSize SimpleRectBatch::genBufferSize() {
-        const uint32_t MAX_VERTEX_SIZE = 16 * 1024;
+        const uint32_t MAX_VERTEX_SIZE = 1024 * 1024;
         VkDeviceSize bufferSize = sizeof(SimpleRectVertex) * MAX_VERTEX_SIZE;
         return bufferSize;
     }
@@ -36,7 +36,7 @@ namespace zidian{
         item.position = glm::vec3(data.left + size, data.top + size, 0.0f);
         item.size = glm::vec2(data.width, data.height);
         item.color = data.color;
-        
+
         vertexData.emplace_back(item);
     }
 

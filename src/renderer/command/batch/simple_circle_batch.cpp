@@ -12,7 +12,7 @@ namespace zidian{
     }
 
     VkDeviceSize SimpleCircleBatch::genBufferSize() {
-        const uint32_t MAX_VERTEX_SIZE = 16 * 1024;
+        const uint32_t MAX_VERTEX_SIZE = 2 * 1024 * 1024;
         return sizeof(SimpleCircleVertex) * MAX_VERTEX_SIZE;
     }
 
@@ -34,7 +34,7 @@ namespace zidian{
         item.position = glm::vec3(data.center, 0.0f);
         item.radius = data.radius;
         item.color = data.color;
-        
+
         vertexData.emplace_back(item);
     }
 
