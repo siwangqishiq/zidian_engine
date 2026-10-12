@@ -855,7 +855,7 @@ namespace zidian {
         // drawCallCount++;
         // std::cout << "vertex Count = " << vertexCount << std::endl;
 
-        Log::i("render", "draw call count : %d", drawCallCount);
+        // Log::i("render", "draw call count : %d", drawCallCount);
     }
 
     void Render::onDispose(){

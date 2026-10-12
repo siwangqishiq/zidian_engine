@@ -14,7 +14,7 @@ public:
         auto &render = zidian::Instance->getRender();
         zidian::RandomUtil::setRandomSeed(0);
 
-        uint8_t* rawPixles = zidian::AssetManager::getInstance()->readAssetImageFile("images/test2.jpg", picWidth, picHeight, picChannel);
+        uint8_t* rawPixles = zidian::AssetManager::getInstance()->readAssetImageFile("images/test3.png", picWidth, picHeight, picChannel);
         zidian::Log::brown("game", "image info : %d %d %d", picWidth , picHeight , picChannel);
 
         if(rawPixles != nullptr){
@@ -26,11 +26,13 @@ public:
                 for(int j = 0; j < picWidth; j++){
                     // pixels[picWidth * i + j] = glm::vec4(0.0f, 1.0f, 0.0f , 1.0f);
                     // pixels[picWidth * i + j] = glm::vec4(0.612f, 0.788f, 0.910f, 1.0f);
-
+                    
                     float r = static_cast<float>(rawPixles[pixelOffset + 0]) / 255.0f;
                     float g = static_cast<float>(rawPixles[pixelOffset + 1]) / 255.0f;
                     float b = static_cast<float>(rawPixles[pixelOffset + 2]) / 255.0f;
                     float a = static_cast<float>(rawPixles[pixelOffset + 3]) / 255.0f;
+
+                    // pixels[picWidth * i + j] = glm::vec4(r,g,b,a);
 
                     pixels[picWidth * i + j] = glm::vec4(
                         zidian::Utils::SrgbToLinear(r),
