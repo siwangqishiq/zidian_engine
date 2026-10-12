@@ -6,8 +6,8 @@
 
 namespace zidian{
     struct DrawTrianglesData{
-        glm::vec2 *vertices;
-        glm::vec4 *colors;
+        std::vector<glm::vec2> vertices;
+        std::vector<glm::vec4> colors;
         
         uint32_t vertexCount;
     };

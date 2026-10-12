@@ -12,11 +12,23 @@ namespace zidian {
     }
 
     void VkCanvas::drawTriangles(glm::vec2 *vertices, glm::vec4 *colors,const uint32_t vertexCount){
+        if(vertexCount == 0){
+            return;
+        }
+
         Cmd cmd;
         cmd.type = CmdType::DrawTriangles;
-        cmd.triData.vertexCount = vertexCount;
-        cmd.triData.vertices = vertices;
-        cmd.triData.colors = colors;
+        DrawTrianglesData data;
+        data.vertexCount = vertexCount;
+        data.vertices.resize(vertexCount);
+        data.colors.resize(vertexCount);
+        
+        for(int i = 0 ; i < vertexCount ; i++){
+            data.vertices[i] = vertices[i];
+            data.colors[i] = colors[i];
+        }//end for i
+        cmd.data = data;
+
         ctx.renderQueue->addCmd(cmd);
     }
 
@@ -51,11 +63,8 @@ namespace zidian {
     void VkCanvas::drawSimpleRect(float left, float top, float width, float height, const glm::vec4 color){
         Cmd cmd;
         cmd.type = CmdType::DrawSimpleRect;
-        cmd.rectData.color = color;
-        cmd.rectData.left = left;
-        cmd.rectData.top = top;
-        cmd.rectData.width = width;
-        cmd.rectData.height = height;
+        DrawSimpleRectData data{.left = left, .top = top, .width = width , .height = height,.color = color};
+        cmd.data = data;
         
         ctx.renderQueue->addCmd(cmd);
     }
@@ -63,21 +72,18 @@ namespace zidian {
     void VkCanvas::drawSimpleTriangle(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, const glm::vec4 color){
         Cmd cmd;
         cmd.type = CmdType::DrawSimpleTriangle;
-        cmd.triangleData.color = color;
-        cmd.triangleData.p1 = p1;
-        cmd.triangleData.p2 = p2;
-        cmd.triangleData.p3 = p3;
-        
+        DrawSimpleTriangleData data{.p1 = p1, .p2 = p2, .p3 = p3,.color = color};
+        cmd.data = data;
+
         ctx.renderQueue->addCmd(cmd);
     }
 
     void VkCanvas::drawSimpleCircle(glm::vec2 center, float radius, const glm::vec4 color){
         Cmd cmd;
         cmd.type = CmdType::DrawSimpleCircle;
-        cmd.circleData.color = color;
-        cmd.circleData.center = center;
-        cmd.circleData.radius = radius;
-        
+        DrawSimpleCircleData data = {.center = center , .radius = radius , .color = color};
+        cmd.data = data;
+
         ctx.renderQueue->addCmd(cmd);
     }
 

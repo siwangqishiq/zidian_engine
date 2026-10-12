@@ -53,6 +53,7 @@ void TestDraw(){
     config.windowHeight = 800;
     config.clearColor = {0.1f, 0.1f, 0.1f, 1.0f};
     config.vsync = true;
+    config.isRecordLog = true;
 
     std::string content = zidian::AssetManager::getInstance()->readAssetFileAsString("test.txt");
     zidian::Log::green("test", "text:%s",content.c_str());

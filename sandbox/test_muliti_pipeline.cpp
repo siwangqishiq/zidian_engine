@@ -11,6 +11,11 @@ public:
     virtual void onTick() override{
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
+
+        // canvas->drawRect(0.0f, 0.0f, canvas->getWidth()/2, canvas->getHeight()/2, {1.0f, 0.0f , 0.0f , 1.0f});
+        // canvas->drawRect(canvas->getWidth()/2, 0.0f, canvas->getWidth()/2, canvas->getHeight()/2, {0.0f, 1.0f , 0.0f , 1.0f});
+        // canvas->drawRect(0.0f, canvas->getHeight()/2, canvas->getWidth()/2, canvas->getHeight()/2, {0.0f, 0.0f , 1.0f , 1.0f});
+        // canvas->drawRect(canvas->getWidth()/2, canvas->getHeight()/2, canvas->getWidth()/2, canvas->getHeight()/2, {1.0f, 1.0f , 0.0f , 1.0f});
         
         float size = 100.0f;
         float x = 0.0f;
@@ -50,6 +55,18 @@ public:
             glm::vec2(150.0f + 150.0f, 200.0f + 100.0f), 
             glm::vec4(0.0f, 0.0f , 1.0f, 1.0f));
         
+        drawOneCircle();
+    }
+
+    void drawOneCircle(){
+        auto &render = zidian::Instance->getRender();
+        auto &canvas = render->getCanvas();
+        
+        float cx = canvas->getWidth() / 2.0f;
+        float cy = canvas->getHeight() / 2.0f;
+        float radius = canvas->getHeight() / 4.0f;
+        glm::vec4 color = {1.0f, 1.0f , 0.0f, 1.0f};
+        canvas->drawCircle(cx,cy, radius, color);
     }
 
     virtual void onDispose() override {

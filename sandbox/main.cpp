@@ -11,10 +11,10 @@ extern void TestTestMultiPipeline();
 int main() {
     // TestLogs();
     // TestApplication();
-    TestDraw();
+    // TestDraw();
     // TestBatchDraw();
     // TestCircleDraw();
     // TestSpriteDraw1();
-    // TestTestMultiPipeline();
+    TestTestMultiPipeline();
     return 0;
 }//end main

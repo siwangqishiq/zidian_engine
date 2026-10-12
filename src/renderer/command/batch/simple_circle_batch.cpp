@@ -1,6 +1,7 @@
 #include "renderer/command/batch/simple_circle_batch.h"
 #include "utils/log.h"
 #include "renderer/frame_resource.h"
+#include <variant>
 
 namespace zidian{
     SimpleCircleBatch::SimpleCircleBatch(Render &ctx_) : Batch(ctx_){
@@ -29,9 +30,11 @@ namespace zidian{
 
     void SimpleCircleBatch::putCmd(const Cmd& cmd,uint32_t frameIndex){
         SimpleCircleVertex item{};
-        item.position = glm::vec3(cmd.circleData.center, 0.0f);
-        item.radius = cmd.circleData.radius;
-        item.color = cmd.circleData.color;
+        const DrawSimpleCircleData &data = std::get<DrawSimpleCircleData>(cmd.data);
+        item.position = glm::vec3(data.center, 0.0f);
+        item.radius = data.radius;
+        item.color = data.color;
+        
         vertexData.emplace_back(item);
     }
 

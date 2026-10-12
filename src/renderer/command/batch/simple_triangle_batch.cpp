@@ -1,6 +1,7 @@
 #include "renderer/command/batch/simple_triangle_batch.h"
 #include "utils/log.h"
 #include "renderer/frame_resource.h"
+#include <variant>
 
 namespace zidian{
     SimpleTriangleBatch::SimpleTriangleBatch(Render &ctx_) : Batch(ctx_){
@@ -28,9 +29,11 @@ namespace zidian{
     }
 
     void SimpleTriangleBatch::putCmd(const Cmd& cmd,uint32_t frameIndex){
-        glm::vec2 p1 = cmd.triangleData.p1;
-        glm::vec2 p2 = cmd.triangleData.p2;
-        glm::vec2 p3 = cmd.triangleData.p3;
+        const DrawSimpleTriangleData &data = std::get<DrawSimpleTriangleData>(cmd.data);
+
+        glm::vec2 p1 = data.p1;
+        glm::vec2 p2 = data.p2;
+        glm::vec2 p3 = data.p3;
         auto aabb = geometry.buildAABB(p1, p2, p3);
 
         glm::vec2 leftTopPoint = aabb[0];
@@ -44,7 +47,7 @@ namespace zidian{
         SimpleTriangleVertex item{};
         item.position= glm::vec3(center, 0.0f);
         item.size = size;
-        item.color = cmd.triangleData.color;
+        item.color = data.color;
 
         glm::vec2 p1Local = p1 - leftTopPoint;
         glm::vec2 p2Local = p2 - leftTopPoint;

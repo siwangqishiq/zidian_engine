@@ -1,6 +1,7 @@
 #include "renderer/command/batch/simple_rect_batch.h"
 #include "utils/log.h"
 #include "renderer/frame_resource.h"
+#include <variant>
 
 namespace zidian{
     SimpleRectBatch::SimpleRectBatch(Render &ctx_) : Batch(ctx_){
@@ -30,10 +31,12 @@ namespace zidian{
 
     void SimpleRectBatch::putCmd(const Cmd& cmd,uint32_t frameIndex){
         SimpleRectVertex item{};
-        float size = cmd.rectData.width / 2.0f;
-        item.position = glm::vec3(cmd.rectData.left + size, cmd.rectData.top + size, 0.0f);
-        item.size = glm::vec2(cmd.rectData.width, cmd.rectData.height);
-        item.color = cmd.rectData.color;
+        const DrawSimpleRectData &data = std::get<DrawSimpleRectData>(cmd.data);
+        float size = data.width / 2.0f;
+        item.position = glm::vec3(data.left + size, data.top + size, 0.0f);
+        item.size = glm::vec2(data.width, data.height);
+        item.color = data.color;
+        
         vertexData.emplace_back(item);
     }
 

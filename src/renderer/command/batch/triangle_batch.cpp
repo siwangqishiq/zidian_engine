@@ -2,6 +2,7 @@
 #include "renderer/pipeline/pipe_triangle.h"
 #include "renderer/command/data/data_triangles.h"
 #include "utils/log.h"
+#include <variant>
 
 namespace zidian{
     TriangleBatch::TriangleBatch(Render &ctx_) : Batch(ctx_) {
@@ -28,13 +29,13 @@ namespace zidian{
     }
     
     void TriangleBatch::putCmd(const Cmd& cmd, uint32_t frameIndex) {
-        auto& trianglesData = cmd.triData;
+        const DrawTrianglesData& trianglesData = std::get<DrawTrianglesData>(cmd.data);
         for(int i = 0 ; i < trianglesData.vertexCount; i++){
             TriangleVertex item;
             item.position = glm::vec3(trianglesData.vertices[i], 1.0f);
             item.color = trianglesData.colors[i];
 
-            Log::purple("debug", "item.position %f %f  color %f %f %f %f ", item.position[0], item.position[1], item.color[0],item.color[1],item.color[2],item.color[3]);
+            // Log::purple("debug", "item.position %f %f  color %f %f %f %f ", item.position[0], item.position[1], item.color[0],item.color[1],item.color[2],item.color[3]);
             vertexData.emplace_back(item);
         }//end for i
     }
@@ -57,7 +58,7 @@ namespace zidian{
             glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
         };
         vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
-        Log::green("pipeline", "commit triangles batch! vertexCount =  %d", vertexCount);
+        // Log::green("pipeline", "commit triangles batch! vertexCount =  %d", vertexCount);
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
 
         vertexData.clear();
