@@ -6,10 +6,9 @@ public:
         zidian::Log::brown("game", "TestSprite init");
         auto &render = zidian::Instance->getRender();
         zidian::RandomUtil::setRandomSeed(0);
-
+        
         std::shared_ptr<zidian::Image> image1 = render->textureManager->loadImageByPath("images/test1.jpg");
         std::shared_ptr<zidian::Image> image2 = render->textureManager->loadImageByPath("images/test2.jpg");
-
     }
 
     virtual void onTick() override{

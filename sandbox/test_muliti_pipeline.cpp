@@ -11,7 +11,7 @@ public:
     virtual void onTick() override{
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
-
+        
         float size = 100.0f;
         float x = 0.0f;
         canvas->drawSimpleRect(x, 0.0f, size, size, glm::vec4(1.0f, 0.0f , 0.0f, 1.0f));

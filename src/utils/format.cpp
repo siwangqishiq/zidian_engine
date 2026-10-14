@@ -32,7 +32,7 @@ namespace zidian {
             }
             return oss.str();
         }
-
+        
         float SrgbToLinear(float c) {
             if (c <= 0.04045f) {
                 return c / 12.92f;

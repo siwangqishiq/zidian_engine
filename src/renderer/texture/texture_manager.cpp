@@ -5,6 +5,7 @@
 
 namespace zidian {
     TextureManager::TextureManager(Render &context): ctx(context) {
+        Log::i("texture_manager","texture manager constructed");
     }
 
     TextureManager::~TextureManager(){
@@ -78,6 +79,7 @@ namespace zidian {
 
         endSingleTimeCommands(commandBuffer);
 
+        //释放暂存区buffer 和 memory
         vkDestroyBuffer(ctx.device, stagingBuffer, nullptr);
         vkFreeMemory(ctx.device, stagingBufferMemory, nullptr);
 
@@ -92,7 +94,6 @@ namespace zidian {
 
     void TextureManager::createDescriptorSet(){
         Log::i("texture_manager","create texture descriptor set");
-        
     }
 
     void TextureManager::createSampler(VkSampler &sampler){

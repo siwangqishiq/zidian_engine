@@ -16,8 +16,8 @@ int main() {
     // TestDraw();
     // TestBatchDraw();
     // TestCircleDraw();
-    // TestSpriteDraw1();
+    TestSpriteDraw1();
     // TestTestMultiPipeline();
-    TestPictureShow();
+    // TestPictureShow();
     return 0;
 }//end main

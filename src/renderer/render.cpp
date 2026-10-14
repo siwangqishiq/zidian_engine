@@ -854,7 +854,7 @@ namespace zidian {
         // vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
         // drawCallCount++;
         // std::cout << "vertex Count = " << vertexCount << std::endl;
-
+        
         // Log::i("render", "draw call count : %d", drawCallCount);
     }
 

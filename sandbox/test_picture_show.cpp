@@ -14,14 +14,14 @@ public:
         auto &render = zidian::Instance->getRender();
         zidian::RandomUtil::setRandomSeed(0);
 
-        uint8_t* rawPixles = zidian::AssetManager::getInstance()->readAssetImageFile("images/test3.png", picWidth, picHeight, picChannel);
+        uint8_t* rawPixles = zidian::AssetManager::getInstance()->readAssetImageFile("images/test1.jpg", picWidth, picHeight, picChannel);
         zidian::Log::brown("game", "image info : %d %d %d", picWidth , picHeight , picChannel);
 
         if(rawPixles != nullptr){
             // pixels.resize(picHeight, std::vector<glm::vec4>(picWidth , glm::vec4{}));
             pixels = new glm::vec4[picWidth * picHeight];
             int pixelOffset = 0;
-
+            
             for(int i = 0 ; i < picHeight; i++) {
                 for(int j = 0; j < picWidth; j++){
                     // pixels[picWidth * i + j] = glm::vec4(0.0f, 1.0f, 0.0f , 1.0f);
@@ -55,9 +55,9 @@ public:
 
         for(int i = 0 ; i< picHeight; i++) {
             for(int j = 0; j< picWidth; j++){
-                // canvas->drawSimpleRect(j, i, 1, 1, pixels[picWidth * i + j]);
-                glm::vec2 c(static_cast<float>(j), static_cast<float>(i));
-                canvas->drawSimpleCircle(c , 1.0f, pixels[picWidth * i + j]);
+                canvas->drawSimpleRect(j, i, 1, 1, pixels[picWidth * i + j]);
+                // glm::vec2 c(static_cast<float>(j), static_cast<float>(i));
+                // canvas->drawSimpleCircle(c , 1.0f, pixels[picWidth * i + j]);
             }//end for j
         }
     }
