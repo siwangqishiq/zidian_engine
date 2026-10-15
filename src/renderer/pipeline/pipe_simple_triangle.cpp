@@ -1,34 +1,34 @@
-#include "renderer/pipeline/simple/pipe_simple_rect.h"
+#include "renderer/pipeline/pipe_simple_triangle.h"
 
 #include "renderer/pipeline/pipeline_manager.h"
 #include "renderer/render.h"
 #include "renderer/shader/shader_manager.h"
-#include "renderer/command/data/data_simple_rect.h"
+#include "renderer/command/data/data_simple_triangle.h"
 #include "renderer/command/data/common_uniform.h"
 
 #include "utils/log.h"
 
 namespace zidian{
-    SimpleRectPipeline::SimpleRectPipeline(Render &context, PipelineManager &pipelineManager) 
+    SimpleTrianglePipeline::SimpleTrianglePipeline(Render &context, PipelineManager &pipelineManager) 
         : BasePipeline::BasePipeline(context, pipelineManager){
     }
 
-    SimpleRectPipeline::~SimpleRectPipeline(){
+    SimpleTrianglePipeline::~SimpleTrianglePipeline(){
         dispose();
-        Log::i("SimpleRectPipeline","SimpleRectPipeline::~SimpleRectPipeline");
+        Log::i("SimpleTrianglePipeline","SimpleTrianglePipeline::~SimpleTrianglePipeline");
     }
 
-    VkShaderModule SimpleRectPipeline::getVertexShaderModule(){
-        return ctx.shaderManager->createShaderModule("shaders/simple_rect.vert.spv");
+    VkShaderModule SimpleTrianglePipeline::getVertexShaderModule(){
+        return ctx.shaderManager->createShaderModule("shaders/simple_triangle.vert.spv");
     }
     
-    VkShaderModule SimpleRectPipeline::getFragmentShaderModule(){
-        return ctx.shaderManager->createShaderModule("shaders/simple_rect.frag.spv");
+    VkShaderModule SimpleTrianglePipeline::getFragmentShaderModule(){
+        return ctx.shaderManager->createShaderModule("shaders/simple_triangle.frag.spv");
     }
 
-    void SimpleRectPipeline::populateVertexInputState(){
-        vertexInputBind = SimpleRectVertex::bindingDesc();
-        vertexInputDescs = SimpleRectVertex::attributeDesc();
+    void SimpleTrianglePipeline::populateVertexInputState(){
+        vertexInputBind = SimpleTriangleVertex::bindingDesc();
+        vertexInputDescs = SimpleTriangleVertex::attributeDesc();
 
         vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
@@ -36,18 +36,18 @@ namespace zidian{
         vertexInputStateCreateInfo.vertexAttributeDescriptionCount = vertexInputDescs.size();
         vertexInputStateCreateInfo.pVertexAttributeDescriptions = vertexInputDescs.data();
 
-        Log::i("SimpleRectPipeline","SimpleRectPipeline::populateVertexInputState");
+        Log::i("SimpleTrianglePipeline","SimpleTrianglePipeline::populateVertexInputState");
     }
 
-    void SimpleRectPipeline::populateInputAssemblyState(){
+    void SimpleTrianglePipeline::populateInputAssemblyState(){
         inputAssembleCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         inputAssembleCreateInfo.primitiveRestartEnable = VK_FALSE;
         inputAssembleCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 
-        Log::i("SimpleRectPipeline","SimpleRectPipeline::populateInputAssemblyState");
+        Log::i("SimpleTrianglePipeline","SimpleTrianglePipeline::populateInputAssemblyState");
     }
 
-    bool SimpleRectPipeline::createPipelineLayout(){
+    bool SimpleTrianglePipeline::createPipelineLayout(){
         createDescriptorSetLayout();
         
         VkPushConstantRange range{};
@@ -62,13 +62,13 @@ namespace zidian{
         layoutCreateInfo.pPushConstantRanges = &range;
         
         if(vkCreatePipelineLayout(ctx.device, &layoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS){
-            Log::e("primitive_pipeline", "create pipeline layout failed!");
+            Log::e("SimpleTrianglePipeline", "create pipeline layout failed!");
             return false;
         }
         return true;
     }
 
-    void SimpleRectPipeline::createDescriptorSetLayout(){
+    void SimpleTrianglePipeline::createDescriptorSetLayout(){
         std::array<VkDescriptorSetLayoutBinding, 1> uboLayoutBindings = CommonUniform::bindingDesc();
         
         VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
@@ -77,7 +77,7 @@ namespace zidian{
         layoutCreateInfo.pBindings = uboLayoutBindings.data();
 
         if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS){
-            Log::e("primitive_pipeline", "create descriptor set layout failed!");
+            Log::e("SimpleTrianglePipeline", "create descriptor set layout failed!");
             return;
         }
 
@@ -91,7 +91,7 @@ namespace zidian{
         descriptorSets.resize(layouts.size());
         VkResult result = vkAllocateDescriptorSets(ctx.device, &allocInfo, descriptorSets.data());
         if(result != VK_SUCCESS){
-            Log::e("primitive_pipeline", "create descriptor set objects failed! %d", result);
+            Log::e("SimpleTrianglePipeline", "create descriptor set objects failed! %d", result);
             return;
         }
     }

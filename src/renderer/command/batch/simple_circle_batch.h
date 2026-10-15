@@ -2,7 +2,7 @@
 
 #include "renderer/command/batch/batch.h"
 #include "renderer/command/data/data_simple_circle.h"
-#include "renderer/pipeline/simple/pipe_simple_circle.h"
+#include "renderer/pipeline/pipe_simple_circle.h"
 #include <memory>
 
 namespace zidian{

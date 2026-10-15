@@ -72,6 +72,7 @@ namespace zidian {
             static_cast<uint32_t>(height),
             1
         };
+
         vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, textureMaps[key]->textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL , 1, &region);
 
         //image 布局二次转换 trans_dst -> shader read
@@ -108,7 +109,7 @@ namespace zidian {
 
         createInfo.magFilter = VK_FILTER_LINEAR;
         createInfo.minFilter = VK_FILTER_LINEAR;
-
+        
         if(vkCreateSampler(ctx.device, &createInfo, nullptr, &sampler) != VK_SUCCESS){
             Log::e("texture_manager","create image sampler failed!");
             return;

@@ -1,5 +1,5 @@
 #include "renderer/command/batch/batch.h"
-#include "renderer/pipeline/simple/pipe_simple_triangle.h"
+#include "renderer/pipeline/pipe_simple_triangle.h"
 #include "renderer/command/data/data_simple_rect.h"
 #include "renderer/geometry.h"
 #include <memory>

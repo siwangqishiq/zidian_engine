@@ -1,4 +1,4 @@
-#include "renderer/pipeline/simple/pipe_simple_circle.h"
+#include "renderer/pipeline/pipe_simple_circle.h"
 #include "renderer/pipeline/pipeline_manager.h"
 #include "renderer/render.h"
 #include "renderer/shader/shader_manager.h"
