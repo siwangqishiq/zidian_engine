@@ -99,6 +99,6 @@ namespace zidian{
     }
 
     SimpleTriangleBatch::~SimpleTriangleBatch(){
-        Log::purple("batch", "SimpleTriangleBatch destroy buffer");
+        // Log::purple("batch", "SimpleTriangleBatch destroy buffer");
     }
 }

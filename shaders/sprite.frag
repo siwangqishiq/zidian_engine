@@ -2,9 +2,8 @@
 
 layout(location = 0) in vec2 uv;
 
-layout(binding = 1) uniform sampler2D texSampler;
+layout(binding = 0) uniform sampler2D texSampler;
 
-//final color result
 layout(location = 0) out vec4 OutColor;
 
 void main(){

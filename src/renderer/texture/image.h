@@ -1,5 +1,6 @@
 #include <string>
 #include "vulkan/vulkan.h"
+#include <vector>
 
 namespace zidian {
     class Image{
@@ -16,7 +17,12 @@ namespace zidian {
         VkImage textureImage = VK_NULL_HANDLE;
         VkDeviceMemory textureMemory = VK_NULL_HANDLE;
         VkImageView textureImageView = VK_NULL_HANDLE;
-        VkSampler textureSampler = VK_NULL_HANDLE;
+
+        std::vector<VkDescriptorSet> descriptorSets;
+
+        void buildDescriptorSets(VkSampler &sampler, VkDescriptorSetLayout &descriptorSetLayout, VkDescriptorPool &descriptorPool);
+
+        // VkSampler textureSampler = VK_NULL_HANDLE;
     private:
         VkDevice &device;
     };

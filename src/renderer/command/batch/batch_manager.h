@@ -17,6 +17,8 @@ namespace zidian{
 
         void registerBatch(CmdType type, std::shared_ptr<Batch> batch);
 
+        void updateDescriptorSets();
+
         std::shared_ptr<Batch> findBatchByType(CmdType type);
 
         void resetAllBatch(uint32_t frameIndex);

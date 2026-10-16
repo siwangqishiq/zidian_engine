@@ -5,7 +5,6 @@ public:
     virtual void onInit() override{
         zidian::Log::brown("game", "TestSprite init");
         auto &render = zidian::Instance->getRender();
-        zidian::RandomUtil::setRandomSeed(0);
         
         std::shared_ptr<zidian::Image> image1 = render->textureManager->loadImageByPath("images/test1.jpg");
         std::shared_ptr<zidian::Image> image2 = render->textureManager->loadImageByPath("images/test2.jpg");
@@ -29,6 +28,7 @@ void TestSpriteDraw1(){
     config.windowWidth = 1280;
     config.windowHeight = 720;
     config.isRecordLog = true;
+    config.clearColor = glm::vec4(0.0f, 0.0f , 0.0f , 1.0f);
 
     zidian::Application app;
     app.setGameObject(std::make_shared<TestSpriteDraw>());

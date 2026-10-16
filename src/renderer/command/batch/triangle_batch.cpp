@@ -70,6 +70,6 @@ namespace zidian{
     }
     
     TriangleBatch::~TriangleBatch(){
-        Log::purple("batch", "TriangleBatch destroy buffer");
+        // Log::purple("batch", "TriangleBatch destroy buffer");
     }
 }

@@ -68,6 +68,6 @@ namespace zidian{
     }
 
     SimpleCircleBatch::~SimpleCircleBatch(){
-        Log::purple("batch", "SimpleCircleBatch destroy buffer");
+        // Log::purple("batch", "SimpleCircleBatch destroy buffer");
     }
 }

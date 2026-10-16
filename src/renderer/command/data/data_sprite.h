@@ -17,4 +17,8 @@ namespace zidian{
         static VkVertexInputBindingDescription bindingDesc();
         static std::vector<VkVertexInputAttributeDescription> attributeDesc();
     };
+
+    struct SpriteUniform{
+        static std::array<VkDescriptorSetLayoutBinding, 1> layoutBindingDesc();
+    };
 }

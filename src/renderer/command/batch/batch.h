@@ -23,6 +23,10 @@ namespace zidian{
 
         virtual void createBuffers();
 
+        virtual void updateDescriptorSets();
+
+        virtual VkDescriptorSetLayout getDescriptorSetLayout();
+
         virtual ~Batch();
         virtual void dispose();
 

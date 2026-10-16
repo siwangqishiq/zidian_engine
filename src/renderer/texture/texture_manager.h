@@ -17,6 +17,9 @@ namespace zidian{
         std::shared_ptr<Image> loadImageByPath(std::string path);
 
         void clear();
+
+        VkSampler linearSampler = VK_NULL_HANDLE;
+        VkSampler nearestSampler = VK_NULL_HANDLE;
     private:
         Render &ctx;
 
@@ -26,6 +29,9 @@ namespace zidian{
         void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
         void createSampler(VkSampler &sampler);
+
+        void prepareSamplers();
+
         void createImageView(VkImageView &imageView , VkImage &image);
         void createDescriptorSet();
 

@@ -4,6 +4,7 @@
 #include "renderer/command/batch/simple_circle_batch.h"
 #include "renderer/command/batch/simple_triangle_batch.h"
 #include "renderer/command/batch/triangle_batch.h"
+#include "renderer/command/batch/sprite_batch.h"
 
 
 namespace zidian{
@@ -25,12 +26,22 @@ namespace zidian{
 
         std::shared_ptr<Batch> trianglesBatch = std::make_shared<TriangleBatch>(ctx);
         registerBatch(CmdType::DrawTriangles, trianglesBatch);
+
+        std::shared_ptr<Batch> spriteBatch = std::make_shared<SpriteBatch>(ctx);
+        registerBatch(CmdType::DrawSprite, spriteBatch);
     }
 
     //将type与batch注册
     void BatchManager::registerBatch(CmdType type, std::shared_ptr<Batch> batch){
         batch->init();
         batchMap[type] = batch;
+    }
+
+    void BatchManager::updateDescriptorSets(){
+        Log::i("batch_manager", "write or copy updateDescriptor Sets");
+        for(auto &p : batchMap){
+            p.second->updateDescriptorSets();
+        }
     }
 
     std::shared_ptr<Batch> BatchManager::findBatchByType(CmdType type){

@@ -20,9 +20,6 @@ namespace zidian {
     Render::Render(Application &appContext):appCtx(appContext) {
     }
 
-    Render::~Render(){
-    }
-
     void Render::init(std::vector<const char *> &glfwExtenstinList){
         initVulkan(glfwExtenstinList);
 
@@ -40,6 +37,9 @@ namespace zidian {
     void Render::initBatchManager(){
         batchManager = std::make_unique<BatchManager>(*this);
         batchManager->autoRegisterBatchs();
+
+        //创建完成后 更新descriptorSets
+        batchManager->updateDescriptorSets();
     }
 
     void Render::initVulkan(std::vector<const char *> &glfwExtenstinList) {
@@ -64,8 +64,8 @@ namespace zidian {
 
         memoryAllocator.init(physicalDevice, device); //初始化内存分配器
         createPipelines();
-
         createCommandPool();
+        
         frameResource = std::make_unique<FrameResource>(*this);
         frameResource->init();
     }
@@ -967,5 +967,8 @@ namespace zidian {
         if (func != nullptr) {
             return func(instance, messenger, nullptr);
         }
+    }
+
+    Render::~Render(){
     }
 }

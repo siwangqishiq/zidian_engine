@@ -2,10 +2,12 @@
 #include "utils/log.h"
 #include "resource/asset_manager.h"
 #include "renderer/render.h"
+#include "renderer/command/batch/batch_manager.h"
 
 namespace zidian {
     TextureManager::TextureManager(Render &context): ctx(context) {
         Log::i("texture_manager","texture manager constructed");
+        prepareSamplers();
     }
 
     TextureManager::~TextureManager(){
@@ -87,8 +89,9 @@ namespace zidian {
         //create imageview
         createImageView(textureMaps[key]->textureImageView, textureMaps[key]->textureImage);
 
-        // textureMaps[key]->textureImageView
-        createSampler(textureMaps[key]->textureSampler);
+        // createSampler(textureMaps[key]->textureSampler);
+        VkDescriptorSetLayout descSetLayout = ctx.batchManager->findBatchByType(CmdType::DrawSprite)->getDescriptorSetLayout();
+        textureMaps[key]->buildDescriptorSets(ctx.textureManager->linearSampler, descSetLayout, ctx.pipelineManager->descriptorPool);
         
         return textureMaps[key];
     }
@@ -112,6 +115,30 @@ namespace zidian {
         
         if(vkCreateSampler(ctx.device, &createInfo, nullptr, &sampler) != VK_SUCCESS){
             Log::e("texture_manager","create image sampler failed!");
+            return;
+        }
+    }
+
+
+    void TextureManager::prepareSamplers(){
+        VkSamplerCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        createInfo.magFilter = VK_FILTER_LINEAR;
+        createInfo.minFilter = VK_FILTER_LINEAR;
+        
+        if(vkCreateSampler(ctx.device, &createInfo, nullptr, &linearSampler) != VK_SUCCESS){
+            Log::e("texture_manager","create image linear sampler failed!");
+            return;
+        }
+
+        createInfo.magFilter = VK_FILTER_NEAREST;
+        createInfo.minFilter = VK_FILTER_NEAREST;
+        if(vkCreateSampler(ctx.device, &createInfo, nullptr, &nearestSampler) != VK_SUCCESS){
+            Log::e("texture_manager","create image nearset sampler failed!");
             return;
         }
     }
@@ -280,5 +307,13 @@ namespace zidian {
     void TextureManager::clear(){
         Log::i("texture_manager","clear all textures");
         textureMaps.clear();
+
+        if(linearSampler != VK_NULL_HANDLE){
+            vkDestroySampler(ctx.device, linearSampler, nullptr);
+        }
+
+        if(nearestSampler != VK_NULL_HANDLE){
+            vkDestroySampler(ctx.device, nearestSampler, nullptr);
+        }
     }
 }

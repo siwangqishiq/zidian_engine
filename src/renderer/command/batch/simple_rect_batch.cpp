@@ -71,6 +71,6 @@ namespace zidian{
     }
 
     SimpleRectBatch::~SimpleRectBatch(){
-        Log::purple("batch", "SimpleRectBatch destroy buffer");
+        // Log::purple("batch", "SimpleRectBatch destroy buffer");
     }
 }

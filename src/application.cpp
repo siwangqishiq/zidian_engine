@@ -9,6 +9,7 @@
 #include "renderer/render.h"
 #include "widget/task_schedule.h"
 #include "input/input_manager.h"
+#include "utils/random.h"
 
 #include <iostream>
 
@@ -34,6 +35,7 @@ namespace zidian{
         initWindow();
         findGlfwExtension();
 
+        RandomUtil::setRandomSeed(0);
         taskSchedule = std::make_unique<TaskSchedule>();
         taskSchedule->scheduleAtFixedRate([this](void *){
             Log::w("fps", "current fps : %d", fps);

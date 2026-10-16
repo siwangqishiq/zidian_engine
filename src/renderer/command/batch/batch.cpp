@@ -54,6 +54,14 @@ namespace zidian{
         }//end for i
     }
 
+    void Batch::updateDescriptorSets(){
+        Log::i("batch", "update descriptor sets");
+    }
+
+    VkDescriptorSetLayout Batch::getDescriptorSetLayout(){
+        return VK_NULL_HANDLE;
+    }
+
     Batch::~Batch(){
         dispose();
     }
