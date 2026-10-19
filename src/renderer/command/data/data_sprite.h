@@ -3,11 +3,16 @@
 #include "glm/glm.hpp"
 #include "vulkan/vulkan.h"
 #include <vector>
+#include <memory>
+#include "renderer/geometry.h"
 
 namespace zidian{
+    class Image;
+    
     struct DrawSpriteData{
-        std::vector<glm::vec2> vertices;
-        
+        Rect srcRect;
+        Rect dstRect;
+        std::shared_ptr<Image> image;
     };
 
     struct SpriteVertex{

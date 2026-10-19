@@ -87,8 +87,17 @@ namespace zidian {
         ctx.renderQueue->addCmd(cmd);
     }
 
-    void VkCanvas::drawImage(Image &image, Rect &srcRect, Rect &dstRect){
-        //todo 
+    void VkCanvas::drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect){
+        Cmd cmd;
+        cmd.type = CmdType::DrawSprite;
+
+        DrawSpriteData data;
+        data.image = image;
+        data.srcRect = srcRect;
+        data.dstRect = dstRect;
+        cmd.data = data;
+        
+        ctx.renderQueue->addCmd(cmd);
     }
 
     void VkCanvas::flush(){

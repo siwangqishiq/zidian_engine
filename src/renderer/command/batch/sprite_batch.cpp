@@ -17,7 +17,7 @@ namespace zidian{
     }
 
     VkDeviceSize SpriteBatch::genBufferSize(){
-        const uint32_t MAX_VERTEX_SIZE = 16 * 1024 * 1024;
+        const uint32_t MAX_VERTEX_SIZE = 32 * 1024 * 1024;
         return sizeof(SpriteVertex) * MAX_VERTEX_SIZE;
     }
 
@@ -26,44 +26,93 @@ namespace zidian{
             return false;
         }
 
+        // Log::brown("debug", "put cmd canbatch");
+        if(currentImage == nullptr){
+            return true;
+        }
+
+        const DrawSpriteData& spriteData = std::get<DrawSpriteData>(cmd.data);
+        if(spriteData.image != currentImage){
+            return false;
+        }
         return true;
     }
     
     void SpriteBatch::putCmd(const Cmd& cmd, uint32_t frameIndex) {
-        // const DrawTrianglesData& trianglesData = std::get<DrawTrianglesData>(cmd.data);
-        // for(int i = 0 ; i < trianglesData.vertexCount; i++){
-        //     TriangleVertex item;
-        //     item.position = glm::vec3(trianglesData.vertices[i], 1.0f);
-        //     item.color = trianglesData.colors[i];
+        // Log::brown("debug", "put cmd sprite");
 
-        //     // Log::purple("debug", "item.position %f %f  color %f %f %f %f ", item.position[0], item.position[1], item.color[0],item.color[1],item.color[2],item.color[3]);
-        //     vertexData.emplace_back(item);
-        // }//end for i
+        const DrawSpriteData& spriteData = std::get<DrawSpriteData>(cmd.data);
+
+        if(spriteData.image == nullptr){
+            return;
+        }
+
+        float uvLeft = (spriteData.srcRect.left) / static_cast<float>(spriteData.image->width);
+        float uvTop = (spriteData.srcRect.top) / static_cast<float>(spriteData.image->height);
+        float uvRight = (spriteData.srcRect.right()) / static_cast<float>(spriteData.image->width);
+        float uvBottom = (spriteData.srcRect.bottom()) / static_cast<float>(spriteData.image->height);
+
+        float posLeft = spriteData.dstRect.left;
+        float posRight = spriteData.dstRect.right();
+        float posTop = spriteData.dstRect.top;
+        float posBottom = spriteData.dstRect.bottom();
+
+        SpriteVertex vertex[4];
+        // 0 1 2
+        vertex[0].position = glm::vec3(posRight, posTop, 1.0f);
+        vertex[0].uv = glm::vec2(uvRight, uvTop);
+
+        vertex[1].position = glm::vec3(posLeft, posTop, 1.0f);
+        vertex[1].uv = glm::vec2(uvLeft, uvTop);
+
+        vertex[2].position = glm::vec3(posLeft, posBottom, 1.0f);
+        vertex[2].uv = glm::vec2(uvLeft, uvBottom);
+
+        vertex[3].position = glm::vec3(posRight, posBottom, 1.0f);
+        vertex[3].uv = glm::vec2(uvRight, uvBottom);
+
+
+        vertexData.emplace_back(vertex[0]);
+        vertexData.emplace_back(vertex[1]);
+        vertexData.emplace_back(vertex[2]);
+
+        vertexData.emplace_back(vertex[0]);
+        vertexData.emplace_back(vertex[2]);
+        vertexData.emplace_back(vertex[3]);
+
+        currentImage = spriteData.image;
     }
     
     void SpriteBatch::commit(VkCommandBuffer &cmdBuffer,uint32_t frameIndex) {
-        // vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, attachPipeline->pipeline);
+        const uint32_t vertexCount = vertexData.size();
+        if(vertexCount == 0){
+            return;
+        }
 
-        // const uint32_t vertexCount = vertexData.size();
-        // auto* dst = static_cast<std::byte*>(vertexMemoryMappeds[frameIndex]) + offsets[frameIndex];
-        // memcpy(dst, vertexData.data(), vertexCount * sizeof(TriangleVertex));
-        // VkDeviceSize offset[] = {offsets[frameIndex]};
+        vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, attachPipeline->pipeline);
+        auto* dst = static_cast<std::byte*>(vertexMemoryMappeds[frameIndex]) + offsets[frameIndex];
+        memcpy(dst, vertexData.data(), vertexCount * sizeof(SpriteVertex));
+        VkDeviceSize offset[] = {offsets[frameIndex]};
 
-        // vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffers[frameIndex], offset);
-        // offsets[frameIndex] += vertexCount * sizeof(TriangleVertex);
+        vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffers[frameIndex], offset);
+        offsets[frameIndex] += vertexCount * sizeof(SpriteVertex);
 
-        // pushConstantDatas[frameIndex].proj = {
-        //     glm::vec4(2.0f / ctx.swapChainExtent.width, 0.0f, 0.0f, 0.0f),
-        //     glm::vec4(0.0f, 2.0f / ctx.swapChainExtent.height, 0.0f, 0.0f),
-        //     glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
-        //     glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
-        // };
-        // vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
-        // // Log::green("pipeline", "commit triangles batch! vertexCount =  %d", vertexCount);
-        // vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
+        pushConstantDatas[frameIndex].proj = {
+            glm::vec4(2.0f / ctx.swapChainExtent.width, 0.0f, 0.0f, 0.0f),
+            glm::vec4(0.0f, 2.0f / ctx.swapChainExtent.height, 0.0f, 0.0f),
+            glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
+            glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
+        };
+        vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
+
+        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, attachPipeline->pipelineLayout, 0, 
+                1, &currentImage->descriptorSets[frameIndex], 0, nullptr);
+
+        vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
 
         vertexData.clear();
         ctx.drawCallCount++;
+        // Log::purple("debug", "drawCallCount = %d vertexCount = %u", ctx.drawCallCount ,vertexCount);
     }
     
     void SpriteBatch::reset(uint32_t frameIndex) {
@@ -75,6 +124,5 @@ namespace zidian{
     }
     
     SpriteBatch::~SpriteBatch(){
-        // Log::purple("batch", "SpriteBatch destroy buffer");
     }
 }

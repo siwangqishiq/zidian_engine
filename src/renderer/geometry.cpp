@@ -1,6 +1,14 @@
 #include "renderer/geometry.h"
 
 namespace zidian {
+    float Rect::right() const{
+        return left + width;
+    }
+
+    float Rect::bottom() const{
+        return top + height;
+    }
+
     std::vector<glm::vec2> Geometry::genRectVertices(float left, float top, float width, float height) const{
         std::vector<glm::vec2> vertices = {
             {left + width, top},

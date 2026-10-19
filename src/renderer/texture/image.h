@@ -1,6 +1,7 @@
 #include <string>
 #include "vulkan/vulkan.h"
 #include <vector>
+#include "renderer/geometry.h"
 
 namespace zidian {
     class Image{
@@ -23,6 +24,8 @@ namespace zidian {
         void buildDescriptorSets(VkSampler &sampler, VkDescriptorSetLayout &descriptorSetLayout, VkDescriptorPool &descriptorPool);
 
         // VkSampler textureSampler = VK_NULL_HANDLE;
+
+        Rect getImageRect();
     private:
         VkDevice &device;
     };

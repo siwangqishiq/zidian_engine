@@ -13,6 +13,9 @@ namespace zidian{
         float top;
         float width;
         float height;
+
+        float right() const;
+        float bottom() const;
     };
 
     class Geometry{

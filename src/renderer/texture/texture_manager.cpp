@@ -310,10 +310,12 @@ namespace zidian {
 
         if(linearSampler != VK_NULL_HANDLE){
             vkDestroySampler(ctx.device, linearSampler, nullptr);
+            linearSampler = VK_NULL_HANDLE;
         }
 
         if(nearestSampler != VK_NULL_HANDLE){
             vkDestroySampler(ctx.device, nearestSampler, nullptr);
+            nearestSampler = VK_NULL_HANDLE;
         }
     }
 }

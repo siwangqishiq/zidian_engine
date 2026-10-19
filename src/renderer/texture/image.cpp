@@ -6,6 +6,12 @@ namespace zidian {
     Image::Image(VkDevice &d, std::string name_) : device(d), name(name_){
     }
 
+    Rect Image::getImageRect(){
+        return Rect{0.0f, 0.0f, 
+            static_cast<float>(width), 
+            static_cast<float>(height)};
+    }
+
     void Image::buildDescriptorSets(VkSampler &sampler, VkDescriptorSetLayout &descriptorSetLayout, VkDescriptorPool &descriptorPool){
         std::vector<VkDescriptorSetLayout> layouts(FrameResource::MAX_FRAME_IN_FLIGHT, descriptorSetLayout);
         VkDescriptorSetAllocateInfo allocInfo{};
