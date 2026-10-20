@@ -55,7 +55,7 @@ namespace zidian{
     }
 
 
-    void Batch::updateUniformBufferMatrix(VkCommandBuffer &cmdBuffer, uint32_t frameIndex, VkPipelineLayout pipelineLayout){
+    void Batch::updateTransformMatrix(VkCommandBuffer &cmdBuffer, uint32_t frameIndex, VkPipelineLayout pipelineLayout){
         pushConstantDatas[frameIndex].proj = {
             glm::vec4(2.0f / ctx.swapChainExtent.width, 0.0f, 0.0f, 0.0f),
             glm::vec4(0.0f, 2.0f / ctx.swapChainExtent.height, 0.0f, 0.0f),

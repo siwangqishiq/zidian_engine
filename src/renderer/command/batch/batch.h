@@ -25,7 +25,7 @@ namespace zidian{
 
         virtual void updateDescriptorSets();
 
-        virtual void updateUniformBufferMatrix(VkCommandBuffer &cmdBuffer, uint32_t frameIndex, VkPipelineLayout pipelineLayout);
+        virtual void updateTransformMatrix(VkCommandBuffer &cmdBuffer, uint32_t frameIndex, VkPipelineLayout pipelineLayout);
 
         virtual VkDescriptorSetLayout getDescriptorSetLayout();
 

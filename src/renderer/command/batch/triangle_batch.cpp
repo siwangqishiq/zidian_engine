@@ -59,7 +59,7 @@ namespace zidian{
         // };
         // vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
         // Log::green("pipeline", "commit triangles batch! vertexCount =  %d", vertexCount);
-        updateUniformBufferMatrix(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
+        updateTransformMatrix(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
 
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
 
