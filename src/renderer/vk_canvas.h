@@ -18,6 +18,7 @@ namespace zidian {
         virtual void drawCircle(float cx, float cy, float radius, const glm::vec4 color) override;
 
         virtual void drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect) override;
+        virtual void drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect, const glm::vec4 color) override;
 
         virtual void drawSimpleRect(float left, float top, float width, float height, const glm::vec4 color) override;
         virtual void drawSimpleTriangle(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, const glm::vec4 color) override;

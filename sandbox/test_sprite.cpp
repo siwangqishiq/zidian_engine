@@ -28,7 +28,7 @@ public:
             .width = dstWidth,
             .height = dstHeight
         };
-        canvas->drawImage(image1, rect, dstRect);
+        canvas->drawImage(image1, rect, dstRect, glm::vec4(1.0f, 1.0f , 1.0f , 0.3f));
         
         zidian::Rect srcRect2 = image2->getImageRect();
         // srcRect2.width = srcRect2.width / 2.0f;
@@ -60,8 +60,8 @@ void TestSpriteDraw1(){
     config.windowHeight = 720;
     config.isRecordLog = true;
     config.isFullScreen = false;
-    config.clearColor = glm::vec4(0.0f, 0.0f , 0.0f , 1.0f);
-
+    config.clearColor = glm::vec4(1.0f, 1.0f , 1.0f , 1.0f);
+    
     zidian::Application app;
     app.setGameObject(std::make_shared<TestSpriteDraw>());
     app.init(config);

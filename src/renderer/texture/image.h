@@ -26,7 +26,7 @@ namespace zidian {
         // VkSampler textureSampler = VK_NULL_HANDLE;
 
         Rect getImageRect();
-    private:
+    protected:
         VkDevice &device;
     };
 }

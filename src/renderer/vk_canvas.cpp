@@ -88,6 +88,10 @@ namespace zidian {
     }
 
     void VkCanvas::drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect){
+        drawImage(image, srcRect , dstRect, glm::vec4(1.0f , 1.0f , 1.0f , 1.0f));
+    }
+
+    void VkCanvas::drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect, const glm::vec4 color){
         Cmd cmd;
         cmd.type = CmdType::DrawSprite;
 
@@ -95,6 +99,8 @@ namespace zidian {
         data.image = image;
         data.srcRect = srcRect;
         data.dstRect = dstRect;
+        data.color = color;
+
         cmd.data = data;
         
         ctx.renderQueue->addCmd(cmd);

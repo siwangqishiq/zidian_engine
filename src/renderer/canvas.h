@@ -24,6 +24,8 @@ namespace zidian{
         //
         virtual void drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect) = 0;
 
+        virtual void drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect, const glm::vec4 color) = 0;
+        
         virtual ~ICanvas(){}
 
         virtual int getWidth() = 0;

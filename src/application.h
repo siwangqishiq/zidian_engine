@@ -53,6 +53,7 @@ namespace zidian{
         ~Application();
 
         std::unique_ptr<Render>& getRender();
+        
         std::unique_ptr<TaskSchedule>& getTaskSchedule();
         std::unique_ptr<ThreadPool>& getThreadPool();
         AppConfig& getAppConfig();

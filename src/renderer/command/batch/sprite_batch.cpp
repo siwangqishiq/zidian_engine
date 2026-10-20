@@ -61,16 +61,19 @@ namespace zidian{
         // 0 1 2
         vertex[0].position = glm::vec3(posRight, posTop, 1.0f);
         vertex[0].uv = glm::vec2(uvRight, uvTop);
+        vertex[0].color = spriteData.color;
 
         vertex[1].position = glm::vec3(posLeft, posTop, 1.0f);
         vertex[1].uv = glm::vec2(uvLeft, uvTop);
+        vertex[1].color = spriteData.color;
 
         vertex[2].position = glm::vec3(posLeft, posBottom, 1.0f);
         vertex[2].uv = glm::vec2(uvLeft, uvBottom);
+        vertex[2].color = spriteData.color;
 
         vertex[3].position = glm::vec3(posRight, posBottom, 1.0f);
         vertex[3].uv = glm::vec2(uvRight, uvBottom);
-
+        vertex[3].color = spriteData.color;
 
         vertexData.emplace_back(vertex[0]);
         vertexData.emplace_back(vertex[1]);

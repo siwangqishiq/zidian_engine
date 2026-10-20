@@ -62,7 +62,7 @@ namespace zidian{
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
 
         vertexData.clear();
-
+        
         ctx.drawCallCount++;
     }
 
