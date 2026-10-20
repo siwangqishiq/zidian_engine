@@ -700,7 +700,7 @@ namespace zidian {
         passBeginInfo.clearValueCount = 1;
         passBeginInfo.pClearValues = &clearColor;
         vkCmdBeginRenderPass(frameResource->commandBuffers[currentFrameIndex], &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
+        
         drawCallCount = 0;
         //清理命令列表
         commandList.reset();

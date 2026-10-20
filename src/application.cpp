@@ -34,7 +34,7 @@ namespace zidian{
 
         initWindow();
         findGlfwExtension();
-
+        
         RandomUtil::setRandomSeed(0);
         taskSchedule = std::make_unique<TaskSchedule>();
         taskSchedule->scheduleAtFixedRate([this](void *){
@@ -43,7 +43,6 @@ namespace zidian{
         },1000);
 
         threadPool = std::make_unique<ThreadPool>(4);
-
         render = std::make_unique<Render>(*this);
 
         auto glfwExtension = findGlfwExtension();
@@ -144,11 +143,12 @@ namespace zidian{
     }
 
     void Application::tick(){
+        onDrawFrame();
+        
         if(!render->beginRenderFrame()) {
             return;
         }
-
-        onDrawFrame();
+        // onDrawFrame();
 
         taskSchedule->tick();
         

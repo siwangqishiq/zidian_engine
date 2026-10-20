@@ -28,7 +28,7 @@ public:
             .width = dstWidth,
             .height = dstHeight
         };
-        canvas->drawImage(image1, rect, dstRect, glm::vec4(1.0f, 1.0f , 1.0f , 0.3f));
+        canvas->drawImage(image1, rect, dstRect, glm::vec4(1.0f, 1.0f , 0.0f , 1.0f));
         
         zidian::Rect srcRect2 = image2->getImageRect();
         // srcRect2.width = srcRect2.width / 2.0f;
@@ -43,6 +43,18 @@ public:
             .height = dstHeight2
         };
         canvas->drawImage(image2, srcRect2, dstRect2);
+
+
+        const float radius = 40.0f;
+        for(int i = 0; i < canvas->getHeight(); i+= 2.0f * radius){
+            for(int j = 0; j < canvas->getWidth(); j+= 2.0f * radius){
+                glm::vec4 color = {
+                    zidian::RandomUtil::randomFloat(0.0f, 1.0f),
+                    zidian::RandomUtil::randomFloat(0.0f, 1.0f),
+                    zidian::RandomUtil::randomFloat(0.0f, 1.0f),  0.5f};
+                canvas->drawCircle(j + radius, i + radius, radius, color);
+            }//
+        }
     }
 
     virtual void onDispose() override {
@@ -61,7 +73,7 @@ void TestSpriteDraw1(){
     config.isRecordLog = true;
     config.isFullScreen = false;
     config.clearColor = glm::vec4(1.0f, 1.0f , 1.0f , 1.0f);
-    
+
     zidian::Application app;
     app.setGameObject(std::make_shared<TestSpriteDraw>());
     app.init(config);

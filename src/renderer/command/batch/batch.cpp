@@ -54,6 +54,17 @@ namespace zidian{
         }//end for i
     }
 
+
+    void Batch::updateUniformBufferMatrix(VkCommandBuffer &cmdBuffer, uint32_t frameIndex, VkPipelineLayout pipelineLayout){
+        pushConstantDatas[frameIndex].proj = {
+            glm::vec4(2.0f / ctx.swapChainExtent.width, 0.0f, 0.0f, 0.0f),
+            glm::vec4(0.0f, 2.0f / ctx.swapChainExtent.height, 0.0f, 0.0f),
+            glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
+            glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
+        };
+        vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
+    }
+
     void Batch::updateDescriptorSets(){
         Log::i("batch", "update descriptor sets");
     }

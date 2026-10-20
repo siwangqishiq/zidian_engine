@@ -78,13 +78,15 @@ namespace zidian{
         vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffers[frameIndex], offset);
         offsets[frameIndex] += vertexCount * sizeof(SimpleTriangleVertex);
 
-        pushConstantDatas[frameIndex].proj = {
-            glm::vec4(2.0f / ctx.swapChainExtent.width, 0.0f, 0.0f, 0.0f),
-            glm::vec4(0.0f, 2.0f / ctx.swapChainExtent.height, 0.0f, 0.0f),
-            glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
-            glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
-        };
-        vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
+        // pushConstantDatas[frameIndex].proj = {
+        //     glm::vec4(2.0f / ctx.swapChainExtent.width, 0.0f, 0.0f, 0.0f),
+        //     glm::vec4(0.0f, 2.0f / ctx.swapChainExtent.height, 0.0f, 0.0f),
+        //     glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
+        //     glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
+        // };
+        // vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
+
+        updateUniformBufferMatrix(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
         
         // Log::green("pipeline", "commit simple triangle batch!");
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
