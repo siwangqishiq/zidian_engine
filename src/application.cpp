@@ -10,6 +10,7 @@
 #include "widget/task_schedule.h"
 #include "input/input_manager.h"
 #include "utils/random.h"
+#include "utils/time.h"
 
 #include <iostream>
 
@@ -130,10 +131,25 @@ namespace zidian{
             game->onInit();
         }
 
+
+        using Clock = std::chrono::steady_clock;
+        bool firstFrame = true;
+        auto lastTime = Clock::now();
+
         while(!glfwWindowShouldClose(window)){
+            auto now = Clock::now();
+            float deltaTime = 0.0f;
+            if (!firstFrame) {
+                deltaTime = std::chrono::duration<float>(
+                    now - lastTime
+                ).count();
+            }
+            firstFrame = false;
+            lastTime = now;
+            
             checkWindowInvalidate();
             glfwPollEvents();
-            tick();
+            tick(deltaTime);
             // glfwSwapBuffers(window);
         }//end while
 
@@ -142,17 +158,15 @@ namespace zidian{
         return SUCCESS;
     }
 
-    void Application::tick(){
-        onDrawFrame();
-        
+    void Application::tick(float deltaTime){
+        onDrawFrame(deltaTime);
+        taskSchedule->tick();
+
         if(!render->beginRenderFrame()) {
             return;
         }
-        // onDrawFrame();
-
-        taskSchedule->tick();
-        
         render->endRenderFrame();
+
         fps++;
     }
 
@@ -164,9 +178,9 @@ namespace zidian{
         }// end while
     }
 
-    void Application::onDrawFrame(){
+    void Application::onDrawFrame(float deltaTime){
         if(game != nullptr){
-            game->onTick();
+            game->onTick(deltaTime);
         }
     }
 

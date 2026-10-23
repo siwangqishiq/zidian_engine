@@ -44,10 +44,16 @@ namespace zidian {
     }
     
     std::string Log::currentShowTime(){
-        auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        auto str = std::put_time(std::localtime(&t), "%X");
+        auto now = std::chrono::system_clock::now();
+        auto t = std::chrono::system_clock::to_time_t(now);
+        // 获取毫秒部分
+        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            now.time_since_epoch()
+        ).count() % 1000;
+        
         std::stringstream ss;
-        ss << str;
+        ss << std::put_time(std::localtime(&t), "%H:%M:%S");
+        ss << '.' << std::setfill('0') << std::setw(3) << ms;
         return ss.str();
     }
 

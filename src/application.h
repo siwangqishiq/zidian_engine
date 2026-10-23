@@ -27,7 +27,7 @@ namespace zidian{
     class IGame{
     public:
         virtual void onInit() = 0;
-        virtual void onTick() = 0;
+        virtual void onTick(float deltaTime) = 0;
         virtual void onDispose() = 0;
     };
 
@@ -46,7 +46,7 @@ namespace zidian{
 
         void onDispose();
 
-        void onDrawFrame();
+        void onDrawFrame(float deltaTime);
 
         void waitEvents();
 
@@ -78,7 +78,7 @@ namespace zidian{
         std::shared_ptr<IGame> game = nullptr;
     private:
         void initWindow();
-        void tick();
+        void tick(float deltaTime);
 
         void checkWindowInvalidate();
 

@@ -9,7 +9,7 @@ public:
         // },1000);
     }
     
-    virtual void onTick() override{
+    virtual void onTick(float deltaTime) override{
         // zidian::Log::brown("game", "game tick");
         auto &render = zidian::Instance->getRender();
         

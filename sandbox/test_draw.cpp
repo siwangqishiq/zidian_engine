@@ -10,7 +10,7 @@ public:
                 render->getCanvas()->getHeight());
     }
     
-    virtual void onTick() override{
+    virtual void onTick(float deltaTime) override{
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
         

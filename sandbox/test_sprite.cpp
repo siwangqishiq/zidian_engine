@@ -13,9 +13,21 @@ public:
         image2 = render->textureManager->loadImageByPath("images/test2.jpg");
     }
 
-    virtual void onTick() override{
+    virtual void onTick(float deltaTime) override{
+        // zidian::Log::purple("game", "tick deltaTime = %f", deltaTime);
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
+
+        const float radius = 40.0f;
+        for(int i = 0; i < canvas->getHeight(); i+= 2.0f * radius){
+            for(int j = 0; j < canvas->getWidth(); j+= 2.0f * radius){
+                glm::vec4 color = {
+                    zidian::RandomUtil::randomFloat(0.0f, 1.0f),
+                    zidian::RandomUtil::randomFloat(0.0f, 1.0f),
+                    zidian::RandomUtil::randomFloat(0.0f, 1.0f),  0.5f};
+                canvas->drawCircle(j + radius, i + radius, radius, color);
+            }//
+        }
 
         canvas->drawCircle(canvas->getWidth() / 2.0f, canvas->getHeight() / 2.0f, 200.0f, glm::vec4(0.0f, 1.0f , 0.0f, 1.0f));
         
@@ -43,18 +55,7 @@ public:
             .height = dstHeight2
         };
         canvas->drawImage(image2, srcRect2, dstRect2);
-
-
-        const float radius = 40.0f;
-        for(int i = 0; i < canvas->getHeight(); i+= 2.0f * radius){
-            for(int j = 0; j < canvas->getWidth(); j+= 2.0f * radius){
-                glm::vec4 color = {
-                    zidian::RandomUtil::randomFloat(0.0f, 1.0f),
-                    zidian::RandomUtil::randomFloat(0.0f, 1.0f),
-                    zidian::RandomUtil::randomFloat(0.0f, 1.0f),  0.5f};
-                canvas->drawCircle(j + radius, i + radius, radius, color);
-            }//
-        }
+        
     }
 
     virtual void onDispose() override {

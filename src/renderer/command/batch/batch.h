@@ -30,6 +30,7 @@ namespace zidian{
         virtual VkDescriptorSetLayout getDescriptorSetLayout();
 
         virtual ~Batch();
+        
         virtual void dispose();
 
         Render &ctx;
