@@ -28,7 +28,7 @@ namespace zidian {
             data.colors[i] = colors[i];
         }//end for i
         cmd.data = data;
-
+        
         ctx.renderQueue->addCmd(cmd);
     }
 

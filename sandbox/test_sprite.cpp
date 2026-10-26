@@ -4,6 +4,7 @@ class TestSpriteDraw : public zidian::IGame {
 public:
     std::shared_ptr<zidian::Image> image1;
     std::shared_ptr<zidian::Image> image2;
+    std::shared_ptr<zidian::Image> subImage1;
 
     virtual void onInit() override{
         zidian::Log::brown("game", "TestSprite init");
@@ -11,10 +12,28 @@ public:
         
         image1 = render->textureManager->loadImageByPath("images/test1.jpg");
         image2 = render->textureManager->loadImageByPath("images/test2.jpg");
+
+
+        subImage1 = image1->buildSubImage(image1->width/ 2 , image1->height / 2, image1->width/ 2, image1->height / 2);
+        image2 = subImage1->buildSubImage(subImage1->width / 2 , subImage1->height / 2, subImage1->width/ 2, subImage1->height / 2);
     }
 
     virtual void onTick(float deltaTime) override{
         // zidian::Log::purple("game", "tick deltaTime = %f", deltaTime);
+        auto &render = zidian::Instance->getRender();
+        auto &canvas = render->getCanvas();
+
+        zidian::Rect srcRect = subImage1->getImageRect();
+        canvas->drawImage(subImage1, srcRect, srcRect);
+
+
+        zidian::Rect srcRect2 = image2->getImageRect();
+        zidian::Rect dstRect2 = srcRect2;
+        dstRect2.left = srcRect.right();
+        canvas->drawImage(image2, srcRect2, dstRect2);
+    }
+
+    void testBaseSprite(){
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
 
@@ -55,13 +74,13 @@ public:
             .height = dstHeight2
         };
         canvas->drawImage(image2, srcRect2, dstRect2);
-        
     }
 
     virtual void onDispose() override {
         zidian::Log::brown("game", "game dispose");
         image1 = nullptr;
         image2 = nullptr;
+        subImage1 = nullptr;
         zidian::AudioManager::getInstance()->dispose();
     }
 };

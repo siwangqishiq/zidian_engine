@@ -3,7 +3,12 @@
 #include "renderer/frame_resource.h"
 
 namespace zidian {
-    ImageResource::ImageResource(VkDevice d) : device(d){
+    const float epsilon = 0.0000000001;
+
+    ImageResource::ImageResource(VkDevice d, uint32_t width_ , uint32_t height_) : device(d),width(width_),height(height_){
+    }
+
+    ImageResource::ImageResource(VkDevice d) : device(d), width(0),height(0){
     }
 
     ImageResource::~ImageResource(){
@@ -68,13 +73,22 @@ namespace zidian {
         imageRes = std::make_shared<ImageResource>(d);
     }
 
-    Image::Image() {
+    Image::Image(VkDevice d, std::string name_, uint32_t width_ , uint32_t height_) : name(name_){
+        width = width_;
+        height = height_;
+        imageRes = std::make_shared<ImageResource>(d,width_,height_);
+    }
+
+    Image::Image(){
+        imageRes = nullptr;
+        width = 0;
+        height = 0;
     }
 
     Rect Image::getImageRect(){
         return Rect{0.0f, 0.0f, 
-            static_cast<float>(width - offsetX), 
-            static_cast<float>(height - offsetY)};
+            static_cast<float>(width), 
+            static_cast<float>(height)};
     }
 
     const std::vector<VkDescriptorSet>& Image::getDescriptorSets(){
@@ -104,8 +118,63 @@ namespace zidian {
         }
     }
 
+    std::shared_ptr<ImageResource>& Image::getImageResource(){
+        return imageRes;
+    }
+
+    float Image::getResImageWidth() const {
+        if(imageRes != nullptr){
+            return static_cast<float>(imageRes->width);
+        }
+        return epsilon;
+    }
+    float Image::getResImageHeight() const{
+        if(imageRes != nullptr){
+            return static_cast<float>(imageRes->height);
+        }
+        return epsilon;
+    }
+
+    std::array<float, 8> Image::getUvCoords(float offsetLeft,float offsetTop,float offsetRight, float offsetBottom){
+        std::array<float, 8> uvCoords;
+        const float uvleft = (static_cast<float>(offsetX) + offsetLeft)/getResImageWidth();
+        const float uvTop = (static_cast<float>(offsetY) + offsetTop)/getResImageHeight();
+        const float uvRight = (static_cast<float>(offsetX) + offsetRight)/getResImageWidth();
+        const float uvBottom = (static_cast<float>(offsetY) + offsetBottom)/getResImageHeight();
+
+        uvCoords[0] = uvleft;
+        uvCoords[1] = uvTop;
+
+        uvCoords[2] = uvleft;
+        uvCoords[3] = uvBottom;
+
+        uvCoords[4] = uvRight;
+        uvCoords[5] = uvBottom;
+
+        uvCoords[6] = uvRight;
+        uvCoords[7] = uvTop;
+        
+        return uvCoords;
+    }
+
+    std::array<float, 8> Image::getUvCoords(){
+        return getUvCoords(0.0f, 0.0f, width, height);
+    }
+
     std::shared_ptr<Image> Image::buildSubImage(uint32_t offsetX,uint32_t offsetY,uint32_t subWidth, uint32_t subHeight){
-        return nullptr;
+        if(subWidth > width || subHeight > height || offsetX > subWidth || offsetY > subHeight) {
+            Log::e("image", "build sub image params illegirate!");
+            return nullptr;
+        }
+
+        std::shared_ptr<Image> subImage = std::make_shared<Image>();
+        subImage->offsetX = this->offsetX + offsetX;
+        subImage->offsetY = this->offsetY + offsetY;
+        subImage->width = subWidth;
+        subImage->height = subHeight;
+        subImage->imageRes = this->imageRes;
+
+        return subImage;
     }
 
     Image::~Image(){

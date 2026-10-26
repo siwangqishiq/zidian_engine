@@ -46,9 +46,7 @@ namespace zidian {
         AssetManager::getInstance()->freePixels(pixels);
         
         std::string key = genLocalMapKey(path);
-        textureMaps[key] = std::make_shared<Image>(ctx.device, key);
-        textureMaps[key]->width = width;
-        textureMaps[key]->height = height;
+        textureMaps[key] = std::make_shared<Image>(ctx.device, key,width,height);
         
         createImage(width, height, 
             VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 
