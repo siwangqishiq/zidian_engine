@@ -3,16 +3,33 @@
 #include "renderer/frame_resource.h"
 
 namespace zidian {
-    Image::Image(VkDevice &d, std::string name_) : device(d), name(name_){
+    ImageResource::ImageResource(VkDevice d) : device(d){
     }
 
-    Rect Image::getImageRect(){
-        return Rect{0.0f, 0.0f, 
-            static_cast<float>(width), 
-            static_cast<float>(height)};
+    ImageResource::~ImageResource(){
+        if(device == VK_NULL_HANDLE){
+            return;
+        }
+
+        if(textureImageView != VK_NULL_HANDLE){
+            vkDestroyImageView(device, textureImageView, nullptr);
+            textureImageView = VK_NULL_HANDLE;
+        }
+
+        if(textureImage != VK_NULL_HANDLE){
+            vkDestroyImage(device, textureImage, nullptr);
+            textureImage = VK_NULL_HANDLE;
+        }
+
+        if(textureMemory != VK_NULL_HANDLE){
+            vkFreeMemory(device, textureMemory, nullptr);
+            textureMemory = VK_NULL_HANDLE;
+        }
+
+        Log::i("ImageResource", "ImageResource is free");
     }
 
-    void Image::buildDescriptorSets(VkSampler &sampler, VkDescriptorSetLayout &descriptorSetLayout, VkDescriptorPool &descriptorPool){
+    void ImageResource::buildDescriptorSets(VkSampler &sampler, VkDescriptorSetLayout &descriptorSetLayout, VkDescriptorPool &descriptorPool){
         std::vector<VkDescriptorSetLayout> layouts(FrameResource::MAX_FRAME_IN_FLIGHT, descriptorSetLayout);
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -47,28 +64,52 @@ namespace zidian {
         }//end for i
     }
 
+    Image::Image(VkDevice d, std::string name_) : name(name_){
+        imageRes = std::make_shared<ImageResource>(d);
+    }
+
+    Image::Image() {
+    }
+
+    Rect Image::getImageRect(){
+        return Rect{0.0f, 0.0f, 
+            static_cast<float>(width - offsetX), 
+            static_cast<float>(height - offsetY)};
+    }
+
+    const std::vector<VkDescriptorSet>& Image::getDescriptorSets(){
+        if(imageRes != nullptr){
+            return imageRes->descriptorSets;
+        }
+
+        const static std::vector<VkDescriptorSet> emptyDescriptorSets;
+        return emptyDescriptorSets;
+    }
+
+    VkImage& Image::getTextureImage() const{
+        return imageRes->textureImage;
+    }
+
+    VkDeviceMemory& Image::getTextureMemory() const{
+        return imageRes->textureMemory;
+    }
+
+    VkImageView& Image::getImageView() const{
+        return imageRes->textureImageView;
+    }
+
+    void Image::buildDescriptorSets(VkSampler &sampler, VkDescriptorSetLayout &descriptorSetLayout, VkDescriptorPool &descriptorPool){
+        if(imageRes != nullptr){
+            imageRes->buildDescriptorSets(sampler, descriptorSetLayout, descriptorPool);
+        }
+    }
+
+    std::shared_ptr<Image> Image::buildSubImage(uint32_t offsetX,uint32_t offsetY,uint32_t subWidth, uint32_t subHeight){
+        return nullptr;
+    }
+
     Image::~Image(){
-        // if(textureSampler != VK_NULL_HANDLE){
-        //     vkDestroySampler(device, textureSampler, nullptr);
-        //     textureSampler = VK_NULL_HANDLE;
-        // }
-
-        if(textureImageView != VK_NULL_HANDLE){
-            vkDestroyImageView(device, textureImageView, nullptr);
-            textureImageView = VK_NULL_HANDLE;
-        }
-
-        if(textureImage != VK_NULL_HANDLE){
-            vkDestroyImage(device, textureImage, nullptr);
-            textureImage = VK_NULL_HANDLE;
-        }
-
-        if(textureMemory != VK_NULL_HANDLE){
-            vkFreeMemory(device, textureMemory, nullptr);
-            textureMemory = VK_NULL_HANDLE;
-        }
-
-        Log::i("image", "image %s is free" , name.c_str());
+        Log::i("Image", "Image %s is free", name.c_str());
     }
 }
 

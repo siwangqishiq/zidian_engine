@@ -53,12 +53,12 @@ namespace zidian {
         createImage(width, height, 
             VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-            textureMaps[key]->textureImage, textureMaps[key]->textureMemory);
+            textureMaps[key]->getTextureImage(), textureMaps[key]->getTextureMemory());
 
         auto commandBuffer = beginSingleTimeCommands();
         
         //image 布局转换 undef -> trans_dst
-        transitionImageLayoutFromUndefToTransdst(commandBuffer, textureMaps[key]->textureImage);
+        transitionImageLayoutFromUndefToTransdst(commandBuffer, textureMaps[key]->getTextureImage());
         
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
@@ -75,10 +75,10 @@ namespace zidian {
             1
         };
 
-        vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, textureMaps[key]->textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL , 1, &region);
+        vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, textureMaps[key]->getTextureImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL , 1, &region);
 
         //image 布局二次转换 trans_dst -> shader read
-        transitionImageLayoutFromTransdstToShadeReadOnly(commandBuffer , textureMaps[key]->textureImage);
+        transitionImageLayoutFromTransdstToShadeReadOnly(commandBuffer , textureMaps[key]->getTextureImage());
 
         endSingleTimeCommands(commandBuffer);
 
@@ -87,7 +87,7 @@ namespace zidian {
         vkFreeMemory(ctx.device, stagingBufferMemory, nullptr);
 
         //create imageview
-        createImageView(textureMaps[key]->textureImageView, textureMaps[key]->textureImage);
+        createImageView(textureMaps[key]->getImageView(), textureMaps[key]->getTextureImage());
 
         // createSampler(textureMaps[key]->textureSampler);
         VkDescriptorSetLayout descSetLayout = ctx.batchManager->findBatchByType(CmdType::DrawSprite)->getDescriptorSetLayout();

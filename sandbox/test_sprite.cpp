@@ -27,7 +27,7 @@ public:
                     zidian::RandomUtil::randomFloat(0.0f, 1.0f),  0.5f};
                 canvas->drawCircle(j + radius, i + radius, radius, color);
             }//
-        }
+        }//end for i
 
         canvas->drawCircle(canvas->getWidth() / 2.0f, canvas->getHeight() / 2.0f, 200.0f, glm::vec4(0.0f, 1.0f , 0.0f, 1.0f));
         

@@ -111,7 +111,7 @@ namespace zidian{
         updateTransformMatrix(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
 
         vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, attachPipeline->pipelineLayout, 0, 
-                1, &currentImage->descriptorSets[frameIndex], 0, nullptr);
+                1, &currentImage->getDescriptorSets()[frameIndex], 0, nullptr);
 
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
 
