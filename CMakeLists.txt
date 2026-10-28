@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 project(app LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # for dll import use case 
@@ -64,9 +65,25 @@ file(GLOB_RECURSE APP_SRCS CONFIGURE_DEPENDS
 )
 
 add_library(glfw3 STATIC IMPORTED)
-set_target_properties(glfw3 PROPERTIES
-    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/windows/libglfw3.a
-)
+
+if (MSVC)
+    message(STATUS "Using Windows MSVC compiler")
+    set_target_properties(glfw3 PROPERTIES
+        IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/lib/windows_msvc/glfw3.lib
+        INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/vendor/glfw/include
+    )
+else()
+    message(STATUS "Using Windows msys urt64 compiler")
+    set_target_properties(glfw3 PROPERTIES
+        IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/lib/windows/libglfw3.a
+        INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/vendor/glfw/include
+    )
+endif()
+
+# set_target_properties(glfw3 PROPERTIES
+#     IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/windows/libglfw3.a
+# )
+
 target_include_directories(glfw3 INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glfw/include
 )
@@ -80,12 +97,43 @@ target_include_directories(vulkan INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/vk
 )
 
-add_compile_options(-Wno-deprecated-declarations)
+# add_compile_options(-Wno-deprecated-declarations)
+
+function(ignore_warning_msvc)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd5045)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4267) 
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4464)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4819)  
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4996) 
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4244)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4099)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4834)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4464)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4514)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4820)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4100)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4365)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4625)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4626)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd5026)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd5027)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4774)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd5204)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4355)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4018)
+endfunction()
 
 add_executable(${PROJECT_NAME} 
     ${APP_SRCS} 
     ${ZIDIAN_SRCS}
 )
+
+if (MSVC)
+    set_target_properties(${PROJECT_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    ignore_warning_msvc()
+else()
+    set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
+endif()
 
 target_link_libraries(${PROJECT_NAME} 
     PRIVATE 

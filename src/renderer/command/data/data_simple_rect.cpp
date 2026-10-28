@@ -1,6 +1,6 @@
 #include "renderer/command/data/data_simple_rect.h"
 #include <vector>
-
+#include <array>
 
 namespace zidian {
 

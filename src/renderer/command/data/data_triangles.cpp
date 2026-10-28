@@ -1,4 +1,5 @@
 #include "renderer/command/data/data_triangles.h"
+#include <array>
 
 namespace zidian{
     VkVertexInputBindingDescription TriangleVertex::bindingDesc(){

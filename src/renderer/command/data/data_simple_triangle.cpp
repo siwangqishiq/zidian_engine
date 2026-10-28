@@ -2,7 +2,6 @@
 #include <array>
 #include <vector>
 
-
 namespace zidian {
     VkVertexInputBindingDescription SimpleTriangleVertex::bindingDesc(){
         VkVertexInputBindingDescription bindingDesc{};

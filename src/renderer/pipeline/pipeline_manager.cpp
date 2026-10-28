@@ -20,8 +20,8 @@ namespace zidian {
     }
 
     void PipelineManager::createDescriptorPool(){
-        constexpr uint32_t pipelineTotalCount = 6;
-        constexpr uint32_t poolMultiplier = 4;
+        uint32_t pipelineTotalCount = 6 + customShaderPipelineCount; 
+        uint32_t poolMultiplier = 4;
 
         VkDescriptorPoolSize poolSizes[] = {
             {
@@ -47,17 +47,27 @@ namespace zidian {
         Log::i("pipeline","create descriptor pool success!");
     }
 
+    CustomShaderPipelineId PipelineManager::createCustomShaderPipeline(std::string moduleName){
+        
+        return -1;
+    }
 
     void PipelineManager::updateDescriptorSets(){
         primitivePipe->updateDescriptorSet();
     }
     
     void PipelineManager::clearPipelines(){
+        customShaderPipeMap.clear();
+
         primitivePipe->dispose();
         
         if(descriptorPool != VK_NULL_HANDLE){
             vkDestroyDescriptorPool(ctx.device, descriptorPool, nullptr);
         }
+    }
+
+    void PipelineManager::incrementCustomPipelineCount(){
+        customShaderPipelineCount++;
     }
 }
 

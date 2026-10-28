@@ -1,6 +1,6 @@
 #include "renderer/command/data/data_simple_circle.h"
 #include <vector>
-
+#include <array>
 
 namespace zidian {
 

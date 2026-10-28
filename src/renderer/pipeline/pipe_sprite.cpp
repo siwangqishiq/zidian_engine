@@ -76,28 +76,10 @@ namespace zidian{
         layoutCreateInfo.pBindings = uboLayoutBindings.data();
 
         // Log::green("SpritePipeline", "create sprite pipeline descriptorSet layout");
-
+        
         if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS){
             Log::e("SpritePipeline", "create descriptor set layout failed!");
             return;
         }
-
-        // std::vector<VkDescriptorSetLayout> layouts(FrameResource::MAX_FRAME_IN_FLIGHT, descriptorSetLayout);
-
-        // VkDescriptorSetAllocateInfo allocInfo{};
-        // allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        // allocInfo.descriptorPool = pipelineMgr.descriptorPool;
-        // allocInfo.descriptorSetCount = layouts.size();
-        // allocInfo.pSetLayouts = layouts.data();
-
-        // descriptorSets.resize(layouts.size());
-        // VkResult result = vkAllocateDescriptorSets(ctx.device, &allocInfo, descriptorSets.data());
-
-        // if(result != VK_SUCCESS){
-        //     Log::e("SpritePipeline", "create descriptor set objects failed! %d", result);
-        //     return;
-        // }
-
-        //write sets
     }
 }//end namespace

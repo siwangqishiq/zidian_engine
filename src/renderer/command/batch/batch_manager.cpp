@@ -29,6 +29,8 @@ namespace zidian{
 
         std::shared_ptr<Batch> spriteBatch = std::make_shared<SpriteBatch>(ctx);
         registerBatch(CmdType::DrawSprite, spriteBatch);
+
+        
     }
 
     //将type与batch注册

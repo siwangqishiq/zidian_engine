@@ -10,14 +10,17 @@ extern void TestTestMultiPipeline();
 
 extern void TestPictureShow();
 
+extern void TestCustomShader();
+
 int main() {
     // TestLogs();
     // TestApplication();
     // TestDraw();
     // TestBatchDraw();
     // TestCircleDraw();
-    TestSpriteDraw1();
+    // TestSpriteDraw1();
     // TestTestMultiPipeline();
     // TestPictureShow();
+    TestCustomShader();
     return 0;
 }//end main

@@ -3,7 +3,7 @@
 #include "renderer/frame_resource.h"
 
 namespace zidian {
-    const float epsilon = 0.0000000001;
+    const float epsilon = 0.0000000001f;
 
     ImageResource::ImageResource(VkDevice d, uint32_t width_ , uint32_t height_) : device(d),width(width_),height(height_){
     }
@@ -168,6 +168,7 @@ namespace zidian {
         }
 
         std::shared_ptr<Image> subImage = std::make_shared<Image>();
+        subImage->name = name + "#sub";
         subImage->offsetX = this->offsetX + offsetX;
         subImage->offsetY = this->offsetY + offsetY;
         subImage->width = subWidth;

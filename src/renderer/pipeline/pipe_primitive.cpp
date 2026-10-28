@@ -5,7 +5,7 @@ namespace zidian{
     PrimitivePipeline::PrimitivePipeline(Render &context, PipelineManager &pipelineManager) 
         : BasePipeline(context, pipelineManager){
     }
-
+    
     PrimitivePipeline::~PrimitivePipeline(){
     }
 }
