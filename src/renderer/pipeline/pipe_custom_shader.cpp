@@ -7,8 +7,12 @@
 #include "renderer/command/data/common_uniform.h"
 
 namespace zidian{
+    CustomShaderPipelineId CustomShaderPipeline::nextPipelineId = 100;
+
     CustomShaderPipeline::CustomShaderPipeline(Render &context, PipelineManager &pipelineManager, std::string shaderName)
         : BasePipeline(context, pipelineManager), shaderModuleName(shaderName){
+        customPipelineId = nextPipelineId;
+        nextPipelineId++;
     }
 
     VkShaderModule CustomShaderPipeline::getVertexShaderModule() {
@@ -69,5 +73,9 @@ namespace zidian{
     }
 
     void CustomShaderPipeline::createDescriptorSetLayout(){
+    }
+
+    CustomShaderPipelineId CustomShaderPipeline::getCustomPipelineId(){
+        return customPipelineId;
     }
 }

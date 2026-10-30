@@ -32,6 +32,8 @@ namespace zidian{
         CustomShaderPipelineId createCustomShaderPipeline(std::string moduleName);
 
         void incrementCustomPipelineCount();
+
+        std::shared_ptr<CustomShaderPipeline> findCustomPipeline(CustomShaderPipelineId pid) const;
     private:
         Render &ctx;
         int customShaderPipelineCount = 0;

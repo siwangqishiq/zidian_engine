@@ -30,6 +30,7 @@ namespace zidian{
 
         Render& ctx;
         PipelineManager& pipelineMgr;
+
     protected:
         VkVertexInputBindingDescription vertexInputBind{};
         std::vector<VkVertexInputAttributeDescription> vertexInputDescs{};
@@ -56,5 +57,7 @@ namespace zidian{
         virtual void populateMultisampleState();
         virtual void populateDepthStencilState();
         virtual void populateViewportState();
+
+        virtual VkPipelineLayout getPipelineLayout();
     };
 }

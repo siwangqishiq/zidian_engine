@@ -316,4 +316,9 @@ namespace zidian{
             vkUpdateDescriptorSets(ctx.device, 1, &write, 0, nullptr);
         }//end for i
     }
+
+    // 返回流水线布局
+    VkPipelineLayout BasePipeline::getPipelineLayout(){
+        return pipelineLayout;
+    }
 }

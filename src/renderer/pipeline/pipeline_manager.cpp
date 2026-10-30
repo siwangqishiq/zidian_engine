@@ -4,6 +4,7 @@
 #include "renderer/pipeline/pipeline_manager.h"
 #include "renderer/pipeline/pipe_primitive.h"
 #include "renderer/shader/shader_manager.h"
+#include "renderer/pipeline/pipe_custom_shader.h"
 
 namespace zidian {
     PipelineManager::PipelineManager(Render &context) : ctx(context){
@@ -48,8 +49,13 @@ namespace zidian {
     }
 
     CustomShaderPipelineId PipelineManager::createCustomShaderPipeline(std::string moduleName){
+        std::shared_ptr<CustomShaderPipeline> pipeline = std::make_shared<CustomShaderPipeline>(ctx, *this, moduleName);
+        pipeline->create();
         
-        return -1;
+        auto pid = pipeline->getCustomPipelineId();
+        customShaderPipeMap[pid] = pipeline;
+        incrementCustomPipelineCount();
+        return pid;
     }
 
     void PipelineManager::updateDescriptorSets(){
@@ -68,6 +74,10 @@ namespace zidian {
 
     void PipelineManager::incrementCustomPipelineCount(){
         customShaderPipelineCount++;
+    }
+
+    std::shared_ptr<CustomShaderPipeline> PipelineManager::findCustomPipeline(CustomShaderPipelineId pid) const{
+        return customShaderPipeMap.at(pid);
     }
 }
 

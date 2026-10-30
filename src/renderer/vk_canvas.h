@@ -24,6 +24,8 @@ namespace zidian {
         virtual void drawSimpleTriangle(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, const glm::vec4 color) override;
         virtual void drawSimpleCircle(glm::vec2 center, float radius, const glm::vec4 color) override;
         
+        virtual void drawCustomShader(CustomShaderPipelineId pid, float left, float top, float width, float height) override;
+        
         virtual void flush() override;
 
         virtual ~VkCanvas();

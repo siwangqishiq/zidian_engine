@@ -3,6 +3,7 @@
 #include "glm/glm.hpp"
 #include "renderer/geometry.h"
 #include <memory>
+#include "renderer/pipeline/pipe_common.h"
 
 namespace zidian{
     class Image;
@@ -25,6 +26,8 @@ namespace zidian{
         virtual void drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect) = 0;
         
         virtual void drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect, const glm::vec4 color) = 0;
+
+        virtual void drawCustomShader(CustomShaderPipelineId pid, float left, float top, float width, float height) = 0;
         
         virtual ~ICanvas(){}
 

@@ -5,6 +5,7 @@
 #include "renderer/command/batch/simple_triangle_batch.h"
 #include "renderer/command/batch/triangle_batch.h"
 #include "renderer/command/batch/sprite_batch.h"
+#include "renderer/command/batch/custom_shader_batch.h"
 
 
 namespace zidian{
@@ -30,7 +31,8 @@ namespace zidian{
         std::shared_ptr<Batch> spriteBatch = std::make_shared<SpriteBatch>(ctx);
         registerBatch(CmdType::DrawSprite, spriteBatch);
 
-        
+        std::shared_ptr<Batch> customShaderBatch = std::make_shared<CustomShaderBatch>(ctx);
+        registerBatch(CmdType::DrawCustomShader, customShaderBatch);
     }
 
     //将type与batch注册

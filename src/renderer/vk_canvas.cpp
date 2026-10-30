@@ -106,6 +106,18 @@ namespace zidian {
         ctx.renderQueue->addCmd(cmd);
     }
 
+    void VkCanvas::drawCustomShader(CustomShaderPipelineId pid, float left, float top, float width, float height) {
+        Cmd cmd;
+        cmd.type = CmdType::DrawCustomShader;
+        
+        DrawCustomShaderData data;
+        data.pipeId = pid;
+        data.dstRect = Rect{left, top , width , height};
+        cmd.data = data;
+
+        ctx.renderQueue->addCmd(cmd);
+    }
+
     void VkCanvas::flush(){
     }
 }

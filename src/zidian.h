@@ -11,6 +11,7 @@
 #include "widget/thread_pool.h"
 #include "input/input_manager.h"
 #include "audio/audio_manager.h"
+#include "renderer/pipeline/pipe_common.h"
 
 namespace zidian{
     std::string Version();

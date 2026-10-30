@@ -1,6 +1,7 @@
 #pragma once
 
 #include "renderer/pipeline/pipe_base.h"
+#include "renderer/pipeline/pipe_common.h"
 
 namespace zidian {
     class Render;
@@ -17,7 +18,13 @@ namespace zidian {
         virtual void populateInputAssemblyState() override;
         virtual bool createPipelineLayout() override;
         virtual void createDescriptorSetLayout() override;
+
+        CustomShaderPipelineId getCustomPipelineId();
     private:
         std::string shaderModuleName;
+
+        CustomShaderPipelineId customPipelineId;
+
+        static CustomShaderPipelineId nextPipelineId;
     };
 }
