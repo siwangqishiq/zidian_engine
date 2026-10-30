@@ -125,6 +125,11 @@ namespace zidian{
             vkDestroyDescriptorSetLayout(ctx.device, descriptorSetLayout, nullptr);
             descriptorSetLayout = VK_NULL_HANDLE;
         }
+
+        for(int i = 0 ; i < descriptorSetLayouts.size() ;i++){
+            vkDestroyDescriptorSetLayout(ctx.device, descriptorSetLayouts[i] , nullptr);
+        }
+        descriptorSetLayouts.clear();
     }
 
     BasePipeline::~BasePipeline(){

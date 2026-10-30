@@ -112,9 +112,9 @@ namespace zidian{
 
         updateTransformMatrix(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
 
-        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, attachPipeline->pipelineLayout, 0, 
+        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, attachPipeline->pipelineLayout, 1, 
                 1, &currentImage->getDescriptorSets()[frameIndex], 0, nullptr);
-
+        
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
 
         vertexData.clear();
@@ -127,7 +127,7 @@ namespace zidian{
     }
 
     VkDescriptorSetLayout SpriteBatch::getDescriptorSetLayout() {
-        return attachPipeline->descriptorSetLayout;
+        return attachPipeline->descriptorSetLayouts[1];
     }
     
     SpriteBatch::~SpriteBatch(){

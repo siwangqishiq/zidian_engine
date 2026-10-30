@@ -53,12 +53,11 @@ namespace zidian{
         range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutCreateInfo.setLayoutCount = 0;
-        layoutCreateInfo.pSetLayouts = nullptr;
         layoutCreateInfo.pushConstantRangeCount = 1;
         layoutCreateInfo.pPushConstantRanges = &range;
-        layoutCreateInfo.setLayoutCount = 1;
-        layoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+
+        layoutCreateInfo.setLayoutCount = descriptorSetLayouts.size();
+        layoutCreateInfo.pSetLayouts = descriptorSetLayouts.data();
         
         if(vkCreatePipelineLayout(ctx.device, &layoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS){
             Log::e("SpritePipeline", "create pipeline layout failed!");
@@ -68,7 +67,12 @@ namespace zidian{
     }
 
     void SpritePipeline::createDescriptorSetLayout(){
-        std::array<VkDescriptorSetLayoutBinding, 1> uboLayoutBindings = SpriteUniform::layoutBindingDesc();
+        descriptorSetLayouts.resize(2);
+
+        descriptorSetLayouts[0] = VK_NULL_HANDLE;
+        descriptorSetLayouts[1] = VK_NULL_HANDLE;
+
+        auto uboLayoutBindings = SpriteUniform::layoutBindingDesc();
 
         VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -76,8 +80,13 @@ namespace zidian{
         layoutCreateInfo.pBindings = uboLayoutBindings.data();
 
         // Log::green("SpritePipeline", "create sprite pipeline descriptorSet layout");
+
+        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayouts[0]) != VK_SUCCESS){
+            Log::e("SpritePipeline", "create descriptor set layout failed!");
+            return;
+        }
         
-        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS){
+        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayouts[1]) != VK_SUCCESS){
             Log::e("SpritePipeline", "create descriptor set layout failed!");
             return;
         }

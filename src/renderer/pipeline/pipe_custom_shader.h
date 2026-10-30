@@ -25,6 +25,8 @@ namespace zidian {
 
         CustomShaderPipelineId customPipelineId;
 
+        void generatorPipelineId();
+
         static CustomShaderPipelineId nextPipelineId;
     };
 }

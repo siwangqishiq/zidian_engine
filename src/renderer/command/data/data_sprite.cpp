@@ -36,11 +36,13 @@ namespace zidian{
     
     std::array<VkDescriptorSetLayoutBinding, 1> SpriteUniform::layoutBindingDesc(){
         std::array<VkDescriptorSetLayoutBinding, 1> setlayoutBindings;
+
         setlayoutBindings[0].binding = 0;
         setlayoutBindings[0].descriptorCount = 1;
         setlayoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         setlayoutBindings[0].pImmutableSamplers = nullptr;
         setlayoutBindings[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
         return setlayoutBindings;
     }
 }

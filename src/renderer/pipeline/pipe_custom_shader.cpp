@@ -11,6 +11,10 @@ namespace zidian{
 
     CustomShaderPipeline::CustomShaderPipeline(Render &context, PipelineManager &pipelineManager, std::string shaderName)
         : BasePipeline(context, pipelineManager), shaderModuleName(shaderName){
+        generatorPipelineId();
+    }
+
+    void CustomShaderPipeline::generatorPipelineId(){
         customPipelineId = nextPipelineId;
         nextPipelineId++;
     }
@@ -62,6 +66,7 @@ namespace zidian{
         layoutCreateInfo.pSetLayouts = nullptr;
         layoutCreateInfo.pushConstantRangeCount = 1;
         layoutCreateInfo.pPushConstantRanges = &range;
+        
         // layoutCreateInfo.setLayoutCount = 1;
         // layoutCreateInfo.pSetLayouts = &descriptorSetLayout;
         

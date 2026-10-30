@@ -21,7 +21,6 @@ public:
         canvas->drawCustomShader(pid1, 0.0f, 0.0f, 300.0f , 300.0f);
         // canvas->drawCustomShader(pid2, 200.0f + 100, 100.0f, 200.0f , 200.0f);
     }
-
     
     virtual void onDispose() override {
         zidian::Log::brown("game", "game dispose");

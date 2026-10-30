@@ -20,6 +20,7 @@ namespace zidian{
         
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
         VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
 
         std::vector<VkDescriptorSet> descriptorSets;
 
