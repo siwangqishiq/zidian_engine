@@ -5,6 +5,8 @@
 #include "renderer/command/batch/batch_manager.h"
 
 namespace zidian {
+    int TextureManager::EmptyImageCount = 0;
+
     TextureManager::TextureManager(Render &context): ctx(context) {
         Log::i("texture_manager","texture manager constructed");
         prepareSamplers();
@@ -16,6 +18,10 @@ namespace zidian {
 
     std::string TextureManager::genLocalMapKey(std::string path){
         return "local_path:" + path;
+    }
+
+    std::string TextureManager::genEmptyImageIndex(){
+        return "empty_image_" + std::to_string(EmptyImageCount++);
     }
 
     std::shared_ptr<Image> TextureManager::loadImageByPath(std::string path){
@@ -92,6 +98,45 @@ namespace zidian {
         textureMaps[key]->buildDescriptorSets(ctx.textureManager->linearSampler, descSetLayout, ctx.pipelineManager->descriptorPool);
         
         return textureMaps[key];
+    }
+
+    std::shared_ptr<Image> TextureManager::createEmptyImage(uint32_t width, uint32_t height , glm::vec4 color){
+        std::string key = genEmptyImageIndex();
+        auto emptyImage = std::make_shared<Image>(ctx.device, key, width, height);
+        textureMaps[key] = emptyImage;
+
+        createImage(width, height, 
+            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+            emptyImage->getTextureImage(), 
+            emptyImage->getTextureMemory());
+        
+        auto commandBuffer = beginSingleTimeCommands();
+
+        transitionImageLayoutFromUndefToTransdst(commandBuffer, emptyImage->getTextureImage());
+        
+        VkClearColorValue clearColor{};
+        clearColor.float32[0] = color[0];
+        clearColor.float32[1] = color[1];
+        clearColor.float32[2] = color[2];
+        clearColor.float32[3] = color[3];
+
+        VkImageSubresourceRange range{};
+        range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        range.baseMipLevel = 0;
+        range.levelCount = 1;
+        range.baseArrayLayer = 0;
+        range.layerCount = 1;
+        vkCmdClearColorImage(commandBuffer,emptyImage->getTextureImage(),VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,&clearColor,1,&range);
+        transitionImageLayoutFromTransdstToShadeReadOnly(commandBuffer, emptyImage->getTextureImage());
+        
+        endSingleTimeCommands(commandBuffer);
+        
+        createImageView(emptyImage->getImageView(), emptyImage->getTextureImage());
+        VkDescriptorSetLayout descSetLayout = ctx.batchManager->findBatchByType(CmdType::DrawSprite)->getDescriptorSetLayout();
+        emptyImage->buildDescriptorSets(ctx.textureManager->linearSampler, descSetLayout, ctx.pipelineManager->descriptorPool);
+        
+        return emptyImage;
     }
 
     void TextureManager::createDescriptorSet(){
@@ -258,6 +303,47 @@ namespace zidian {
             0, 0, nullptr, 0, nullptr, 1, &barrier);
     }
 
+    // void TextureManager::transitionImageLayoutFromUndefToShaderReadOnly(VkCommandBuffer &cmdBuffer,VkImage &image){
+    //     VkImageMemoryBarrier barrier{};
+    //     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    //     barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    //     barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    //     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    //     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    //     barrier.image = image;
+    //     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    //     barrier.subresourceRange.baseMipLevel = 0;
+    //     barrier.subresourceRange.levelCount = 1;
+    //     barrier.subresourceRange.baseArrayLayer = 0;
+    //     barrier.subresourceRange.layerCount = 1;
+    //     barrier.srcAccessMask = 0;
+    //     barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+    //     vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
+    //         0, 0, nullptr, 0, nullptr, 1, &barrier);
+    // }
+
+    void TextureManager::transitionImageLayoutFromShadeReadOnlyToTransDst(VkCommandBuffer &cmdBuffer,VkImage &image){
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = image;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        
+        vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 
+            0, 0, nullptr, 0, nullptr, 1, &barrier);
+    }
+
     VkCommandBuffer TextureManager::beginSingleTimeCommands(){
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -277,7 +363,7 @@ namespace zidian {
         return commandBuffer;
     }
 
-    void TextureManager::endSingleTimeCommands(VkCommandBuffer commandBuffer){
+    void TextureManager::endSingleTimeCommands(VkCommandBuffer &commandBuffer){
         vkEndCommandBuffer(commandBuffer);
 
         VkSubmitInfo submitInfo{};

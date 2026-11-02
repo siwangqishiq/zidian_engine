@@ -178,6 +178,10 @@ namespace zidian {
         return subImage;
     }
 
+    std::shared_ptr<Image> Image::autoGenSpriteSheet(std::string path){
+        return nullptr;
+    }
+
     Image::~Image(){
         Log::i("Image", "Image %s is free", name.c_str());
     }

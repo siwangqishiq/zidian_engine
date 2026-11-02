@@ -12,6 +12,8 @@ public:
     int frameCount = 6;
     float frameWaitTime = 0.0f;
 
+    std::shared_ptr<zidian::Image> emptyImage;
+
     virtual void onInit() override{
         zidian::Log::brown("game", "TestSprite init");
         auto &render = zidian::Instance->getRender();
@@ -24,13 +26,25 @@ public:
         image2 = subImage1->buildSubImage(subImage1->width / 2 , subImage1->height / 2, subImage1->width/ 2, subImage1->height / 2);
 
         spriteImage = render->textureManager->loadImageByPath("images/player_full_animation.png");
+
+        emptyImage = render->textureManager->createEmptyImage(512, 512, glm::vec4(0.0f, 1.0f, 0.0f , 0.5f));
     }
 
     virtual void onTick(float deltaTime) override{
         // zidian::Log::purple("game", "tick deltaTime = %f", deltaTime);
+        // testEmptyImage(deltaTime);
         testSprite(deltaTime);
         // testSubImage();
         // testBaseSprite();
+    }
+
+    void testEmptyImage(float deltaTime){
+        auto &render = zidian::Instance->getRender();
+        auto &canvas = render->getCanvas();
+
+        zidian::Rect srcRect = emptyImage->getImageRect();
+        zidian::Rect dstRect = srcRect;
+        canvas->drawImage(emptyImage, srcRect, dstRect);
     }
 
     void testSprite(float deltaTime){
@@ -113,6 +127,7 @@ public:
         image2 = nullptr;
         subImage1 = nullptr;
         spriteImage = nullptr;
+        emptyImage = nullptr;
         zidian::AudioManager::getInstance()->dispose();
     }
 };

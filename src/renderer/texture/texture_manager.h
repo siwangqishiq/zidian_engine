@@ -20,6 +20,8 @@ namespace zidian{
 
         VkSampler linearSampler = VK_NULL_HANDLE;
         VkSampler nearestSampler = VK_NULL_HANDLE;
+
+        std::shared_ptr<Image> createEmptyImage(uint32_t width, uint32_t height, glm::vec4 color);
     private:
         Render &ctx;
 
@@ -37,12 +39,18 @@ namespace zidian{
 
         void transitionImageLayoutFromUndefToTransdst(VkCommandBuffer &cmdBuffer,VkImage &image);
         void transitionImageLayoutFromTransdstToShadeReadOnly(VkCommandBuffer &cmdBuffer,VkImage &image);
+        // void transitionImageLayoutFromUndefToShaderReadOnly(VkCommandBuffer &cmdBuffer,VkImage &image);
+        void transitionImageLayoutFromShadeReadOnlyToTransDst(VkCommandBuffer &cmdBuffer,VkImage &image);
 
         VkCommandBuffer beginSingleTimeCommands();
-        void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+        void endSingleTimeCommands(VkCommandBuffer &commandBuffer);
 
         std::string genLocalMapKey(std::string path);
 
         std::map<std::string, std::shared_ptr<Image>> textureMaps;
+
+        std::string genEmptyImageIndex();
+
+        static int EmptyImageCount;
     };
 }

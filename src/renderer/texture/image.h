@@ -61,6 +61,8 @@ namespace zidian {
 
         float getResImageWidth() const;
         float getResImageHeight() const;
+
+        std::shared_ptr<Image> autoGenSpriteSheet(std::string path);
     protected:
         std::shared_ptr<ImageResource> imageRes = nullptr;
     };
