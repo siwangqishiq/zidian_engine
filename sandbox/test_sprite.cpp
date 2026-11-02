@@ -6,6 +6,12 @@ public:
     std::shared_ptr<zidian::Image> image2;
     std::shared_ptr<zidian::Image> subImage1;
 
+    std::shared_ptr<zidian::Image> spriteImage;
+    int spriteIndex = 0;
+    float duratingSeconds = 0.8f;
+    int frameCount = 6;
+    float frameWaitTime = 0.0f;
+
     virtual void onInit() override{
         zidian::Log::brown("game", "TestSprite init");
         auto &render = zidian::Instance->getRender();
@@ -16,16 +22,41 @@ public:
 
         subImage1 = image1->buildSubImage(image1->width/ 2 , image1->height / 2, image1->width/ 2, image1->height / 2);
         image2 = subImage1->buildSubImage(subImage1->width / 2 , subImage1->height / 2, subImage1->width/ 2, subImage1->height / 2);
+
+        spriteImage = render->textureManager->loadImageByPath("images/player_full_animation.png");
     }
 
     virtual void onTick(float deltaTime) override{
         // zidian::Log::purple("game", "tick deltaTime = %f", deltaTime);
+        testSprite(deltaTime);
+        // testSubImage();
+        // testBaseSprite();
+    }
+
+    void testSprite(float deltaTime){
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
 
-        zidian::Rect srcRect = subImage1->getImageRect();
-        canvas->drawImage(subImage1, srcRect, srcRect);
+        float spriteWidth = 40.0f;
+        float spriteHeight = 64.0f;
 
+        frameWaitTime += deltaTime;
+        if(frameWaitTime >= (duratingSeconds / frameCount)){
+            spriteIndex = (spriteIndex + 1) % frameCount;
+            frameWaitTime = 0.0f;
+        }
+
+        zidian::Rect srcRect{spriteWidth + spriteIndex * spriteWidth, 0, spriteWidth, spriteHeight};
+        zidian::Rect dstRect{0.0f,0.0f,2.0f * spriteWidth,2.0f * spriteHeight};
+        canvas->drawImage(spriteImage, srcRect, dstRect);
+    }
+
+    void testSubImage(){
+        auto &render = zidian::Instance->getRender();
+        auto &canvas = render->getCanvas();
+        zidian::Rect srcRect = subImage1->getImageRect();
+        zidian::Rect dstRect = srcRect;
+        canvas->drawImage(subImage1, srcRect, dstRect);
 
         zidian::Rect srcRect2 = image2->getImageRect();
         zidian::Rect dstRect2 = srcRect2;
@@ -81,6 +112,7 @@ public:
         image1 = nullptr;
         image2 = nullptr;
         subImage1 = nullptr;
+        spriteImage = nullptr;
         zidian::AudioManager::getInstance()->dispose();
     }
 };

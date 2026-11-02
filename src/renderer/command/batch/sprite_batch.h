@@ -23,7 +23,7 @@ namespace zidian{
         std::unique_ptr<SpritePipeline> attachPipeline;
         
         std::vector<SpriteVertex> vertexData;
-
+        
         std::shared_ptr<Image> currentImage = nullptr;
     };
 }

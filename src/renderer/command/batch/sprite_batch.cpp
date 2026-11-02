@@ -47,34 +47,39 @@ namespace zidian{
             return;
         }
 
-        float uvLeft = (spriteData.srcRect.left) / static_cast<float>(spriteData.image->width);
-        float uvTop = (spriteData.srcRect.top) / static_cast<float>(spriteData.image->height);
-        float uvRight = (spriteData.srcRect.right()) / static_cast<float>(spriteData.image->width);
-        float uvBottom = (spriteData.srcRect.bottom()) / static_cast<float>(spriteData.image->height);
-
-        auto uvCoords = spriteData.image->getUvCoords();
-
         float posLeft = spriteData.dstRect.left;
         float posRight = spriteData.dstRect.right();
         float posTop = spriteData.dstRect.top;
         float posBottom = spriteData.dstRect.bottom();
 
+        // float uvLeft = (spriteData.srcRect.left) / static_cast<float>(spriteData.image->width);
+        // float uvTop = (spriteData.srcRect.top) / static_cast<float>(spriteData.image->height);
+        // float uvRight = (spriteData.srcRect.right()) / static_cast<float>(spriteData.image->width);
+        // float uvBottom = (spriteData.srcRect.bottom()) / static_cast<float>(spriteData.image->height);
+
+        auto uvCoords = spriteData.image->getUvCoords(spriteData.srcRect.left, spriteData.srcRect.top, 
+                            spriteData.srcRect.right() , spriteData.srcRect.bottom());
+
+        // Log::blue("debug", "uv %f,%f   %f,%f   %f,%f   %f,%f", 
+        //     uvCoords[0], uvCoords[1], uvCoords[2] , uvCoords[3],
+        //     uvCoords[4], uvCoords[5] , uvCoords[6] , uvCoords[7]);
+
         SpriteVertex vertex[4];
         // 0 1 2
-        vertex[0].position = glm::vec3(posRight, posTop, 1.0f);
-        vertex[0].uv = glm::vec2(uvCoords[6], uvCoords[7]);
+        vertex[0].position = glm::vec3(posLeft, posTop, 1.0f);
+        vertex[0].uv = glm::vec2(uvCoords[0], uvCoords[1]);
         vertex[0].color = spriteData.color;
 
-        vertex[1].position = glm::vec3(posLeft, posTop, 1.0f);
-        vertex[1].uv = glm::vec2(uvCoords[0], uvCoords[1]);
+        vertex[1].position = glm::vec3(posLeft, posBottom, 1.0f);
+        vertex[1].uv = glm::vec2(uvCoords[2], uvCoords[3]);
         vertex[1].color = spriteData.color;
 
-        vertex[2].position = glm::vec3(posLeft, posBottom, 1.0f);
-        vertex[2].uv = glm::vec2(uvCoords[2], uvCoords[3]);
+        vertex[2].position = glm::vec3(posRight, posBottom, 1.0f);
+        vertex[2].uv = glm::vec2(uvCoords[4], uvCoords[5]);
         vertex[2].color = spriteData.color;
 
-        vertex[3].position = glm::vec3(posRight, posBottom, 1.0f);
-        vertex[3].uv = glm::vec2(uvCoords[4], uvCoords[5]);
+        vertex[3].position = glm::vec3(posRight, posTop, 1.0f);
+        vertex[3].uv = glm::vec2(uvCoords[6], uvCoords[7]);
         vertex[3].color = spriteData.color;
 
         vertexData.emplace_back(vertex[0]);

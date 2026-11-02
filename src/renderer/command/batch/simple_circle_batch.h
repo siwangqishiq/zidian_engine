@@ -19,7 +19,7 @@ namespace zidian{
         virtual ~SimpleCircleBatch();
     private:
         std::unique_ptr<SimpleCirclePipeline> attachPipeline;
-
+        
         std::vector<SimpleCircleVertex> vertexData;
     };
 }
