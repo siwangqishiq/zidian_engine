@@ -74,7 +74,7 @@ namespace zidian{
         entity->pData = std::move(fileData);
         entity->isLoop = playLoop;
 
-        if(ma_decoder_init_memory(entity->pData.get() , 
+        if(ma_decoder_init_memory(entity->pData.get(), 
                 fileSize , nullptr , &entity->decoder) != MA_SUCCESS){
             Log::e("audio" , "loadAudioResource %s create decoder error" , path.c_str());
             return nullptr;
