@@ -268,6 +268,15 @@ namespace zidian {
             Log::green("render", "\t properties: %s",memoryPropertiesToStr(type.propertyFlags).c_str());
             Log::green("render", "\t==========================================");
         }//end for i
+
+        uint32_t extensionCount;
+        vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount , nullptr);
+        std::vector<VkExtensionProperties> extensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount , extensions.data());
+        Log::green("extension","pyshcical device extensions:");
+        for(VkExtensionProperties &prop : extensions){
+            Log::green("extension", "\t%s",prop.extensionName);
+        }//end for 
     }
 
     void Render::checkPhysicalDeviceFeatures(){

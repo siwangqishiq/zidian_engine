@@ -59,7 +59,7 @@ namespace zidian{
         std::mutex queue_mutex;
         std::condition_variable condition;
         std::atomic<bool> stop;
-
+        
         ScheduleMode mode;
 
         void workerLoop();
