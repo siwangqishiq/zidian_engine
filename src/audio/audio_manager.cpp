@@ -9,301 +9,384 @@
 
 #include "utils/log.h"
 #include "resource/asset_manager.h"
-#include <functional>
+
+#include <algorithm>
 #include <cstdint>
+#include <memory>
+#include <string>
 
-namespace zidian{
+namespace zidian {
 
-    struct AudioEntityUserData{
-        AudioEntity *entity;
-    };
+namespace {
 
-    class AudioEntity{
-    public:
-        std::string name;
-        std::unique_ptr<uint8_t[]> pData;
-        ma_device device;
-        ma_device_config deviceConfig;
-        ma_device_data_proc dataCallback;
+// AudioManager 是单例，因此整个音频系统只需要一个 ma_engine。
+// ma_engine 内部管理唯一的输出设备以及音频混音图。
+ma_engine gAudioEngine{};
+bool gAudioEngineInitialized = false;
 
-        AudioEntityUserData userData;
-
-        ma_decoder decoder;
-        bool isPlay = false;
-        bool isLoop = false;
-        bool isReleased = false;
-        unsigned long pcmFrameLength = 0;
-        double duration = 0.0f;
-        unsigned long readedFrame = 0;//记录播放时
-
-         //播放进度更新回调
-        ProgressUpdateCallbackFn onPlayProgressUpdate = nullptr;
-
-        //播放结束 回调
-        PlayEndCallbackFn onPlayEndCallback = nullptr;
-
-        void setPlayProgressUpdateCallback(ProgressUpdateCallbackFn callback){
-            onPlayProgressUpdate = callback;
-        }
-
-        void setPlayEndCallback(PlayEndCallbackFn callback){
-            onPlayEndCallback = callback;
-        }
-    };
-
-    std::unique_ptr<AudioManager>& AudioManager::getInstance(){
-        static std::unique_ptr<AudioManager> instance_;
-        if(instance_ == nullptr){
-            instance_ = std::make_unique<AudioManager>();
-        }
-        return instance_;
+bool ensureAudioEngine() {
+    if (gAudioEngineInitialized) {
+        return true;
     }
 
-    std::shared_ptr<AudioEntity> AudioManager::loadAudioEntity(std::string path , 
-        bool playLoop , bool asset_path){
-        long fileSize = 0;
-        std::unique_ptr<uint8_t[]> fileData = asset_path?
-            AssetManager::getInstance()->readAssetFileAsBinary(path , fileSize) : ReadFileAsBinary(path , fileSize);
-        Log::i("audio" , "loadAudioResource file size: %ld" , fileSize);
-        if(fileSize <= 0){
-            Log::e("audio" , "loadAudioResource read file %s failed" , path.c_str());
-        }
-        
-        std::shared_ptr<AudioEntity> entity = std::make_shared<AudioEntity>();
-        entity->name = path;
-        entity->pData = std::move(fileData);
-        entity->isLoop = playLoop;
-
-        if(ma_decoder_init_memory(entity->pData.get(), 
-                fileSize , nullptr , &entity->decoder) != MA_SUCCESS){
-            Log::e("audio" , "loadAudioResource %s create decoder error" , path.c_str());
-            return nullptr;
-        }
-
-        Log::i("audio" , "%s info channel: %d  sampleRate: %d  outputFormat : %d" , 
-            path.c_str() , 
-            entity->decoder.outputChannels,
-            entity->decoder.outputSampleRate,
-            entity->decoder.outputFormat);
-
-
-        ma_uint64 pcmLength;
-        if(ma_data_source_get_length_in_pcm_frames(&entity->decoder, &pcmLength)!= MA_SUCCESS){
-            Log::e("audio" , "framesRead occur error!");
-        }
-        Log::i("audio" , "frames length: %lu" , pcmLength);
-        entity->pcmFrameLength = pcmLength;
-        const double durationTime = static_cast<double>(pcmLength) / entity->decoder.outputSampleRate;
-        entity->duration = durationTime;
-        Log::i("audio" , "durationTime: %f" , durationTime);
-        
-
-        entity->dataCallback = [](ma_device* pDevice, void* pOutput, const void* pInput, 
-            ma_uint32 frameCount){
-            const AudioEntityUserData *userData = static_cast<AudioEntityUserData *>(pDevice->pUserData);
-            AudioEntity *audioEntity = static_cast<AudioEntity *>(userData->entity);
-
-            ma_decoder* pDecoder = &audioEntity->decoder;
-            if (pDecoder == nullptr) {
-                std::cout << "audio play callback deocoder is null" << std::endl;
-                return;
-            }
-
-            // std::cout << "audio play " << audioEntity->isPlay << std::endl;
-            if(audioEntity->isPlay){
-                ma_uint64 readCount;
-                ma_data_source_read_pcm_frames(pDecoder, pOutput, frameCount, &readCount);
-                audioEntity->readedFrame += readCount;
-                // Log::i("audio","play audio %u / %u" , audioEntity->readedFrame , audioEntity->pcmFrameLength);
-
-                if(audioEntity->onPlayProgressUpdate != nullptr){
-                    audioEntity->onPlayProgressUpdate(audioEntity->readedFrame , audioEntity->pcmFrameLength , audioEntity->duration);
-                }
-
-
-                if(readCount < frameCount){
-                    audioEntity->readedFrame = 0;
-                    ma_decoder_seek_to_pcm_frame(pDecoder , 0);
-
-                    if(audioEntity->onPlayEndCallback != nullptr){
-                        audioEntity->onPlayEndCallback(audioEntity->name);
-                    }
-
-                    if(!(audioEntity->isLoop)){
-                        audioEntity->isPlay = false;
-                    }
-                }
-            }
-        };
-
-        entity->deviceConfig = ma_device_config_init(ma_device_type_playback);
-        entity->deviceConfig.playback.format   = entity->decoder.outputFormat;
-        entity->deviceConfig.playback.channels = entity->decoder.outputChannels;
-        entity->deviceConfig.sampleRate        = entity->decoder.outputSampleRate;
-        entity->userData.entity = entity.get();
-
-        entity->deviceConfig.pUserData = &(entity->userData);
-        entity->deviceConfig.dataCallback = entity->dataCallback;
-
-        if(ma_device_init(nullptr, &(entity->deviceConfig), &(entity->device)) != MA_SUCCESS) {
-            Log::i("audio" , "loadAudioResource ma_device_init error");
-            ma_decoder_uninit(&(entity->decoder));
-            return nullptr;
-        }
-
-        entity->isPlay = false;
-        return entity;
+    ma_result result = ma_engine_init(nullptr, &gAudioEngine);
+    if (result != MA_SUCCESS) {
+        Log::e("audio", "ma_engine_init failed: %d", result);
+        return false;
     }
 
-    void AudioManager::playAudioEntity(std::shared_ptr<AudioEntity> entity){
-        if(entity == nullptr){
-            return;
-        }
+    gAudioEngineInitialized = true;
+    return true;
+}
 
-        entity->isPlay = true;
-        if (ma_device_start(&(entity->device)) != MA_SUCCESS) {
-            Log::i("audio" , "Failed to start playback device");
-        }
+} // namespace
+
+class AudioEntity {
+public:
+    std::string name;
+
+    // 保留原始文件数据。decoder 使用内存作为输入数据源，
+    // 因此在 decoder / sound 释放前不能释放这块内存。
+    std::unique_ptr<uint8_t[]> pData;
+
+    ma_decoder decoder{};
+    ma_sound sound{};
+
+    bool isPlay = false;
+    bool isLoop = false;
+    bool isReleased = false;
+
+    ma_uint64 pcmFrameLength = 0;
+    double duration = 0.0;
+    ma_uint64 readedFrame = 0;
+
+    ProgressUpdateCallbackFn onPlayProgressUpdate = nullptr;
+    PlayEndCallbackFn onPlayEndCallback = nullptr;
+
+    void setPlayProgressUpdateCallback(ProgressUpdateCallbackFn callback) {
+        onPlayProgressUpdate = callback;
     }
 
-    void AudioManager::stopAudioEntity(std::shared_ptr<AudioEntity> entity){
-        if(entity == nullptr){
-            return;
-        }
+    void setPlayEndCallback(PlayEndCallbackFn callback) {
+        onPlayEndCallback = callback;
+    }
+};
 
-        entity->isPlay = false;
-        if (ma_device_stop(&(entity->device)) != MA_SUCCESS) {
-            Log::i("audio" , "Failed to stop playback device");
-        }
+// ma_sound 自然播放结束时由 miniaudio 调用。
+// 注意：该回调运行在音频线程，不要在其中执行阻塞操作或释放其他音频资源。
+static void onSoundEnd(void* pUserData, ma_sound* /*pSound*/) {
+    auto* entity = static_cast<AudioEntity*>(pUserData);
+    if (entity == nullptr || entity->isReleased) {
+        return;
     }
 
-    bool AudioManager::isPlayAudioEntity(std::shared_ptr<AudioEntity> entity){
-        if(entity == nullptr){
-            return false;
-        }
+    entity->isPlay = false;
+    entity->readedFrame = 0;
 
-        return entity->isPlay;
+    if (entity->onPlayEndCallback != nullptr) {
+        entity->onPlayEndCallback(entity->name);
+    }
+}
+
+std::unique_ptr<AudioManager>& AudioManager::getInstance() {
+    static std::unique_ptr<AudioManager> instance_;
+    if (instance_ == nullptr) {
+        instance_ = std::make_unique<AudioManager>();
+    }
+    return instance_;
+}
+
+std::shared_ptr<AudioEntity> AudioManager::loadAudioEntity(
+    std::string path,
+    bool playLoop,
+    bool asset_path
+) {
+    if (!ensureAudioEngine()) {
+        return nullptr;
     }
 
-    void AudioManager::restartAudioEntity(std::shared_ptr<AudioEntity> entity){
-        if(entity == nullptr){
-            return;
-        }
+    long fileSize = 0;
+    std::unique_ptr<uint8_t[]> fileData = asset_path
+        ? AssetManager::getInstance()->readAssetFileAsBinary(path, fileSize)
+        : ReadFileAsBinary(path, fileSize);
 
-        ma_decoder_seek_to_pcm_frame(&entity->decoder , 0);
-        playAudioEntity(entity);
+    if (fileData == nullptr || fileSize <= 0) {
+        Log::e("audio", "loadAudioResource read file %s failed", path.c_str());
+        return nullptr;
     }
 
-    void AudioManager::setAudioPlayProgressCallback(std::shared_ptr<AudioEntity> entity , ProgressUpdateCallbackFn callback){
-        if(entity == nullptr){
-            return;
-        }
+    auto entity = std::make_shared<AudioEntity>();
+    entity->name = path;
+    entity->pData = std::move(fileData);
+    entity->isLoop = playLoop;
 
-        entity->setPlayProgressUpdateCallback(callback);
+    ma_result result = ma_decoder_init_memory(
+        entity->pData.get(),
+        static_cast<size_t>(fileSize),
+        nullptr,
+        &entity->decoder
+    );
+
+    if (result != MA_SUCCESS) {
+        Log::e("audio", "loadAudioResource %s create decoder error: %d",
+               path.c_str(), result);
+        entity->pData.reset();
+        return nullptr;
     }
 
-    void AudioManager::setAudioPlayEndCallback(std::shared_ptr<AudioEntity> entity , PlayEndCallbackFn callback){
-        if(entity == nullptr){
-            return;
-        }
+    Log::i(
+        "audio",
+        "%s info channel: %d sampleRate: %d outputFormat: %d",
+        path.c_str(),
+        entity->decoder.outputChannels,
+        entity->decoder.outputSampleRate,
+        entity->decoder.outputFormat
+    );
 
-        entity->setPlayEndCallback(callback);
+    ma_uint64 pcmLength = 0;
+    result = ma_data_source_get_length_in_pcm_frames(
+        &entity->decoder,
+        &pcmLength
+    );
+
+    if (result != MA_SUCCESS) {
+        Log::e("audio", "get audio frame length failed: %d", result);
+        ma_decoder_uninit(&entity->decoder);
+        entity->pData.reset();
+        return nullptr;
     }
 
-    AudioInfo AudioManager::getAudioEntityInfo(std::shared_ptr<AudioEntity> entity){
-        AudioInfo retInfo;
+    entity->pcmFrameLength = pcmLength;
+    entity->duration = entity->decoder.outputSampleRate > 0
+        ? static_cast<double>(pcmLength) /
+              static_cast<double>(entity->decoder.outputSampleRate)
+        : 0.0;
 
-        if(entity == nullptr){
-            return retInfo;
-        }
+    Log::i("audio", "frames length: %llu", pcmLength);
+    Log::i("audio", "durationTime: %f", entity->duration);
 
-        retInfo.duration = entity->duration;
-        retInfo.isLoop = entity->isLoop;
-        retInfo.isPlay = entity->isPlay;
-        retInfo.pcmFrameLength = entity->pcmFrameLength;
-        retInfo.readedFrame = entity->readedFrame;
-        retInfo.name = entity->name;
 
+    result = ma_sound_init_from_data_source(
+        &gAudioEngine,
+        &entity->decoder,
+        0,
+        nullptr,
+        &entity->sound
+    );
+
+    if (result != MA_SUCCESS) {
+        Log::e("audio", "ma_sound_init_from_data_source failed: %d", result);
+        ma_decoder_uninit(&entity->decoder);
+        entity->pData.reset();
+        return nullptr;
+    }
+
+    // 设置是否循环播放
+    ma_sound_set_looping(
+        &entity->sound,
+        playLoop ? MA_TRUE : MA_FALSE
+    );
+
+    ma_sound_set_end_callback(&entity->sound, onSoundEnd, entity.get());
+
+    entity->isPlay = false;
+    entity->isReleased = false;
+
+    return entity;
+}
+
+void AudioManager::playAudioEntity(std::shared_ptr<AudioEntity> entity) {
+    if (entity == nullptr || entity->isReleased) {
+        return;
+    }
+
+    if (!ensureAudioEngine()) {
+        return;
+    }
+
+    ma_result result = ma_sound_start(&entity->sound);
+    if (result != MA_SUCCESS) {
+        Log::e("audio", "ma_sound_start failed: %d", result);
+        return;
+    }
+
+    entity->isPlay = true;
+}
+
+void AudioManager::stopAudioEntity(std::shared_ptr<AudioEntity> entity) {
+    if (entity == nullptr || entity->isReleased) {
+        return;
+    }
+
+    ma_result result = ma_sound_stop(&entity->sound);
+    if (result != MA_SUCCESS) {
+        Log::e("audio", "ma_sound_stop failed: %d", result);
+    }
+
+    entity->isPlay = false;
+}
+
+bool AudioManager::isPlayAudioEntity(std::shared_ptr<AudioEntity> entity) {
+    if (entity == nullptr || entity->isReleased) {
+        return false;
+    }
+
+    return ma_sound_is_playing(&entity->sound) == MA_TRUE;
+}
+
+void AudioManager::restartAudioEntity(std::shared_ptr<AudioEntity> entity) {
+    if (entity == nullptr || entity->isReleased) {
+        return;
+    }
+
+    ma_result result = ma_sound_seek_to_pcm_frame(&entity->sound, 0);
+    if (result != MA_SUCCESS) {
+        Log::e("audio", "ma_sound_seek_to_pcm_frame failed: %d", result);
+        return;
+    }
+
+    playAudioEntity(entity);
+}
+
+void AudioManager::setAudioPlayProgressCallback(
+    std::shared_ptr<AudioEntity> entity,
+    ProgressUpdateCallbackFn callback
+) {
+    if (entity == nullptr || entity->isReleased) {
+        return;
+    }
+
+    entity->setPlayProgressUpdateCallback(callback);
+}
+
+void AudioManager::setAudioPlayEndCallback(
+    std::shared_ptr<AudioEntity> entity,
+    PlayEndCallbackFn callback
+) {
+    if (entity == nullptr || entity->isReleased) {
+        return;
+    }
+
+    entity->setPlayEndCallback(callback);
+}
+
+AudioInfo AudioManager::getAudioEntityInfo(std::shared_ptr<AudioEntity> entity) {
+    AudioInfo retInfo{};
+
+    if (entity == nullptr || entity->isReleased) {
         return retInfo;
     }
 
-    void AudioManager::releaseAudioEntity(std::shared_ptr<AudioEntity> entity){
-        if(entity == nullptr){
-            return;
-        }
-
-        Log::i("audio" , "audio %s release" , entity->name.c_str());
-
-        if(entity->isReleased){
-            Log::i("audio" , "this audio %s had been released" , entity->name.c_str());
-            return;    
-        }
-
-        entity->isPlay = false;
-        ma_device_stop(&(entity->device));
-
-        ma_device_uninit(&(entity->device));
-        ma_decoder_uninit(&(entity->decoder));
-        entity->pData = nullptr;
-        entity->isReleased = true;
+    ma_uint64 cursor = 0;
+    if (ma_sound_get_cursor_in_pcm_frames(&entity->sound, &cursor) == MA_SUCCESS) {
+        entity->readedFrame = cursor;
     }
 
-    //载入音频资源
-    std::shared_ptr<AudioEntity> AudioManager::loadAudio(
-        std::string path,
-        std::string key, 
-        bool playloop, bool asset_path){
-        
-        auto entity = loadAudioEntity(path, playloop, asset_path);
-        if(audioMap_[key] != nullptr){
-            releaseAudioEntity(audioMap_[key]);
-        }
+    retInfo.duration = entity->duration;
+    retInfo.isLoop = entity->isLoop;
+    retInfo.isPlay = ma_sound_is_playing(&entity->sound) == MA_TRUE;
+    retInfo.pcmFrameLength = entity->pcmFrameLength;
+    retInfo.readedFrame = entity->readedFrame;
+    retInfo.name = entity->name;
 
-        audioMap_[key] = entity;
-        return entity;
-    }
-
-    //播放音频
-    void AudioManager::playAudio(std::string key){
-        auto entity = audioMap_[key];
-        playAudioEntity(entity);
-    }
-
-    //停止播放
-    void AudioManager::stopAudio(std::string key){
-        auto entity = audioMap_[key];
-        stopAudioEntity(entity);
-    }
-
-    //重新开始播放
-    void AudioManager::restartAudio(std::string key){
-        auto entity = audioMap_[key];
-        restartAudioEntity(entity);
-    }
-
-    //
-    void AudioManager::releaseAudio(std::string key){
-        auto entity = audioMap_[key];
-        releaseAudioEntity(entity);
-        audioMap_.erase(key);
-    }
-
-    void AudioManager::init(){
-        Log::i("audio" , "audio manager init");
-    }
-
-    //释放载入的音频资源    
-    void AudioManager::dispose(){
-        Log::i("audio" , "audio manager dispose");
-
-        for(auto &pair : audioMap_){
-            if(pair.second != nullptr){
-                releaseAudioEntity(pair.second);
-            }
-        }//end for each;
-
-        audioMap_.clear();
-    }
-
+    return retInfo;
 }
 
+void AudioManager::releaseAudioEntity(std::shared_ptr<AudioEntity> entity) {
+    if (entity == nullptr || entity->isReleased) {
+        return;
+    }
+
+    Log::i("audio", "audio %s release", entity->name.c_str());
+
+    entity->isPlay = false;
+
+    // 先释放 sound，确保它不再引用 decoder；
+    // 再释放 decoder 和其依赖的原始内存。
+    ma_sound_stop(&entity->sound);
+    ma_sound_uninit(&entity->sound);
+    ma_decoder_uninit(&entity->decoder);
+
+    entity->pData.reset();
+    entity->isReleased = true;
+}
+
+std::shared_ptr<AudioEntity> AudioManager::loadAudio(
+    std::string path,
+    std::string key,
+    bool playloop,
+    bool asset_path
+) {
+    auto entity = loadAudioEntity(path, playloop, asset_path);
+    if (entity == nullptr) {
+        return nullptr;
+    }
+
+    auto it = audioMap_.find(key);
+    if (it != audioMap_.end()) {
+        releaseAudioEntity(it->second);
+        it->second = entity;
+    } else {
+        audioMap_.emplace(key, entity);
+    }
+
+    return entity;
+}
+
+void AudioManager::playAudio(std::string key) {
+    auto it = audioMap_.find(key);
+    if (it != audioMap_.end()) {
+        playAudioEntity(it->second);
+    }
+}
+
+void AudioManager::stopAudio(std::string key) {
+    auto it = audioMap_.find(key);
+    if (it != audioMap_.end()) {
+        stopAudioEntity(it->second);
+    }
+}
+
+void AudioManager::restartAudio(std::string key) {
+    auto it = audioMap_.find(key);
+    if (it != audioMap_.end()) {
+        restartAudioEntity(it->second);
+    }
+}
+
+void AudioManager::releaseAudio(std::string key) {
+    auto it = audioMap_.find(key);
+    if (it == audioMap_.end()) {
+        return;
+    }
+
+    releaseAudioEntity(it->second);
+    audioMap_.erase(it);
+}
+
+void AudioManager::init() {
+    Log::i("audio", "audio manager init");
+
+    if (!ensureAudioEngine()) {
+        Log::e("audio", "audio manager init failed");
+    }
+}
+
+void AudioManager::dispose() {
+    Log::i("audio", "audio manager dispose");
+
+    for (auto& pair : audioMap_) {
+        if (pair.second != nullptr) {
+            releaseAudioEntity(pair.second);
+        }
+    }
+
+    audioMap_.clear();
+
+    if (gAudioEngineInitialized) {
+        ma_engine_uninit(&gAudioEngine);
+        gAudioEngineInitialized = false;
+    }
+}
+
+} // namespace zidian
