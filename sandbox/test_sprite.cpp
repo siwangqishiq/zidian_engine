@@ -139,7 +139,7 @@ void TestSpriteDraw1(){
     config.windowHeight = 720;
     config.isRecordLog = true;
     config.isFullScreen = false;
-    config.clearColor = glm::vec4(1.0f, 1.0f , 1.0f , 1.0f);
+    config.clearColor = glm::vec4(0.0f, 0.0f , 0.0f , 1.0f);
 
     zidian::Application app;
     app.setGameObject(std::make_shared<TestSpriteDraw>());

@@ -22,6 +22,8 @@ namespace zidian{
         VkSampler nearestSampler = VK_NULL_HANDLE;
 
         std::shared_ptr<Image> createEmptyImage(uint32_t width, uint32_t height, glm::vec4 color);
+        
+        std::shared_ptr<Image> autoGenSpriteSheet(std::shared_ptr<Image> parentImage, std::string path);
     private:
         Render &ctx;
 

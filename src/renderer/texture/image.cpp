@@ -5,7 +5,8 @@
 namespace zidian {
     const float epsilon = 0.0000000001f;
 
-    ImageResource::ImageResource(VkDevice d, uint32_t width_ , uint32_t height_) : device(d),width(width_),height(height_){
+    ImageResource::ImageResource(VkDevice d, uint32_t width_ , uint32_t height_) 
+        : device(d),width(width_),height(height_){
     }
 
     ImageResource::ImageResource(VkDevice d) : device(d), width(0),height(0){
@@ -178,12 +179,21 @@ namespace zidian {
         return subImage;
     }
 
-    std::shared_ptr<Image> Image::autoGenSpriteSheet(std::string path){
-        return nullptr;
-    }
+    // // 将path指定的文件路径解析
+    // // 将image自动设置为当前image的子image
+    // std::shared_ptr<Image> Image::autoGenSpriteSheet(std::string path){
+    //     return nullptr;
+    // }
 
     Image::~Image(){
         Log::i("Image", "Image %s is free", name.c_str());
+    }
+
+
+    ImageRegionRecord::ImageRegionRecord(){
+    }
+
+    ImageRegionRecord::~ImageRegionRecord(){
     }
 }
 

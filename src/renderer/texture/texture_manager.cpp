@@ -143,6 +143,25 @@ namespace zidian {
         Log::i("texture_manager","create texture descriptor set");
     }
 
+    std::shared_ptr<Image> TextureManager::autoGenSpriteSheet(std::shared_ptr<Image> parentImage, std::string path){
+        if(parentImage == nullptr || path.empty()){
+            return nullptr;
+        }
+
+        Log::i("texture_manager","load file %s",path.c_str());
+        int width, height;
+        int channel;
+        auto pixels = AssetManager::getInstance()->readAssetImageFile(path, width, height, channel);
+        if(!pixels || width == 0 || height == 0){
+            Log::e("texture_manager","load %s failed", path.c_str());
+            return nullptr;
+        }
+        Log::i("texture_manager","read %s success size %d x %d   channel %d", path.c_str(), width , height , channel);
+        AssetManager::getInstance()->freePixels(pixels);
+        
+        return nullptr;
+    }
+
     void TextureManager::createSampler(VkSampler &sampler){
         VkSamplerCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
