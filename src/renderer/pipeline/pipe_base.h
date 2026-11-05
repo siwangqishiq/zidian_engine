@@ -2,7 +2,6 @@
 
 #include "renderer/pipeline/pipeline_manager.h"
 #include <vector>
-#include <array>
 
 namespace zidian{
     class Render;
