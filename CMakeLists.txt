@@ -22,6 +22,7 @@ file(GLOB_RECURSE GLSL_FILES
     CONFIGURE_DEPENDS
     "${SHADER_SOURCE_DIR}/*.vert"
     "${SHADER_SOURCE_DIR}/*.frag"
+    "${SHADER_SOURCE_DIR}/*.comp"
 )
 
 set(SPV_FILES)

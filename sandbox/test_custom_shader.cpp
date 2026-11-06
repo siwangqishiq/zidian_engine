@@ -15,6 +15,11 @@ public:
         pid2 = render->pipelineManager->createCustomShaderPipeline("custom_shader2");
 
         gridShader = render->pipelineManager->createCustomShaderPipeline("custom_grid");
+
+        zidian::Instance->getThreadPool()->enqueue([](){
+            zidian::AudioManager::getInstance()->loadAudio("sound/lace.mp3","lace",true);
+            zidian::AudioManager::getInstance()->playAudio("lace");
+        });
     }
 
     virtual void onTick(float deltaTime) override{
@@ -23,11 +28,12 @@ public:
         auto &canvas = render->getCanvas();
 
         // canvas->drawCustomShader(pid1, 0.0f, 0.0f, 300.0f , 300.0f);
-        // canvas->drawCustomShader(pid2, 200.0f + 100, 100.0f, 200.0f , 200.0f);
-        canvas->drawCustomShader(gridShader , 0.0f, 0.0f, 300.0f , 300.0f);
+        canvas->drawCustomShader(pid2, 600.0f, 0.0f, 200.0f , 200.0f);
+        canvas->drawCustomShader(gridShader , 0.0f, 0.0f, 600.0f , 600.0f);
     }
     
     virtual void onDispose() override {
+        zidian::AudioManager::getInstance()->dispose();
         zidian::Log::brown("game", "game dispose");
     }
 };
