@@ -5,12 +5,16 @@ public:
     zidian::CustomShaderPipelineId pid1 = -1;
     zidian::CustomShaderPipelineId pid2 = -1;
 
+    zidian::CustomShaderPipelineId gridShader = -1;
+
     virtual void onInit() override{
         zidian::Log::brown("game", "TestCustomShaderCase init");
         auto &render = zidian::Instance->getRender();
         
         pid1 = render->pipelineManager->createCustomShaderPipeline("custom_shader1");
         pid2 = render->pipelineManager->createCustomShaderPipeline("custom_shader2");
+
+        gridShader = render->pipelineManager->createCustomShaderPipeline("custom_grid");
     }
 
     virtual void onTick(float deltaTime) override{
@@ -18,8 +22,9 @@ public:
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
 
-        canvas->drawCustomShader(pid1, 0.0f, 0.0f, 300.0f , 300.0f);
+        // canvas->drawCustomShader(pid1, 0.0f, 0.0f, 300.0f , 300.0f);
         // canvas->drawCustomShader(pid2, 200.0f + 100, 100.0f, 200.0f , 200.0f);
+        canvas->drawCustomShader(gridShader , 0.0f, 0.0f, 300.0f , 300.0f);
     }
     
     virtual void onDispose() override {

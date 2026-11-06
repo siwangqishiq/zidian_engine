@@ -20,7 +20,7 @@ int main() {
     // TestCircleDraw();
     // TestTestMultiPipeline();
     // TestPictureShow();
-    TestSpriteDraw1();
-    // TestCustomShader();
+    // TestSpriteDraw1();
+    TestCustomShader();
     return 0;
 }//end main
