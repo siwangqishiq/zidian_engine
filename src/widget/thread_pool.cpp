@@ -36,7 +36,7 @@ namespace zidian{
 
                 if (stop && tasks.empty())
                     return;
-
+                
                 if (mode == ScheduleMode::FIFO) {
                     task = std::move(tasks.front());
                     tasks.pop_front();

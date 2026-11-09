@@ -12,6 +12,10 @@ extern void TestPictureShow();
 
 extern void TestCustomShader();
 
+extern void TestGeometryRational();
+
+extern void TestGeometryQuadratic();
+
 int main() {
     // TestLogs();
     // TestApplication();
@@ -21,6 +25,10 @@ int main() {
     // TestTestMultiPipeline();
     // TestPictureShow();
     // TestSpriteDraw1();
-    TestCustomShader();
+    // TestCustomShader();
+
+    // TestGeometryRational();
+
+    TestGeometryQuadratic();
     return 0;
 }//end main

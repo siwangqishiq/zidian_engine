@@ -13,6 +13,10 @@
 #include "audio/audio_manager.h"
 #include "renderer/pipeline/pipe_common.h"
 
+#include "geometry/rational.h"
+#include "geometry/quadratic_field.h"
+#include "geometry/quadratic_number.h"
+
 namespace zidian{
     std::string Version();
     std::string Name();
