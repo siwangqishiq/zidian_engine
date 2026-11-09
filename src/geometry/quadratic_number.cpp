@@ -151,6 +151,37 @@ namespace zidian {
         return sign() < 0;
     }
 
+    bool QuadraticNumber::operator<(const QuadraticNumber& other) const{
+        checkSameField(other);
+        return (*this - other).sign() < 0;
+    }
+
+    bool QuadraticNumber::operator<=(const QuadraticNumber& other) const{
+        checkSameField(other);
+        return (*this - other).sign() <= 0;
+    }
+
+    bool QuadraticNumber::operator>(const QuadraticNumber& other) const{
+        checkSameField(other);
+        return (*this - other).sign() > 0;
+    }
+
+    bool QuadraticNumber::operator>=(const QuadraticNumber& other) const{
+        checkSameField(other);
+        return (*this - other).sign() >= 0;
+    }
+
+    //求共轭数
+    QuadraticNumber QuadraticNumber::conjugate() const{
+        return QuadraticNumber(field_, a_, -1 * b_);
+    }
+
+    //范数
+    Rational QuadraticNumber::norm() const{
+        const Rational& d = field_.getD();
+        return a_ * a_ - b_ * b_ * d;
+    }
+
     // 普通加法
     QuadraticNumber operator+(const QuadraticNumber& lhs,const QuadraticNumber& rhs) {
         QuadraticNumber result = lhs;

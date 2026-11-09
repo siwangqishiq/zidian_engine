@@ -30,6 +30,18 @@ namespace zidian {
         bool isPositive() const;
         bool isNegative() const;
 
+
+        bool operator<(const QuadraticNumber& other) const;
+        bool operator<=(const QuadraticNumber& other) const;
+        bool operator>(const QuadraticNumber& other) const;
+        bool operator>=(const QuadraticNumber& other) const;
+
+        // 共轭：a - b√d
+        QuadraticNumber conjugate() const;
+
+        // 范数：a² - b²d
+        Rational norm() const;
+
     private:
         const QuadraticField& field_;
 
