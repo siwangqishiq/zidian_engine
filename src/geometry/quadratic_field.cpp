@@ -1,52 +1,50 @@
 #include "geometry/quadratic_field.h"
-#include <stdexcept>
-#include <cmath>
+#include "geometry/quadratic_number.h"
 #include <limits>
+#include <stdexcept>
 
 namespace zidian {
-    QuadraticField::QuadraticField(const Rational& d) : d_(d) {
-        if (d_.sign() <= 0) {
-            throw std::invalid_argument("d must be positive");
+    QuadraticField::QuadraticField() = default;
+
+    QuadraticField::QuadraticField(
+        const QuadraticField& parent,
+        const QuadraticNumber& radicand
+    ): parent_(&parent),radicand_(&radicand) {
+        if (&radicand.getField() != &parent) {
+            throw std::invalid_argument(
+                "Radicand must belong to parent field"
+            );
         }
 
-        if (isRationalSquare(d_)) {
-            throw std::invalid_argument("d must not be a rational square");
-        }
-    }
+        level_ = parent.getLevel() + 1;
 
-    const Rational& QuadraticField::getD() const {
-        return d_;
-    }
-
-    bool QuadraticField::operator==(const QuadraticField& other) const {
-        return d_ == other.d_;
-    }
-
-    bool QuadraticField::operator!=(const QuadraticField& other) const {
-        return !(*this == other);
-    }
-
-    bool QuadraticField::isRationalSquare(const Rational& value) {
-        const Integer numerator = value.getNumerator();
-        const Integer denominator = value.getDenominator();
-
-        return isPerfectSquare(numerator) && isPerfectSquare(denominator);
-    }
-
-    bool QuadraticField::isPerfectSquare(Integer value) {
-        if (value < 0) {
-            return false;
+        // 检查维度翻倍是否溢出
+        if (parent.getDimension() > std::numeric_limits<size_t>::max() / 2) {
+            throw std::overflow_error(
+                "Quadratic field dimension overflow"
+            );
         }
 
-        const Integer root = static_cast<Integer>(
-            std::sqrt(static_cast<long double>(value))
-        );
+        dimension_ = parent.getDimension() * 2;
+    }
 
-        // 使用除法验证，避免 root * root 溢出。
-        return root == 0
-            ? value == 0
-            : (value / root == root && value % root == 0)
-            || ((root + 1) <= value / (root + 1)
-                && (root + 1) * (root + 1) == value);
+    bool QuadraticField::isBaseField() const {
+        return parent_ == nullptr;
+    }
+
+    size_t QuadraticField::getLevel() const {
+        return level_;
+    }
+
+    size_t QuadraticField::getDimension() const {
+        return dimension_;
+    }
+
+    const QuadraticField* QuadraticField::getParent() const {
+        return parent_;
+    }
+
+    const QuadraticNumber* QuadraticField::getRadicand() const {
+        return radicand_;
     }
 }

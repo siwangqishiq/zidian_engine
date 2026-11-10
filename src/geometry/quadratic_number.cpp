@@ -1,212 +1,656 @@
 #include "geometry/quadratic_number.h"
+#include "geometry/quadratic_field.h"
 
 #include <stdexcept>
+#include <sstream>
+#include <cmath>
+#include <algorithm>
 
 namespace zidian {
-    QuadraticNumber::QuadraticNumber(const QuadraticField& field,const Rational& a,const Rational& b)
-        : field_(field), a_(a), b_(b) {
+    using Coefficients = std::vector<Rational>;
+
+    //比较两个数阈是否一样 不一样抛出异常
+    void checkSameField(const QuadraticField& lhs,const QuadraticField& rhs) {
+        if (&lhs != &rhs) {
+            throw std::invalid_argument("QuadraticNumber field mismatch");
+        }
     }
 
+    void checkDimension(const QuadraticField& field,const Coefficients& coefficients) {
+        if (coefficients.size() != field.getDimension()) {
+            throw std::invalid_argument("QuadraticNumber coefficient count mismatch");
+        }
+    }
+
+    //系数加法
+    Coefficients add(const Coefficients& lhs,const Coefficients& rhs) {
+        Coefficients result(lhs.size());
+
+        for (size_t i = 0; i < lhs.size(); ++i) {
+            result[i] = lhs[i] + rhs[i];
+        }
+
+        return result;
+    }
+
+    //系数减法
+    Coefficients subtract(const Coefficients& lhs,const Coefficients& rhs) {
+        Coefficients result(lhs.size());
+
+        for (size_t i = 0; i < lhs.size(); ++i) {
+            result[i] = lhs[i] - rhs[i];
+        }
+
+        return result;
+    }
+
+    //系数求反
+    Coefficients negate(const Coefficients& value) {
+        Coefficients result(value.size());
+
+        for (size_t i = 0; i < value.size(); ++i) {
+            result[i] = -value[i];
+        }
+
+        return result;
+    }
+
+    //系数乘以一个有理数
+    Coefficients multiplyByRational(const Coefficients& value,const Rational& scalar) {
+        Coefficients result(value.size());
+
+        for (size_t i = 0; i < value.size(); ++i) {
+            result[i] = value[i] * scalar;
+        }
+
+        return result;
+    }
+
+    bool isZeroCoefficients(const Coefficients& value) {
+        for (const auto& coefficient : value) {
+            if (!coefficient.isZero()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    QuadraticNumber::QuadraticNumber(const QuadraticField& field)
+        : field_(field),coefficients_(field.getDimension(), Rational(0)) {
+    }
+
+    QuadraticNumber::QuadraticNumber(
+        const QuadraticField& field,
+        const Rational& value
+    ) : field_(field),coefficients_(field.getDimension(), Rational(0)) {
+        coefficients_[0] = value;
+    }
+
+    QuadraticNumber::QuadraticNumber(
+        const QuadraticField& field,
+        const std::vector<Rational>& coefficients
+    ) : field_(field),coefficients_(coefficients) {
+        checkDimension(field_, coefficients_);
+    }
+
+    QuadraticNumber::QuadraticNumber(
+        const QuadraticField& field,
+        const Rational& a,
+        const Rational& b
+    ) : field_(field), coefficients_{a, b}
+    {
+        checkDimension(field_, coefficients_);
+    }
 
     const QuadraticField& QuadraticNumber::getField() const {
         return field_;
     }
 
-    const Rational& QuadraticNumber::getA() const {
-        return a_;
+    const std::vector<Rational>& QuadraticNumber::getCoefficients() const {
+        return coefficients_;
     }
 
-    const Rational& QuadraticNumber::getB() const {
-        return b_;
+    bool QuadraticNumber::isZero() const {
+        return ::zidian::isZeroCoefficients(coefficients_);
     }
 
-    void QuadraticNumber::checkSameField(const QuadraticNumber& other) const {
-        if (field_ != other.field_) {
-            throw std::invalid_argument("QuadraticNumber: different fields");
+    // ============================================================
+    // 递归乘法
+    //
+    // K = K_parent(sqrt(d))
+    //
+    // x = A + B * sqrt(d)
+    // y = C + D * sqrt(d)
+    //
+    // xy = (AC + dBD) + (AD + BC) * sqrt(d)
+    // ============================================================
+
+    Coefficients multiply(
+        const QuadraticField& field,
+        const Coefficients& lhs,
+        const Coefficients& rhs
+    ) {
+        // 基础数域 Q
+        if (field.isBaseField()) {
+            return { lhs[0] * rhs[0] };
         }
+
+        const QuadraticField& parent = *field.getParent();
+
+        const size_t half = parent.getDimension();
+
+        // x = A + B * sqrt(d)
+        Coefficients a(lhs.begin(), lhs.begin() + half);
+        Coefficients b(lhs.begin() + half, lhs.end());
+
+        // y = C + D * sqrt(d)
+        Coefficients c(rhs.begin(), rhs.begin() + half);
+        Coefficients d(rhs.begin() + half, rhs.end());
+
+        // AC
+        Coefficients ac = multiply(parent, a, c);
+
+        // BD
+        Coefficients bd = multiply(parent, b, d);
+
+        // AD
+        Coefficients ad = multiply(parent, a, d);
+
+        // BC
+        Coefficients bc = multiply(parent, b, c);
+
+        // 当前层的 radicand
+        const Coefficients& radicand =
+            field.getRadicand()->getCoefficients();
+
+        // low = AC + radicand * BD
+        Coefficients low = add(
+            ac,
+            multiply(
+                parent,
+                radicand,
+                bd
+            )
+        );
+
+        // high = AD + BC
+        Coefficients high = add(ad, bc);
+
+        // 重新组合系数
+        low.insert(
+            low.end(),
+            high.begin(),
+            high.end()
+        );
+
+        return low;
     }
 
-    // 加法
-    QuadraticNumber& QuadraticNumber::operator+=(const QuadraticNumber& other) {
-        checkSameField(other);
+    // ============================================================
+    // 递归除法
+    //
+    // x / y = x * conjugate(y) / norm(y)
+    //
+    // norm(y) = C² - dD²
+    // ============================================================
 
-        a_ += other.a_;
-        b_ += other.b_;
-
-        return *this;
-    }
-
-    // 减法
-    QuadraticNumber& QuadraticNumber::operator-=(const QuadraticNumber& other) {
-        checkSameField(other);
-
-        a_ -= other.a_;
-        b_ -= other.b_;
-
-        return *this;
-    }
-
-    // 乘法
-    QuadraticNumber& QuadraticNumber::operator*=(const QuadraticNumber& other) {
-        checkSameField(other);
-
-        const Rational& d = field_.getD();
-
-        Rational a = a_ * other.a_ + b_ * other.b_ * d;
-        Rational b = a_ * other.b_ + b_ * other.a_;
-
-        a_ = a;
-        b_ = b;
-
-        return *this;
-    }
-
-    // 除法
-    QuadraticNumber& QuadraticNumber::operator/=(const QuadraticNumber& other) {
-        checkSameField(other);
-
-        const Rational& d = field_.getD();
-
-        // 分母：c² - e²d
-        Rational denominator =
-            other.a_ * other.a_
-            - other.b_ * other.b_ * d;
-
-        if (denominator.isZero()) {
+    Coefficients divide(
+        const QuadraticField& field,
+        const Coefficients& lhs,
+        const Coefficients& rhs
+    ) {
+        if (isZeroCoefficients(rhs)) {
             throw std::domain_error("Division by zero");
         }
 
-        Rational a =
-            (a_ * other.a_ - b_ * other.b_ * d)
-            / denominator;
+        // 基础数域 Q
+        if (field.isBaseField()) {
+            return { lhs[0] / rhs[0] };
+        }
 
-        Rational b =
-            (b_ * other.a_ - a_ * other.b_)
-            / denominator;
+        const QuadraticField& parent = *field.getParent();
 
-        a_ = a;
-        b_ = b;
+        const size_t half = parent.getDimension();
 
-        return *this;
+        // rhs = C + D * sqrt(d)
+        Coefficients c(rhs.begin(), rhs.begin() + half);
+        Coefficients d(rhs.begin() + half, rhs.end());
+
+        const Coefficients& radicand =
+            field.getRadicand()->getCoefficients();
+
+        // norm = C² - radicand * D²
+        Coefficients c2 = multiply(parent, c, c);
+        Coefficients d2 = multiply(parent, d, d);
+
+        Coefficients norm = subtract(
+            c2,
+            multiply(parent, radicand, d2)
+        );
+
+        if (isZeroCoefficients(norm)) {
+            throw std::domain_error("Division by zero");
+        }
+
+        // inverse = conjugate(rhs) / norm
+        Coefficients inverseLow = divide(
+            parent,
+            c,
+            norm
+        );
+
+        Coefficients inverseHigh = negate(
+            divide(
+                parent,
+                d,
+                norm
+            )
+        );
+
+        inverseLow.insert(
+            inverseLow.end(),
+            inverseHigh.begin(),
+            inverseHigh.end()
+        );
+
+        return multiply(field, lhs, inverseLow);
     }
 
-    // 相等比较
-    bool QuadraticNumber::operator==(const QuadraticNumber& other) const {
-        checkSameField(other);
-        return a_ == other.a_ && b_ == other.b_;
-    }
+    // ============================================================
+    // 递归符号判断
+    //
+    // x = A + B * sqrt(d)
+    //
+    // A、B 属于父数域，且 d > 0
+    // ============================================================
 
-    bool QuadraticNumber::operator!=(const QuadraticNumber& other) const {
-        return !(*this == other);
-    }
+    int signCoefficients(
+        const QuadraticField& field,
+        const Coefficients& value
+    ) {
+        // 基础数域 Q
+        if (field.isBaseField()) {
+            return value[0].sign();
+        }
 
-    int QuadraticNumber::sign() const{
-         // a + b√d
-        const int signA = a_.sign();
-        const int signB = b_.sign();
+        const QuadraticField& parent = *field.getParent();
 
-        // a = 0
+        const size_t half = parent.getDimension();
+
+        Coefficients a(value.begin(), value.begin() + half);
+        Coefficients b(value.begin() + half, value.end());
+
+        int signA = signCoefficients(parent, a);
+        int signB = signCoefficients(parent, b);
+
         if (signA == 0) {
             return signB;
         }
 
-        // b = 0
         if (signB == 0) {
             return signA;
         }
 
-        // a、b 同号
+        // A、B 同号
         if (signA == signB) {
             return signA;
         }
 
-        // a、b 异号，比较 a² 和 b²d
-        const Rational lhs = a_ * a_;
-        const Rational rhs = b_ * b_ * field_.getD();
+        // A、B 异号
+        // 比较 A² 和 dB²
 
-        const int comparison = (lhs - rhs).sign();
+        const Coefficients& radicand =
+            field.getRadicand()->getCoefficients();
 
-        if (comparison == 0) {
-            return 0;
+        Coefficients a2 = multiply(parent, a, a);
+        Coefficients b2 = multiply(parent, b, b);
+
+        Coefficients difference = subtract(
+            a2,
+            multiply(parent, radicand, b2)
+        );
+
+        int result = signCoefficients(parent, difference);
+
+        return signA > 0 ? result : -result;
+    }
+
+    // ============================================================
+    // 转换成 double
+    // 仅用于渲染和展示，不用于精确判断
+    // ============================================================
+
+    double evaluate(
+        const QuadraticField& field,
+        const Coefficients& value
+    ) {
+        if (field.isBaseField()) {
+            return value[0].toDouble();
         }
 
-        // a² > b²d，结果符号与 a 相同
-        if (comparison > 0) {
-            return signA;
+        const QuadraticField& parent = *field.getParent();
+
+        const size_t half = parent.getDimension();
+
+        Coefficients a(value.begin(), value.begin() + half);
+        Coefficients b(value.begin() + half, value.end());
+
+        double av = evaluate(parent, a);
+        double bv = evaluate(parent, b);
+
+        double radicand =
+            field.getRadicand()->toDouble();
+
+        return av + bv * std::sqrt(radicand);
+    }
+
+    // ============================================================
+    // 字符串转换
+    // ============================================================
+
+    std::string format(
+        const QuadraticField& field,
+        const Coefficients& value
+    ) {
+        if (field.isBaseField()) {
+            return value[0].toString();
         }
 
-        // a² < b²d，结果符号与 b 相同
-        return signB;
+        const QuadraticField& parent = *field.getParent();
+
+        const size_t half = parent.getDimension();
+
+        Coefficients a(value.begin(), value.begin() + half);
+        Coefficients b(value.begin() + half, value.end());
+
+        return "(" + format(parent, a) + ") + (" +
+            format(parent, b) + ") * sqrt(" +
+            field.getRadicand()->toString() + ")";
     }
-        
-    bool QuadraticNumber::isZero() const{
-        return sign() == 0;
-    }
-        
-    bool QuadraticNumber::isPositive() const{
+
+
+    // ============================================================
+    // 符号判断
+    // ============================================================
+    bool QuadraticNumber::isPositive() const {
         return sign() > 0;
     }
 
-    bool QuadraticNumber::isNegative() const{
+    bool QuadraticNumber::isNegative() const {
         return sign() < 0;
     }
 
-    bool QuadraticNumber::operator<(const QuadraticNumber& other) const{
-        checkSameField(other);
-        return (*this - other).sign() < 0;
+    int QuadraticNumber::sign() const {
+        return signCoefficients(field_, coefficients_);
     }
 
-    bool QuadraticNumber::operator<=(const QuadraticNumber& other) const{
-        checkSameField(other);
-        return (*this - other).sign() <= 0;
+    // ============================================================
+    // 共轭
+    //
+    // A + B * sqrt(d)
+    // ->
+    // A - B * sqrt(d)
+    // ============================================================
+
+    QuadraticNumber QuadraticNumber::conjugate() const {
+        if (field_.isBaseField()) {
+            return *this;
+        }
+
+        const size_t half =
+            field_.getParent()->getDimension();
+
+        Coefficients result = coefficients_;
+
+        for (size_t i = half; i < result.size(); ++i) {
+            result[i] = -result[i];
+        }
+
+        return QuadraticNumber(field_, result);
     }
 
-    bool QuadraticNumber::operator>(const QuadraticNumber& other) const{
-        checkSameField(other);
-        return (*this - other).sign() > 0;
+    // ============================================================
+    // 范数
+    //
+    // norm = A² - dB²
+    //
+    // 返回父数域中的数
+    // ============================================================
+
+    QuadraticNumber QuadraticNumber::norm() const {
+        if (field_.isBaseField()) {
+            return *this;
+        }
+
+        const QuadraticField& parent = *field_.getParent();
+
+        const size_t half = parent.getDimension();
+
+        Coefficients a(
+            coefficients_.begin(),
+            coefficients_.begin() + half
+        );
+
+        Coefficients b(
+            coefficients_.begin() + half,
+            coefficients_.end()
+        );
+
+        const Coefficients& radicand =
+            field_.getRadicand()->getCoefficients();
+
+        Coefficients a2 = multiply(parent, a, a);
+        Coefficients b2 = multiply(parent, b, b);
+
+        Coefficients result = subtract(
+            a2,
+            multiply(parent, radicand, b2)
+        );
+
+        return QuadraticNumber(parent, result);
     }
 
-    bool QuadraticNumber::operator>=(const QuadraticNumber& other) const{
-        checkSameField(other);
-        return (*this - other).sign() >= 0;
+    // ============================================================
+    // 转换
+    // ============================================================
+
+    double QuadraticNumber::toDouble() const {
+        return evaluate(field_, coefficients_);
     }
 
-    //求共轭数
-    QuadraticNumber QuadraticNumber::conjugate() const{
-        return QuadraticNumber(field_, a_, -1 * b_);
+    std::string QuadraticNumber::toString() const {
+        return format(field_, coefficients_);
     }
 
-    //范数
-    Rational QuadraticNumber::norm() const{
-        const Rational& d = field_.getD();
-        return a_ * a_ - b_ * b_ * d;
+
+    // ============================================================
+    // 一元运算
+    // ============================================================
+
+    QuadraticNumber QuadraticNumber::operator-() const {
+        return QuadraticNumber(
+            field_,
+            negate(coefficients_)
+        );
     }
 
-    // 普通加法
-    QuadraticNumber operator+(const QuadraticNumber& lhs,const QuadraticNumber& rhs) {
-        QuadraticNumber result = lhs;
-        result += rhs;
-        return result;
+    // ============================================================
+    // 复合赋值
+    // ============================================================
+
+    QuadraticNumber& QuadraticNumber::operator+=(
+        const QuadraticNumber& rhs
+    ) {
+        checkSameField(field_, rhs.field_);
+
+        coefficients_ = add(
+            coefficients_,
+            rhs.coefficients_
+        );
+
+        return *this;
     }
 
-    // 普通减法
-    QuadraticNumber operator-(const QuadraticNumber& lhs,const QuadraticNumber& rhs) {
-        QuadraticNumber result = lhs;
-        result -= rhs;
-        return result;
+    QuadraticNumber& QuadraticNumber::operator-=(
+        const QuadraticNumber& rhs
+    ) {
+        checkSameField(field_, rhs.field_);
+
+        coefficients_ = subtract(
+            coefficients_,
+            rhs.coefficients_
+        );
+
+        return *this;
     }
 
-    // 普通乘法
-    QuadraticNumber operator*(const QuadraticNumber& lhs,const QuadraticNumber& rhs) {
-        QuadraticNumber result = lhs;
-        result *= rhs;
-        return result;
+    QuadraticNumber& QuadraticNumber::operator*=(
+        const QuadraticNumber& rhs
+    ) {
+        checkSameField(field_, rhs.field_);
+
+        coefficients_ = multiply(
+            field_,
+            coefficients_,
+            rhs.coefficients_
+        );
+
+        return *this;
     }
 
-    // 普通除法
-    QuadraticNumber operator/(const QuadraticNumber& lhs,const QuadraticNumber& rhs) {
-        QuadraticNumber result = lhs;
-        result /= rhs;
-        return result;
+    QuadraticNumber& QuadraticNumber::operator/=(
+        const QuadraticNumber& rhs
+    ) {
+        checkSameField(field_, rhs.field_);
+
+        coefficients_ = divide(
+            field_,
+            coefficients_,
+            rhs.coefficients_
+        );
+
+        return *this;
+    }
+
+    // ============================================================
+    // 四则运算
+    // ============================================================
+
+    QuadraticNumber operator+(
+        const QuadraticNumber& lhs,
+        const QuadraticNumber& rhs
+    ) {
+        checkSameField(lhs.field_, rhs.field_);
+
+        return QuadraticNumber(
+            lhs.field_,
+            add(lhs.coefficients_, rhs.coefficients_)
+        );
+    }
+
+    QuadraticNumber operator-(
+        const QuadraticNumber& lhs,
+        const QuadraticNumber& rhs
+    ) {
+        checkSameField(lhs.field_, rhs.field_);
+
+        return QuadraticNumber(
+            lhs.field_,
+            subtract(lhs.coefficients_, rhs.coefficients_)
+        );
+    }
+
+    QuadraticNumber operator*(
+        const QuadraticNumber& lhs,
+        const QuadraticNumber& rhs
+    ) {
+        checkSameField(lhs.field_, rhs.field_);
+
+        return QuadraticNumber(
+            lhs.field_,
+            multiply(
+                lhs.field_,
+                lhs.coefficients_,
+                rhs.coefficients_
+            )
+        );
+    }
+
+    QuadraticNumber operator/(
+        const QuadraticNumber& lhs,
+        const QuadraticNumber& rhs
+    ) {
+        checkSameField(lhs.field_, rhs.field_);
+
+        return QuadraticNumber(
+            lhs.field_,
+            divide(
+                lhs.field_,
+                lhs.coefficients_,
+                rhs.coefficients_
+            )
+        );
+    }
+
+    // ============================================================
+    // 比较运算
+    // ============================================================
+
+    bool operator==(
+        const QuadraticNumber& lhs,
+        const QuadraticNumber& rhs
+    ) {
+        checkSameField(lhs.field_, rhs.field_);
+
+        return lhs.coefficients_ == rhs.coefficients_;
+    }
+
+    bool operator!=(
+        const QuadraticNumber& lhs,
+        const QuadraticNumber& rhs
+    ) {
+        return !(lhs == rhs);
+    }
+
+    bool operator<(
+        const QuadraticNumber& lhs,
+        const QuadraticNumber& rhs
+    ) {
+        checkSameField(lhs.field_, rhs.field_);
+
+        return signCoefficients(
+            lhs.field_,
+            subtract(lhs.coefficients_, rhs.coefficients_)
+        ) < 0;
+    }
+
+    bool operator<=(
+        const QuadraticNumber& lhs,
+        const QuadraticNumber& rhs
+    ) {
+        checkSameField(lhs.field_, rhs.field_);
+
+        return !(lhs > rhs);
+    }
+
+    bool operator>(
+        const QuadraticNumber& lhs,
+        const QuadraticNumber& rhs
+    ) {
+        checkSameField(lhs.field_, rhs.field_);
+
+        return signCoefficients(
+            lhs.field_,
+            subtract(lhs.coefficients_, rhs.coefficients_)
+        ) > 0;
+    }
+
+    bool operator>=(
+        const QuadraticNumber& lhs,
+        const QuadraticNumber& rhs
+    ) {
+        checkSameField(lhs.field_, rhs.field_);
+        return !(lhs < rhs);
     }
 }
