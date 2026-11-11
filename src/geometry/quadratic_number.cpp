@@ -5,6 +5,41 @@
 #include <sstream>
 #include <cmath>
 #include <algorithm>
+#include <utility>
+
+namespace {
+    bool tryIntegerSqrt(
+        long long value,
+        long long& result
+    ) {
+        if (value < 0) {
+            return false;
+        }
+
+        const auto n = static_cast<unsigned long long>(value);
+
+        unsigned long long low = 0;
+        unsigned long long high = 4294967296ULL;
+
+        while (low + 1 < high) {
+            const unsigned long long mid = low + (high - low) / 2;
+
+            if (mid <= n / mid) {
+                low = mid;
+            } else {
+                high = mid;
+            }
+        }
+
+        if (low * low != n) {
+            return false;
+        }
+
+        result = static_cast<long long>(low);
+        return true;
+    }
+
+}
 
 namespace zidian {
     using Coefficients = std::vector<Rational>;
@@ -652,5 +687,206 @@ namespace zidian {
     ) {
         checkSameField(lhs.field_, rhs.field_);
         return !(lhs < rhs);
+    }
+
+    bool QuadraticNumber::trySqrt(QuadraticNumber& result) const {
+        if (&result.getField() != &field_) {
+            throw std::invalid_argument("trySqrt: result belongs to a different field");
+        }
+
+        if (isNegative()) {
+            return false;
+        }
+
+        if (isZero()) {
+            result.coefficients_.assign(field_.getDimension(), Rational(0));
+            return true;
+        }
+
+        if (field_.isBaseField()) {
+            const Rational& value = coefficients_[0];
+
+            long long numeratorRoot = 0;
+            long long denominatorRoot = 0;
+
+            if (!tryIntegerSqrt(value.getNumerator(), numeratorRoot)) {
+                return false;
+            }
+
+            if (!tryIntegerSqrt(value.getDenominator(), denominatorRoot)) {
+                return false;
+            }
+
+            result.coefficients_[0] = Rational(
+                numeratorRoot,
+                denominatorRoot
+            );
+
+            return true;
+        }
+
+        
+         // 当前数域 K = K0(sqrt(d))
+        const QuadraticField* parent = field_.getParent();
+        const QuadraticNumber* radicand = field_.getRadicand();
+
+        if (parent == nullptr || radicand == nullptr) {
+            throw std::logic_error("Invalid quadratic field");
+        }
+
+        const size_t parentDimension = parent->getDimension();
+
+        // 拆分 x = A + B * sqrt(d)
+        std::vector<Rational> aCoefficients(
+            coefficients_.begin(),
+            coefficients_.begin() + parentDimension
+        );
+
+        std::vector<Rational> bCoefficients(
+            coefficients_.begin() + parentDimension,
+            coefficients_.end()
+        );
+
+        QuadraticNumber A(*parent, aCoefficients);
+        QuadraticNumber B(*parent, bCoefficients);
+
+        const QuadraticNumber& d = *radicand;
+
+        // 将父域中的 U、V 组合成当前域中的 U + V * sqrt(d)
+        auto compose = [&](const QuadraticNumber& U,
+                        const QuadraticNumber& V) {
+
+            std::vector<Rational> coefficients;
+            coefficients.reserve(field_.getDimension());
+
+            const auto& u = U.getCoefficients();
+            const auto& v = V.getCoefficients();
+
+            coefficients.insert(
+                coefficients.end(),
+                u.begin(),
+                u.end()
+            );
+
+            coefficients.insert(
+                coefficients.end(),
+                v.begin(),
+                v.end()
+            );
+
+            return QuadraticNumber(field_, coefficients);
+        };
+
+        QuadraticNumber zero(*parent);
+
+        // --------------------------------------------------
+        // 情况一：B = 0
+        // --------------------------------------------------
+        if (B.isZero()) {
+            // 尝试 x = A，即寻找 U，使 U² = A
+            {
+                QuadraticNumber U(*parent);
+
+                if (A.trySqrt(U)) {
+                    QuadraticNumber candidate = compose(U, zero);
+
+                    if (candidate * candidate == *this) {
+                        result.coefficients_ = candidate.coefficients_;
+                        return true;
+                    }
+                }
+            }
+
+            // 尝试 x = d * V²，即寻找 V，使 V² = A / d
+            {
+                QuadraticNumber V(*parent);
+                QuadraticNumber target = A / d;
+
+                if (target.trySqrt(V)) {
+                    QuadraticNumber candidate = compose(zero, V);
+
+                    if (candidate * candidate == *this) {
+                        result.coefficients_ = candidate.coefficients_;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        // --------------------------------------------------
+        // 情况二：B != 0
+        // --------------------------------------------------
+
+        // N = A² - d * B²
+        QuadraticNumber N = A * A - d * B * B;
+
+        // C² = N
+        QuadraticNumber C(*parent);
+
+        if (!N.trySqrt(C)) {
+            return false;
+        }
+
+        const QuadraticNumber two(*parent, Rational(2));
+        const QuadraticNumber denominator = two * d;
+
+        // 尝试 C 和 -C 两个分支
+        for (int branch = 0; branch < 2; ++branch) {
+
+            QuadraticNumber signedC = branch == 0 ? C : -C;
+
+            // U² = (A + C) / 2
+            QuadraticNumber uSquared = (A + signedC) / two;
+
+            // V² = (A - C) / (2d)
+            QuadraticNumber vSquared = (A - signedC) / denominator;
+
+            QuadraticNumber U(*parent);
+            QuadraticNumber V(*parent);
+
+            if (!uSquared.trySqrt(U)) {
+                continue;
+            }
+
+            if (!vSquared.trySqrt(V)) {
+                continue;
+            }
+
+            // U、V 当前都是非负根。
+            // 根据 B 的符号调整 V，使 2UV = B。
+            std::vector<Rational> vCoefficients = V.getCoefficients();
+
+            if (B.isNegative()) {
+                for (auto& coefficient : vCoefficients) {
+                    coefficient = -coefficient;
+                }
+            }
+
+            QuadraticNumber signedV(*parent, vCoefficients);
+            QuadraticNumber candidate = compose(U, signedV);
+
+            // 统一选择非负平方根
+            if (candidate.isNegative()) {
+                std::vector<Rational> coefficients =
+                    candidate.getCoefficients();
+
+                for (auto& coefficient : coefficients) {
+                    coefficient = -coefficient;
+                }
+
+                // candidate = QuadraticNumber(field_, coefficients);
+                candidate.coefficients_ = std::move(coefficients);
+            }
+
+            // 最终进行精确验证
+            if (candidate * candidate == *this) {
+                result.coefficients_ = candidate.coefficients_;
+                return true;
+            }
+        }
+
+        return false;
     }
 }

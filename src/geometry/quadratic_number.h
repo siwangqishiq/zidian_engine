@@ -43,6 +43,11 @@ namespace zidian {
 
         int sign() const;
 
+        // 尝试在当前数域中寻找非负平方根。
+        // 成功返回 true，并将结果写入 result。
+        // 如果当前数域无法表示平方根，返回 false。
+        bool trySqrt(QuadraticNumber& result) const;
+
         // 共轭与范数
         QuadraticNumber conjugate() const;
         QuadraticNumber norm() const;
