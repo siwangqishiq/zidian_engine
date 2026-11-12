@@ -16,6 +16,8 @@ extern void TestGeometryRational();
 
 extern void TestGeometryQuadratic();
 
+extern void TestBigInt();
+
 int main() {
     // TestLogs();
     // TestApplication();
@@ -27,8 +29,10 @@ int main() {
     // TestSpriteDraw1();
     // TestCustomShader();
 
-    // TestGeometryRational();
 
+    // TestGeometryRational();
     TestGeometryQuadratic();
+
+    // TestBigInt();
     return 0;
 }//end main

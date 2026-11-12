@@ -2,9 +2,10 @@
 
 #include <string>
 #include <iosfwd>
+#include "geometry/big_int.h"
 
 namespace zidian {
-    using Integer = long long; 
+    using Integer = BigInt; 
 
     class Rational{
     public:
@@ -46,8 +47,7 @@ namespace zidian {
         Integer numerator_; //分子
         Integer denominator_; //分母
 
-        // static Integer gcd(Integer a, Integer b);
-        static unsigned long long gcd(unsigned long long a,unsigned long long b);
+        static Integer gcd(Integer a, Integer b);
         void normalize();
     };
 

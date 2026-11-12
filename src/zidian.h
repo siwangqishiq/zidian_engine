@@ -11,11 +11,12 @@
 #include "widget/thread_pool.h"
 #include "input/input_manager.h"
 #include "audio/audio_manager.h"
-#include "renderer/pipeline/pipe_common.h"
 
+#include "geometry/big_int.h"
 #include "geometry/rational.h"
 #include "geometry/quadratic_field.h"
 #include "geometry/quadratic_number.h"
+
 
 namespace zidian{
     std::string Version();

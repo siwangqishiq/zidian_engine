@@ -1,3 +1,4 @@
+
 #include "geometry/quadratic_number.h"
 #include "geometry/quadratic_field.h"
 
@@ -8,57 +9,61 @@
 #include <utility>
 
 namespace {
+
+    // 使用 BigInt 判断一个非负整数是否为完全平方数。
     bool tryIntegerSqrt(
-        long long value,
-        long long& result
+        const zidian::BigInt& value,
+        zidian::BigInt& result
     ) {
-        if (value < 0) {
+        if (value.isNegative()) {
             return false;
         }
 
-        const auto n = static_cast<unsigned long long>(value);
+        zidian::BigInt root =
+            zidian::BigInt::integerSqrt(value);
 
-        unsigned long long low = 0;
-        unsigned long long high = 4294967296ULL;
-
-        while (low + 1 < high) {
-            const unsigned long long mid = low + (high - low) / 2;
-
-            if (mid <= n / mid) {
-                low = mid;
-            } else {
-                high = mid;
-            }
-        }
-
-        if (low * low != n) {
+        if (root * root != value) {
             return false;
         }
 
-        result = static_cast<long long>(low);
+        result = std::move(root);
         return true;
     }
 
 }
 
 namespace zidian {
+
     using Coefficients = std::vector<Rational>;
 
-    //比较两个数阈是否一样 不一样抛出异常
-    void checkSameField(const QuadraticField& lhs,const QuadraticField& rhs) {
+    // 比较两个数域是否相同，不相同则抛出异常
+    void checkSameField(
+        const QuadraticField& lhs,
+        const QuadraticField& rhs
+    ) {
         if (&lhs != &rhs) {
-            throw std::invalid_argument("QuadraticNumber field mismatch");
+            throw std::invalid_argument(
+                "QuadraticNumber field mismatch"
+            );
         }
     }
 
-    void checkDimension(const QuadraticField& field,const Coefficients& coefficients) {
+    void checkDimension(
+        const QuadraticField& field,
+        const Coefficients& coefficients
+    ) {
         if (coefficients.size() != field.getDimension()) {
-            throw std::invalid_argument("QuadraticNumber coefficient count mismatch");
+            throw std::invalid_argument(
+                "QuadraticNumber coefficient count mismatch"
+            );
         }
     }
 
-    //系数加法
-    Coefficients add(const Coefficients& lhs,const Coefficients& rhs) {
+    // 系数加法
+    Coefficients add(
+        const Coefficients& lhs,
+        const Coefficients& rhs
+    ) {
         Coefficients result(lhs.size());
 
         for (size_t i = 0; i < lhs.size(); ++i) {
@@ -68,8 +73,11 @@ namespace zidian {
         return result;
     }
 
-    //系数减法
-    Coefficients subtract(const Coefficients& lhs,const Coefficients& rhs) {
+    // 系数减法
+    Coefficients subtract(
+        const Coefficients& lhs,
+        const Coefficients& rhs
+    ) {
         Coefficients result(lhs.size());
 
         for (size_t i = 0; i < lhs.size(); ++i) {
@@ -79,7 +87,7 @@ namespace zidian {
         return result;
     }
 
-    //系数求反
+    // 系数求反
     Coefficients negate(const Coefficients& value) {
         Coefficients result(value.size());
 
@@ -90,8 +98,11 @@ namespace zidian {
         return result;
     }
 
-    //系数乘以一个有理数
-    Coefficients multiplyByRational(const Coefficients& value,const Rational& scalar) {
+    // 系数乘以一个有理数
+    Coefficients multiplyByRational(
+        const Coefficients& value,
+        const Rational& scalar
+    ) {
         Coefficients result(value.size());
 
         for (size_t i = 0; i < value.size(); ++i) {
@@ -111,21 +122,32 @@ namespace zidian {
         return true;
     }
 
-    QuadraticNumber::QuadraticNumber(const QuadraticField& field)
-        : field_(field),coefficients_(field.getDimension(), Rational(0)) {
+    // ============================================================
+    // 构造函数
+    // ============================================================
+
+    QuadraticNumber::QuadraticNumber(
+        const QuadraticField& field
+    )
+        : field_(field),
+          coefficients_(field.getDimension(), Rational(0)) {
     }
 
     QuadraticNumber::QuadraticNumber(
         const QuadraticField& field,
         const Rational& value
-    ) : field_(field),coefficients_(field.getDimension(), Rational(0)) {
+    )
+        : field_(field),
+          coefficients_(field.getDimension(), Rational(0)) {
         coefficients_[0] = value;
     }
 
     QuadraticNumber::QuadraticNumber(
         const QuadraticField& field,
         const std::vector<Rational>& coefficients
-    ) : field_(field),coefficients_(coefficients) {
+    )
+        : field_(field),
+          coefficients_(coefficients) {
         checkDimension(field_, coefficients_);
     }
 
@@ -133,8 +155,9 @@ namespace zidian {
         const QuadraticField& field,
         const Rational& a,
         const Rational& b
-    ) : field_(field), coefficients_{a, b}
-    {
+    )
+        : field_(field),
+          coefficients_{a, b} {
         checkDimension(field_, coefficients_);
     }
 
@@ -142,7 +165,8 @@ namespace zidian {
         return field_;
     }
 
-    const std::vector<Rational>& QuadraticNumber::getCoefficients() const {
+    const std::vector<Rational>&
+    QuadraticNumber::getCoefficients() const {
         return coefficients_;
     }
 
@@ -404,10 +428,10 @@ namespace zidian {
             field.getRadicand()->toString() + ")";
     }
 
-
     // ============================================================
     // 符号判断
     // ============================================================
+
     bool QuadraticNumber::isPositive() const {
         return sign() > 0;
     }
@@ -497,7 +521,6 @@ namespace zidian {
     std::string QuadraticNumber::toString() const {
         return format(field_, coefficients_);
     }
-
 
     // ============================================================
     // 一元运算
@@ -686,12 +709,39 @@ namespace zidian {
         const QuadraticNumber& rhs
     ) {
         checkSameField(lhs.field_, rhs.field_);
+
         return !(lhs < rhs);
     }
 
-    bool QuadraticNumber::trySqrt(QuadraticNumber& result) const {
+    // ============================================================
+    // 尝试在当前数域中寻找非负平方根
+    //
+    // 当前数域 K = K0(sqrt(d))
+    //
+    // x = A + B * sqrt(d)
+    //
+    // 若存在平方根 y = U + V * sqrt(d)，则：
+    //
+    // U² + dV² = A
+    // 2UV = B
+    //
+    // 由此可得：
+    //
+    // (U² - dV²)² = A² - dB²
+    //
+    // 令 C² = A² - dB²：
+    //
+    // U² = (A + C) / 2
+    // V² = (A - C) / (2d)
+    // ============================================================
+
+    bool QuadraticNumber::trySqrt(
+        QuadraticNumber& result
+    ) const {
         if (&result.getField() != &field_) {
-            throw std::invalid_argument("trySqrt: result belongs to a different field");
+            throw std::invalid_argument(
+                "trySqrt: result belongs to a different field"
+            );
         }
 
         if (isNegative()) {
@@ -699,21 +749,34 @@ namespace zidian {
         }
 
         if (isZero()) {
-            result.coefficients_.assign(field_.getDimension(), Rational(0));
+            result.coefficients_.assign(
+                field_.getDimension(),
+                Rational(0)
+            );
             return true;
         }
+
+        // --------------------------------------------------
+        // 基础数域 Q
+        // --------------------------------------------------
 
         if (field_.isBaseField()) {
             const Rational& value = coefficients_[0];
 
-            long long numeratorRoot = 0;
-            long long denominatorRoot = 0;
+            BigInt numeratorRoot;
+            BigInt denominatorRoot;
 
-            if (!tryIntegerSqrt(value.getNumerator(), numeratorRoot)) {
+            if (!tryIntegerSqrt(
+                    value.getNumerator(),
+                    numeratorRoot
+                )) {
                 return false;
             }
 
-            if (!tryIntegerSqrt(value.getDenominator(), denominatorRoot)) {
+            if (!tryIntegerSqrt(
+                    value.getDenominator(),
+                    denominatorRoot
+                )) {
                 return false;
             }
 
@@ -725,8 +788,10 @@ namespace zidian {
             return true;
         }
 
-        
-         // 当前数域 K = K0(sqrt(d))
+        // --------------------------------------------------
+        // 当前数域 K = K0(sqrt(d))
+        // --------------------------------------------------
+
         const QuadraticField* parent = field_.getParent();
         const QuadraticNumber* radicand = field_.getRadicand();
 
@@ -753,9 +818,10 @@ namespace zidian {
         const QuadraticNumber& d = *radicand;
 
         // 将父域中的 U、V 组合成当前域中的 U + V * sqrt(d)
-        auto compose = [&](const QuadraticNumber& U,
-                        const QuadraticNumber& V) {
-
+        auto compose = [&](
+            const QuadraticNumber& U,
+            const QuadraticNumber& V
+        ) {
             std::vector<Rational> coefficients;
             coefficients.reserve(field_.getDimension());
 
@@ -782,6 +848,7 @@ namespace zidian {
         // --------------------------------------------------
         // 情况一：B = 0
         // --------------------------------------------------
+
         if (B.isZero()) {
             // 尝试 x = A，即寻找 U，使 U² = A
             {
@@ -829,19 +896,26 @@ namespace zidian {
             return false;
         }
 
-        const QuadraticNumber two(*parent, Rational(2));
+        const QuadraticNumber two(
+            *parent,
+            Rational(2)
+        );
+
         const QuadraticNumber denominator = two * d;
 
         // 尝试 C 和 -C 两个分支
         for (int branch = 0; branch < 2; ++branch) {
 
-            QuadraticNumber signedC = branch == 0 ? C : -C;
+            QuadraticNumber signedC =
+                branch == 0 ? C : -C;
 
             // U² = (A + C) / 2
-            QuadraticNumber uSquared = (A + signedC) / two;
+            QuadraticNumber uSquared =
+                (A + signedC) / two;
 
             // V² = (A - C) / (2d)
-            QuadraticNumber vSquared = (A - signedC) / denominator;
+            QuadraticNumber vSquared =
+                (A - signedC) / denominator;
 
             QuadraticNumber U(*parent);
             QuadraticNumber V(*parent);
@@ -856,7 +930,8 @@ namespace zidian {
 
             // U、V 当前都是非负根。
             // 根据 B 的符号调整 V，使 2UV = B。
-            std::vector<Rational> vCoefficients = V.getCoefficients();
+            std::vector<Rational> vCoefficients =
+                V.getCoefficients();
 
             if (B.isNegative()) {
                 for (auto& coefficient : vCoefficients) {
@@ -864,7 +939,11 @@ namespace zidian {
                 }
             }
 
-            QuadraticNumber signedV(*parent, vCoefficients);
+            QuadraticNumber signedV(
+                *parent,
+                vCoefficients
+            );
+
             QuadraticNumber candidate = compose(U, signedV);
 
             // 统一选择非负平方根
@@ -876,7 +955,6 @@ namespace zidian {
                     coefficient = -coefficient;
                 }
 
-                // candidate = QuadraticNumber(field_, coefficients);
                 candidate.coefficients_ = std::move(coefficients);
             }
 
@@ -889,4 +967,5 @@ namespace zidian {
 
         return false;
     }
+
 }

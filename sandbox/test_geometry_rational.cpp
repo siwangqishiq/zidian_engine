@@ -1,13 +1,19 @@
+
 #include <iostream>
-#include <limits>
+#include <random>
 #include <stdexcept>
 #include <string>
+
 #include "zidian.h"
 
 using namespace zidian;
 
 int passed = 0;
 int failed = 0;
+
+// ============================================================
+// 测试辅助函数
+// ============================================================
 
 void check(bool condition, const std::string& name) {
     if (condition) {
@@ -39,11 +45,18 @@ void checkThrows(Function function, const std::string& name) {
     }
 }
 
+// ============================================================
 // 1. 构造和约分
+// ============================================================
+
 void testConstruction() {
     std::cout << "\n=== Construction ===\n";
 
-    checkEqual(Rational(), Rational(0), "default constructor");
+    checkEqual(
+        Rational(),
+        Rational(0),
+        "default constructor"
+    );
 
     checkEqual(
         Rational(2, 4),
@@ -86,22 +99,46 @@ void testConstruction() {
     );
 
     checkThrows<std::invalid_argument>(
-        [] { Rational(1, 0); },
+        [] {
+            Rational(1, 0);
+        },
         "zero denominator"
     );
 }
 
+// ============================================================
 // 2. 四则运算
+// ============================================================
+
 void testArithmetic() {
     std::cout << "\n=== Arithmetic ===\n";
 
     Rational a(1, 2);
     Rational b(1, 3);
 
-    checkEqual(a + b, Rational(5, 6), "addition");
-    checkEqual(a - b, Rational(1, 6), "subtraction");
-    checkEqual(a * b, Rational(1, 6), "multiplication");
-    checkEqual(a / b, Rational(3, 2), "division");
+    checkEqual(
+        a + b,
+        Rational(5, 6),
+        "addition"
+    );
+
+    checkEqual(
+        a - b,
+        Rational(1, 6),
+        "subtraction"
+    );
+
+    checkEqual(
+        a * b,
+        Rational(1, 6),
+        "multiplication"
+    );
+
+    checkEqual(
+        a / b,
+        Rational(3, 2),
+        "division"
+    );
 
     checkEqual(
         Rational(-1, 2) + Rational(1, 3),
@@ -125,6 +162,7 @@ void testArithmetic() {
         [] {
             Rational a(1, 2);
             Rational b(0);
+
             auto result = a / b;
             (void)result;
         },
@@ -132,7 +170,10 @@ void testArithmetic() {
     );
 }
 
+// ============================================================
 // 3. 复合赋值
+// ============================================================
+
 void testCompoundAssignment() {
     std::cout << "\n=== Compound Assignment ===\n";
 
@@ -150,20 +191,25 @@ void testCompoundAssignment() {
     a /= Rational(2, 3);
     checkEqual(a, Rational(1, 2), "operator /=");
 
-    // 自我赋值
+    // 自我加法
     a += a;
     checkEqual(a, Rational(1), "self addition");
 
+    // 自我乘法
     a = Rational(2, 3);
     a *= a;
     checkEqual(a, Rational(4, 9), "self multiplication");
 
+    // 自我除法
     a = Rational(2, 3);
     a /= a;
     checkEqual(a, Rational(1), "self division");
 }
 
+// ============================================================
 // 4. 比较运算
+// ============================================================
+
 void testComparison() {
     std::cout << "\n=== Comparison ===\n";
 
@@ -179,14 +225,31 @@ void testComparison() {
     check(c > a, "greater than");
     check(c >= a, "greater than or equal");
 
-    check(Rational(-1, 2) < Rational(1, 3),
-          "negative less than positive");
+    check(
+        Rational(-1, 2) < Rational(1, 3),
+        "negative less than positive"
+    );
 
-    check(Rational(-2, 3) < Rational(-1, 3),
-          "negative comparison");
+    check(
+        Rational(-2, 3) < Rational(-1, 3),
+        "negative comparison"
+    );
+
+    check(
+        Rational(-1, 2) == Rational(-2, 4),
+        "negative equivalent fractions"
+    );
+
+    check(
+        Rational(0, 5) == Rational(0, 100),
+        "zero fraction comparison"
+    );
 }
 
+// ============================================================
 // 5. 符号判断
+// ============================================================
+
 void testSign() {
     std::cout << "\n=== Sign ===\n";
 
@@ -203,164 +266,238 @@ void testSign() {
     check(zero.sign() == 0, "zero sign");
 }
 
-// 6. 溢出检测
-void testOverflow() {
-    std::cout << "\n=== Overflow ===\n";
+// ============================================================
+// 6. 大整数运算
+// ============================================================
 
-    using Integer = Integer;
+void testBigIntegerOperations() {
+    std::cout << "\n=== Big Integer Operations ===\n";
 
-    const Integer max = std::numeric_limits<Integer>::max();
-
-    checkThrows<std::overflow_error>(
-        [max] {
-            Rational a(max);
-            Rational b(2);
-            auto result = a * b;
-            (void)result;
-        },
-        "multiplication overflow"
-    );
-
-    checkThrows<std::overflow_error>(
-        [max] {
-            Rational a(max);
-            Rational b(1);
-            a += b;
-        },
-        "addition overflow"
-    );
-}
-
-// 7. LLONG_MIN 边界测试
-void testMinInteger() {
-    std::cout << "\n=== LLONG_MIN Boundary ===\n";
-
-    using Integer = Integer;
-
-    const Integer min = std::numeric_limits<Integer>::min();
-
-    // 单参数构造
-    Rational a(min);
+    BigInt a("9223372036854775807");
+    BigInt b("9223372036854775808");
 
     check(
-        a.numerator() == min && a.denominator() == 1,
-        "construct LLONG_MIN"
+        b > a,
+        "BigInt greater than LLONG_MAX"
     );
-
-    // 双参数构造
-    // 这个测试预计会暴露当前 gcd() 的问题
-    try {
-        Rational b(min, 1);
-
-        check(
-            b.numerator() == min && b.denominator() == 1,
-            "construct LLONG_MIN / 1"
-        );
-    } catch (...) {
-        check(false, "construct LLONG_MIN / 1");
-    }
-
-    // 零的分母虽然是最小负数，但结果仍然应该是零
-    try {
-        Rational c(0, min);
-
-        check(
-            c.isZero() && c.denominator() == 1,
-            "zero with LLONG_MIN denominator"
-        );
-    } catch (...) {
-        check(false, "zero with LLONG_MIN denominator");
-    }
-
-    // -LLONG_MIN 超出 long long 范围，应该抛出异常
-    checkThrows<std::overflow_error>(
-        [min] {
-            Rational a(min, -1);
-            (void)a;
-        },
-        "unrepresentable positive numerator"
-    );
-}
-
-
-// 8. 比较运算溢出测试
-void testComparisonOverflow() {
-    std::cout << "\n=== Comparison Overflow ===\n";
-
-    using Integer = Integer;
-
-    const Integer max = std::numeric_limits<Integer>::max();
-
-    Rational a(max, max - 1);
-    Rational b(max - 1, max);
-
-    bool result = false;
-    bool exceptionThrown = false;
-
-    try {
-        result = a > b;
-    } catch (...) {
-        exceptionThrown = true;
-    }
 
     check(
-        !exceptionThrown && result,
-        "compare large fractions without overflow"
+        BigInt("-9223372036854775809") < a,
+        "BigInt less than LLONG_MIN"
+    );
+
+    Rational r1(a);
+    Rational r2(2);
+
+    checkEqual(
+        r1 * r2,
+        Rational(BigInt("18446744073709551614")),
+        "multiplication beyond LLONG_MAX"
+    );
+
+    checkEqual(
+        r1 + r2,
+        Rational(BigInt("9223372036854775809")),
+        "addition beyond LLONG_MAX"
+    );
+
+    checkEqual(
+        r1 - Rational(BigInt("9223372036854775809")),
+        Rational(-2),
+        "subtraction beyond LLONG_MAX"
+    );
+
+    checkEqual(
+        Rational(BigInt("18446744073709551614")) / r2,
+        r1,
+        "division beyond LLONG_MAX"
     );
 }
 
-// 9. 大数交叉约分测试
-void testCrossReduction() {
-    std::cout << "\n=== Cross Reduction ===\n";
+// ============================================================
+// 7. 大整数构造和约分
+// ============================================================
 
-    using Integer = Integer;
+void testLargeFraction() {
+    std::cout << "\n=== Large Fraction ===\n";
 
-    const Integer max = std::numeric_limits<Integer>::max();
+    BigInt a("123456789012345678901234567890");
+    BigInt b("246913578024691357802469135780");
 
-    Rational a(max, max - 1);
-    Rational b(max - 1, max);
+    Rational r(a, b);
 
-    try {
-        Rational result = a * b;
+    checkEqual(
+        r,
+        Rational(1, 2),
+        "large fraction reduction"
+    );
 
-        checkEqual(
-            result,
-            Rational(1),
-            "large fraction cross reduction"
-        );
-    } catch (...) {
-        check(false, "large fraction cross reduction");
-    }
+    check(
+        r.toString() == "1/2",
+        "large fraction toString"
+    );
 
-    // 再测试不同符号
-    try {
-        Rational c(max, max - 1);
-        Rational d(-(max - 1), max);
+    Rational zero(
+        BigInt(0),
+        BigInt("-999999999999999999999999999999")
+    );
 
-        checkEqual(
-            c * d,
-            Rational(-1),
-            "negative large fraction cross reduction"
-        );
-    } catch (...) {
-        check(false, "negative large fraction cross reduction");
-    }
+    check(
+        zero.isZero() &&
+        zero.denominator() == BigInt(1),
+        "large denominator zero normalization"
+    );
+
+    checkThrows<std::invalid_argument>(
+        [] {
+            Rational r(
+                BigInt("12345678901234567890"),
+                BigInt(0)
+            );
+        },
+        "large numerator with zero denominator"
+    );
 }
 
-// 10. 随机运算性质测试
+// ============================================================
+// 8. 大整数比较
+// ============================================================
+
+void testLargeComparison() {
+    std::cout << "\n=== Large Comparison ===\n";
+
+    BigInt a("999999999999999999999999999999");
+    BigInt b("999999999999999999999999999998");
+
+    Rational r1(a, b);
+    Rational r2(b, a);
+
+    check(
+        r1 > r2,
+        "compare large fractions"
+    );
+
+    check(
+        r2 < r1,
+        "reverse large fraction comparison"
+    );
+
+    check(
+        Rational(a, a - BigInt(1)) > Rational(1),
+        "large fraction greater than one"
+    );
+
+    check(
+        Rational(b, a) < Rational(1),
+        "large fraction less than one"
+    );
+}
+
+// ============================================================
+// 9. 大整数交叉约分
+// ============================================================
+
+void testLargeCrossReduction() {
+    std::cout << "\n=== Large Cross Reduction ===\n";
+
+    BigInt n("123456789012345678901234567890");
+
+    Rational a(n, n - BigInt(1));
+    Rational b(n - BigInt(1), n);
+
+    checkEqual(
+        a * b,
+        Rational(1),
+        "large fraction cross reduction"
+    );
+
+    checkEqual(
+        a / a,
+        Rational(1),
+        "large fraction self division"
+    );
+
+    Rational c(n, n - BigInt(1));
+    Rational d(
+        -(n - BigInt(1)),
+        n
+    );
+
+    checkEqual(
+        c * d,
+        Rational(-1),
+        "negative large fraction cross reduction"
+    );
+}
+
+// ============================================================
+// 10. 大整数负数运算
+// ============================================================
+
+void testLargeNegative() {
+    std::cout << "\n=== Large Negative ===\n";
+
+    BigInt positive("123456789012345678901234567890");
+    BigInt negative("-123456789012345678901234567890");
+
+    Rational a(positive);
+    Rational b(negative);
+
+    checkEqual(
+        a + b,
+        Rational(0),
+        "large positive plus negative"
+    );
+
+    checkEqual(
+        a + b - Rational(1),
+        Rational(-1),
+        "large cancellation"
+    );
+
+    checkEqual(
+        b * Rational(-1),
+        a,
+        "large negative multiplication"
+    );
+
+    checkEqual(
+        b / Rational(-1),
+        a,
+        "large negative division"
+    );
+
+    check(
+        b.isNegative(),
+        "large negative sign"
+    );
+}
+
+// ============================================================
+// 11. 随机运算性质测试
+// ============================================================
+
 void testRandomOperations() {
     std::cout << "\n=== Random Operations ===\n";
 
     std::mt19937_64 rng(123456);
 
-    std::uniform_int_distribution<long long> numeratorDist(-1000, 1000);
-    std::uniform_int_distribution<long long> denominatorDist(1, 1000);
+    std::uniform_int_distribution<long long> numeratorDist(
+        -1000,
+        1000
+    );
+
+    std::uniform_int_distribution<long long> denominatorDist(
+        1,
+        1000
+    );
 
     bool additionOk = true;
     bool subtractionOk = true;
     bool multiplicationOk = true;
     bool divisionOk = true;
     bool commutativeOk = true;
+    bool comparisonOk = true;
 
     constexpr int TEST_COUNT = 1000;
 
@@ -401,6 +538,15 @@ void testRandomOperations() {
         if (a + b != b + a || a * b != b * a) {
             commutativeOk = false;
         }
+
+        // 比较一致性
+        if ((a < b) != (b > a)) {
+            comparisonOk = false;
+        }
+
+        if ((a <= b) != (a < b || a == b)) {
+            comparisonOk = false;
+        }
     }
 
     check(additionOk, "random addition property");
@@ -408,21 +554,30 @@ void testRandomOperations() {
     check(multiplicationOk, "random multiplication property");
     check(divisionOk, "random division property");
     check(commutativeOk, "random commutative property");
+    check(comparisonOk, "random comparison consistency");
 }
 
+// ============================================================
+// 测试入口
+// ============================================================
+
 void TestGeometryRational() {
+    passed = 0;
+    failed = 0;
+
     testConstruction();
     testArithmetic();
     testCompoundAssignment();
     testComparison();
     testSign();
-    testOverflow();
 
-    testMinInteger();
-    testComparisonOverflow();
-    testCrossReduction();
+    testBigIntegerOperations();
+    testLargeFraction();
+    testLargeComparison();
+    testLargeCrossReduction();
+    testLargeNegative();
+
     testRandomOperations();
-
 
     std::cout << "\n============================\n";
     std::cout << "Passed: " << passed << '\n';

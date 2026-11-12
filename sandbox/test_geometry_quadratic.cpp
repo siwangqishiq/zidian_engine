@@ -28,6 +28,10 @@ static void test(const string& name, const function<void()>& fn) {
         cout << "[FAIL] " << name << ": " << e.what() << endl;
         ++failed;
     }
+    catch (...) {
+        cout << "[FAIL] " << name << ": unknown exception" << endl;
+        ++failed;
+    }
 }
 
 static void expect(bool condition, const string& message) {
@@ -486,7 +490,86 @@ static void testSqrtBaseField() {
 }
 
 // ==================================================
-// 9. 平方根判定：第一层扩张
+// 9. BigInt 平方根测试
+// ==================================================
+
+static void testSqrtBigInteger() {
+
+    QuadraticField Q;
+    QuadraticNumber result(Q);
+
+    test("Sqrt BigInt - Large Perfect Square", [&]() {
+
+        BigInt n("123456789012345678901234567890");
+
+        BigInt square = n * n;
+
+        QuadraticNumber x(Q, Rational(square));
+
+        expect(
+            x.trySqrt(result),
+            "Large perfect square should succeed"
+        );
+
+        expectEqual(
+            result,
+            { Rational(n) },
+            "Large square root should equal original integer"
+        );
+    });
+
+    test("Sqrt BigInt - Large Rational Square", [&]() {
+
+        BigInt numerator("123456789012345678901234567890");
+        BigInt denominator("98765432109876543210987654321");
+
+        Rational expected(numerator, denominator);
+
+        Rational square = expected * expected;
+
+        QuadraticNumber x(Q, square);
+
+        expect(
+            x.trySqrt(result),
+            "Large rational perfect square should succeed"
+        );
+
+        expectEqual(
+            result,
+            { expected },
+            "Large rational square root should be correct"
+        );
+    });
+
+    test("Sqrt BigInt - Large Non Perfect Square", [&]() {
+
+        BigInt n("123456789012345678901234567890");
+
+        BigInt square = n * n + BigInt(1);
+
+        QuadraticNumber x(Q, Rational(square));
+
+        expect(
+            !x.trySqrt(result),
+            "Large non-perfect square should fail"
+        );
+    });
+
+    test("Sqrt BigInt - Large Negative Number", [&]() {
+
+        BigInt n("-123456789012345678901234567890");
+
+        QuadraticNumber x(Q, Rational(n));
+
+        expect(
+            !x.trySqrt(result),
+            "Large negative number should not have real square root"
+        );
+    });
+}
+
+// ==================================================
+// 10. 平方根判定：第一层扩张
 // ==================================================
 
 static void testSqrtSingleExtension() {
@@ -547,7 +630,7 @@ static void testSqrtSingleExtension() {
 }
 
 // ==================================================
-// 10. 平方根判定：第二层扩张
+// 11. 平方根判定：第二层扩张
 // ==================================================
 
 static void testSqrtDoubleExtension() {
@@ -564,7 +647,6 @@ static void testSqrtDoubleExtension() {
 
     test("Sqrt Level 2 - sqrt(6)", [&]() {
         // sqrt(6) = sqrt(2)*sqrt(3)
-        // 被开方数是 6，而不是 sqrt(6)
         QuadraticNumber x(Q23, Rational(6));
 
         expect(x.trySqrt(result), "sqrt(6) should succeed");
@@ -640,8 +722,12 @@ static void testSqrtDoubleExtension() {
     });
 }
 
+// ==================================================
+// 12. 平方根判定：第三层扩张
+// ==================================================
 
-void testSqrtLevel3(QuadraticField& Q235) {
+static void testSqrtLevel3(QuadraticField& Q235) {
+
     test("Sqrt Level 3 - sqrt(30)", [&]() {
         QuadraticNumber x(Q235, Rational(30));
         QuadraticNumber result(Q235);
@@ -653,13 +739,23 @@ void testSqrtLevel3(QuadraticField& Q235) {
             Rational(0), Rational(0), Rational(0), Rational(1)
         };
 
-        expectEqual(result, expected, "sqrt(30) should equal basis element");
+        expectEqual(
+            result,
+            expected,
+            "sqrt(30) should equal basis element"
+        );
     });
 
     test("Sqrt Level 3 - sqrt(11 + 2sqrt(30))", [&]() {
         QuadraticNumber x(Q235, vector<Rational>{
-            Rational(11), Rational(0), Rational(0), Rational(2),
-            Rational(0), Rational(0), Rational(0), Rational(0)
+            Rational(11),
+            Rational(0),
+            Rational(0),
+            Rational(0),
+            Rational(0),
+            Rational(0),
+            Rational(0),
+            Rational(2)
         });
 
         QuadraticNumber result(Q235);
@@ -667,11 +763,21 @@ void testSqrtLevel3(QuadraticField& Q235) {
         expect(x.trySqrt(result), "sqrt(11 + 2sqrt(30)) should exist");
 
         vector<Rational> expected = {
-            Rational(0), Rational(0), Rational(0), Rational(1),
-            Rational(0), Rational(0), Rational(1), Rational(0)
+            Rational(0),
+            Rational(0),
+            Rational(0),
+            Rational(1),
+            Rational(1),
+            Rational(0),
+            Rational(0),
+            Rational(0)
         };
 
-        expectEqual(result, expected, "result should equal sqrt(5) + sqrt(6)");
+        expectEqual(
+            result,
+            expected,
+            "result should equal sqrt(5) + sqrt(6)"
+        );
     });
 
     test("Sqrt Level 3 - sqrt(9 + 4sqrt(5))", [&]() {
@@ -689,7 +795,11 @@ void testSqrtLevel3(QuadraticField& Q235) {
             Rational(1), Rational(0), Rational(0), Rational(0)
         };
 
-        expectEqual(result, expected, "result should equal 2 + sqrt(5)");
+        expectEqual(
+            result,
+            expected,
+            "result should equal 2 + sqrt(5)"
+        );
     });
 
     test("Sqrt Level 3 - sqrt(17) does not exist", [&]() {
@@ -700,29 +810,34 @@ void testSqrtLevel3(QuadraticField& Q235) {
     });
 }
 
-void testSqrtRandomProperties(QuadraticField& field) {
-    test("Sqrt Random Properties", [&]() {
+// ==================================================
+// 13. 随机平方根性质测试
+// ==================================================
+
+static void testSqrtRandomProperties(QuadraticField& field) {
+
+    test("Sqrt Random Properties - Level " + to_string(field.getLevel()), [&]() {
+
         mt19937 rng(20261111);
 
-        // uniform_int_distribution<int> numeratorDist(-2, 2);
         uniform_int_distribution<int> numeratorDist(-1, 1);
         uniform_int_distribution<int> denominatorDist(1, 3);
 
         const int testCount = 20;
 
         for (int i = 0; i < testCount; ++i) {
-            // vector<Rational> coefficients;
 
-            // for (size_t j = 0; j < field.getDimension(); ++j) {
-            //     int numerator = numeratorDist(rng);
-            //     int denominator = denominatorDist(rng);
-
-            //     coefficients.emplace_back(numerator, denominator);
-            // }
             vector<Rational> coefficients;
 
             for (size_t j = 0; j < field.getDimension(); ++j) {
-                coefficients.emplace_back(numeratorDist(rng));
+
+                int numerator = numeratorDist(rng);
+                int denominator = denominatorDist(rng);
+
+                coefficients.emplace_back(
+                    numerator,
+                    denominator
+                );
             }
 
             QuadraticNumber y(field, coefficients);
@@ -732,15 +847,23 @@ void testSqrtRandomProperties(QuadraticField& field) {
 
             QuadraticNumber result(field);
 
-            expect(x.trySqrt(result), "sqrt(y * y) should always exist");
+            expect(
+                x.trySqrt(result),
+                "sqrt(y * y) should always exist"
+            );
 
-            expect(result * result == x, "result squared should equal x");
+            expect(
+                result * result == x,
+                "result squared should equal x"
+            );
 
-            expect(!result.isNegative(), "result should be non-negative");
+            expect(
+                !result.isNegative(),
+                "result should be non-negative"
+            );
         }
     });
 }
-
 
 // ==================================================
 // 测试入口
@@ -773,7 +896,7 @@ int TestGeometryQuadratic() {
     );
 
     // --------------------------------------------------
-    // 执行测试
+    // 基础运算测试
     // --------------------------------------------------
 
     testBaseField(Q);
@@ -785,9 +908,21 @@ int TestGeometryQuadratic() {
     testComparison(Qsqrt2);
     testExceptions(Q, Qsqrt2);
 
+    // --------------------------------------------------
+    // 平方根测试
+    // --------------------------------------------------
+
     testSqrtBaseField();
+    testSqrtBigInteger();
     testSqrtSingleExtension();
     testSqrtDoubleExtension();
+
+    // 补上第三层平方根测试
+    testSqrtLevel3(Qsqrt2sqrt3sqrt5);
+
+    // --------------------------------------------------
+    // 随机性质测试
+    // --------------------------------------------------
 
     testSqrtRandomProperties(Q);
     testSqrtRandomProperties(Qsqrt2);

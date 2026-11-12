@@ -1,104 +1,55 @@
+
 #include "geometry/rational.h"
 
-#include <limits>
 #include <stdexcept>
 #include <ostream>
-#include <numeric>
+#include <cmath>
+#include <string>
 
 namespace zidian {
-    using UnsignedInteger = unsigned long long;
 
-     UnsignedInteger magnitude(Integer value) {
-        if (value >= 0) {
-            return static_cast<UnsignedInteger>(value);
-        }
+    namespace {
 
-        return static_cast<UnsignedInteger>(-(value + 1)) + 1;
-    }
+        // 将 BigInt 转换成科学计数法形式的 long double。
+        // 避免直接转换超大整数时超出 long double 的表示范围。
+        long double toScientificValue(const BigInt& value, int& exponent) {
+            std::string str = value.abs().toString();
 
-    int comparePositiveFractions(unsigned long long a,unsigned long long b,
-        unsigned long long c,unsigned long long d) {
-        bool reversed = false;
-        while (true) {
-            auto q1 = a / b;
-            auto q2 = c / d;
-
-            if (q1 != q2) {
-                bool less = q1 < q2;
-
-                if (reversed) {
-                    less = !less;
-                }
-
-                return less ? -1 : 1;
+            if (str == "0") {
+                exponent = 0;
+                return 0.0L;
             }
 
-            auto r1 = a % b;
-            auto r2 = c % d;
+            constexpr size_t PRECISION = 18;
 
-            if (r1 == 0 || r2 == 0) {
-                if (r1 == 0 && r2 == 0) {
-                    return 0;
-                }
+            size_t count = str.size() < PRECISION
+                ? str.size()
+                : PRECISION;
 
-                bool less = (r1 == 0);
+            long double mantissa = 0.0L;
 
-                if (reversed) {
-                    less = !less;
-                }
-
-                return less ? -1 : 1;
+            for (size_t i = 0; i < count; ++i) {
+                mantissa = mantissa * 10.0L
+                         + static_cast<long double>(str[i] - '0');
             }
 
-            // 继续比较倒数后的余数分数
-            a = b;
-            b = r1;
+            exponent = static_cast<int>(str.size() - count);
 
-            c = d;
-            d = r2;
+            if (value.isNegative()) {
+                mantissa = -mantissa;
+            }
 
-            reversed = !reversed;
-        }//end while
-        return 0;
-    }
-
-    //检测数字加法是否溢出
-    Integer checkedAdd(Integer a, Integer b) {
-        Integer result;
-        if (__builtin_add_overflow(a, b, &result)) {
-            throw std::overflow_error("Rational integer overflow");
+            return mantissa;
         }
-        return result;
+
     }
 
-    //检测数字减法是否溢出
-    Integer checkedSub(Integer a, Integer b) {
-        Integer result;
-        if (__builtin_sub_overflow(a, b, &result)) {
-            throw std::overflow_error("Rational integer overflow");
-        }
-        return result;
+    Rational::Rational()
+        : numerator_(0), denominator_(1) {
     }
 
-    Integer checkedMul(Integer a, Integer b) {
-        Integer result;
-        if (__builtin_mul_overflow(a, b, &result)) {
-            throw std::overflow_error("Rational integer overflow");
-        }
-        return result;
-    }
-
-    Integer checkedNegate(Integer value) {
-        if (value == std::numeric_limits<Integer>::min()) {
-            throw std::overflow_error("Rational integer overflow");
-        }
-        return -value;
-    }
-
-    Rational::Rational() : numerator_(0), denominator_(1) {
-    }
-
-    Rational::Rational(Integer value) : numerator_(value), denominator_(1) {
+    Rational::Rational(Integer value)
+        : numerator_(value), denominator_(1) {
     }
 
     Rational::Rational(Integer numerator, Integer denominator)
@@ -114,60 +65,78 @@ namespace zidian {
         return denominator_;
     }
 
+    Integer Rational::getNumerator() const {
+        return numerator_;
+    }
+
+    Integer Rational::getDenominator() const {
+        return denominator_;
+    }
+
     bool Rational::isZero() const {
-        return numerator_ == 0;
+        return numerator_.isZero();
     }
 
     bool Rational::isPositive() const {
-        return numerator_ > 0;
+        return numerator_.isPositive();
     }
 
     bool Rational::isNegative() const {
-        return numerator_ < 0;
+        return numerator_.isNegative();
     }
 
     int Rational::sign() const {
-        if (numerator_ > 0) {
-            return 1;
-        }
-
-        if (numerator_ < 0) {
-            return -1;
-        }
-        return 0;
+        return numerator_.sign();
     }
 
     double Rational::toDouble() const {
-        return static_cast<double>(numerator_) /
-            static_cast<double>(denominator_);
+        if (numerator_.isZero()) {
+            return 0.0;
+        }
+
+        int numeratorExponent = 0;
+        int denominatorExponent = 0;
+
+        long double numeratorValue =
+            toScientificValue(numerator_, numeratorExponent);
+
+        long double denominatorValue =
+            toScientificValue(denominator_, denominatorExponent);
+
+        int exponent = numeratorExponent - denominatorExponent;
+
+        long double result = numeratorValue / denominatorValue;
+
+        result *= std::pow(10.0L, static_cast<long double>(exponent));
+
+        return static_cast<double>(result);
     }
 
     std::string Rational::toString() const {
-        if (denominator_ == 1) {
-            return std::to_string(numerator_);
+        if (denominator_ == Integer(1)) {
+            return numerator_.toString();
         }
 
-        return std::to_string(numerator_) + "/" +
-            std::to_string(denominator_);
+        return numerator_.toString() + "/" +
+               denominator_.toString();
     }
 
     Rational Rational::operator-() const {
-        return Rational(checkedNegate(numerator_), denominator_);
+        return Rational(-numerator_, denominator_);
     }
 
+    // 加法
     Rational& Rational::operator+=(const Rational& rhs) {
         // 先约分两个分母，降低中间结果的大小
-        Integer g = std::gcd(denominator_, rhs.denominator_);
+        Integer g = gcd(denominator_, rhs.denominator_);
 
         Integer leftFactor = rhs.denominator_ / g;
         Integer rightFactor = denominator_ / g;
 
-        Integer n = checkedAdd(
-            checkedMul(numerator_, leftFactor),
-            checkedMul(rhs.numerator_, rightFactor)
-        );
+        Integer n = numerator_ * leftFactor
+                  + rhs.numerator_ * rightFactor;
 
-        Integer d = checkedMul(denominator_, leftFactor);
+        Integer d = denominator_ * leftFactor;
 
         numerator_ = n;
         denominator_ = d;
@@ -176,93 +145,65 @@ namespace zidian {
         return *this;
     }
 
+    // 减法
     Rational& Rational::operator-=(const Rational& rhs) {
-        return *this += -rhs;
+        return *this += (-rhs);
     }
 
+    // 乘法
     Rational& Rational::operator*=(const Rational& rhs) {
         // 交叉约分
-        Integer g1 = static_cast<Integer>(
-            gcd(magnitude(numerator_), magnitude(rhs.denominator_))
-        );
-
-        Integer g2 = static_cast<Integer>(
-            gcd(magnitude(rhs.numerator_), magnitude(denominator_))
-        );
+        Integer g1 = gcd(numerator_, rhs.denominator_);
+        Integer g2 = gcd(rhs.numerator_, denominator_);
 
         Integer a = numerator_ / g1;
         Integer b = rhs.numerator_ / g2;
         Integer c = denominator_ / g2;
         Integer d = rhs.denominator_ / g1;
 
-        numerator_ = checkedMul(a, b);
-        denominator_ = checkedMul(c, d);
+        numerator_ = a * b;
+        denominator_ = c * d;
 
         normalize();
         return *this;
     }
 
+    // 除法
     Rational& Rational::operator/=(const Rational& rhs) {
-        if (rhs.numerator_ == 0) {
+        if (rhs.numerator_.isZero()) {
             throw std::domain_error("Rational: division by zero");
         }
 
-        Integer rhsNumerator = rhs.numerator_;
-        Integer rhsDenominator = rhs.denominator_;
-
         // 交叉约分
-        Integer g1 = std::gcd(numerator_, rhsNumerator);
-        Integer g2 = std::gcd(rhsDenominator, denominator_);
+        Integer g1 = gcd(numerator_, rhs.numerator_);
+        Integer g2 = gcd(rhs.denominator_, denominator_);
 
         Integer a = numerator_ / g1;
-        Integer b = rhsDenominator / g2;
+        Integer b = rhs.denominator_ / g2;
         Integer c = denominator_ / g2;
-        Integer d = rhsNumerator / g1;
+        Integer d = rhs.numerator_ / g1;
 
-        numerator_ = checkedMul(a, b);
-        denominator_ = checkedMul(c, d);
+        numerator_ = a * b;
+        denominator_ = c * d;
 
         normalize();
         return *this;
     }
 
-    Integer Rational::getNumerator() const{
-        return numerator_;
-    }
-
-    Integer Rational::getDenominator() const{
-        return denominator_;
-    }
-
+    // 相等
     bool operator==(const Rational& lhs, const Rational& rhs) {
-        return lhs.numerator_ == rhs.numerator_ && lhs.denominator_ == rhs.denominator_;
+        return lhs.numerator_ == rhs.numerator_
+            && lhs.denominator_ == rhs.denominator_;
     }
 
     bool operator!=(const Rational& lhs, const Rational& rhs) {
         return !(lhs == rhs);
     }
 
+    // 小于
     bool operator<(const Rational& lhs, const Rational& rhs) {
-        int leftSign = lhs.sign();
-        int rightSign = rhs.sign();
-
-        if (leftSign != rightSign) {
-            return leftSign < rightSign;
-        }
-
-        if (leftSign == 0) {
-            return false;
-        }
-
-        int result = comparePositiveFractions(
-            magnitude(lhs.numerator_),
-            static_cast<unsigned long long>(lhs.denominator_),
-            magnitude(rhs.numerator_),
-            static_cast<unsigned long long>(rhs.denominator_)
-        );
-
-        // 两个负数比较大小时，绝对值较大的反而较小
-        return leftSign > 0 ? result < 0 : result > 0;
+        return lhs.numerator_ * rhs.denominator_
+             < rhs.numerator_ * lhs.denominator_;
     }
 
     bool operator<=(const Rational& lhs, const Rational& rhs) {
@@ -277,10 +218,12 @@ namespace zidian {
         return !(lhs < rhs);
     }
 
+    // 输出
     std::ostream& operator<<(std::ostream& os, const Rational& value) {
         return os << value.toString();
     }
 
+    // 四则运算
     Rational operator+(Rational lhs, const Rational& rhs) {
         lhs += rhs;
         return lhs;
@@ -301,70 +244,36 @@ namespace zidian {
         return lhs;
     }
 
-    UnsignedInteger Rational::gcd(UnsignedInteger a,UnsignedInteger b) {
-        while (b != 0) {
-            unsigned long long remainder = a % b;
-            a = b;
-            b = remainder;
-        }
-
-        return a;
+    // 最大公约数
+    Integer Rational::gcd(Integer a, Integer b) {
+        return BigInt::gcd(a.abs(), b.abs());
     }
 
+    // 规范化分数
     void Rational::normalize() {
-        if (denominator_ == 0) {
+        if (denominator_.isZero()) {
             throw std::invalid_argument(
                 "Rational: denominator cannot be zero"
             );
         }
 
-        // 零优先处理，避免对 LLONG_MIN 分母取负
-        if (numerator_ == 0) {
-            denominator_ = 1;
+        // 零统一表示为 0/1
+        if (numerator_.isZero()) {
+            denominator_ = Integer(1);
             return;
         }
 
-        bool negative = (numerator_ < 0) != (denominator_ < 0);
-
-        unsigned long long n = magnitude(numerator_);
-        unsigned long long d = magnitude(denominator_);
-
-        unsigned long long divisor = gcd(n, d);
-
-        n /= divisor;
-        d /= divisor;
-
-        const unsigned long long maxValue =
-            static_cast<unsigned long long>(
-                std::numeric_limits<Integer>::max()
-            );
-
-        // 分母必须能用正的 long long 表示
-        if (d > maxValue) {
-            throw std::overflow_error(
-                "Rational denominator overflow"
-            );
+        // 保证分母为正数
+        if (denominator_.isNegative()) {
+            numerator_ = -numerator_;
+            denominator_ = -denominator_;
         }
 
-        // 负数允许表示 LLONG_MIN
-        if (negative) {
-            if (n == maxValue + 1) {
-                numerator_ = std::numeric_limits<Integer>::min();
-            } else {
-                numerator_ = -static_cast<Integer>(n);
-            }
-        } else {
-            // 正数不能超过 LLONG_MAX
-            if (n > maxValue) {
-                throw std::overflow_error(
-                    "Rational numerator overflow"
-                );
-            }
+        // 最大公约数约分
+        Integer divisor = gcd(numerator_, denominator_);
 
-            numerator_ = static_cast<Integer>(n);
-        }
-
-        denominator_ = static_cast<Integer>(d);
+        numerator_ /= divisor;
+        denominator_ /= divisor;
     }
 
 }
