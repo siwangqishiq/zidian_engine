@@ -5,11 +5,7 @@
 #include <vector>
 
 namespace zidian {
-
-    // ==================================================
     // 构造
-    // ==================================================
-
     FieldEmbedding::FieldEmbedding(
         const QuadraticField& source,
         const QuadraticField& target
@@ -20,10 +16,7 @@ namespace zidian {
         validateEmbedding(source_);
     }
 
-    // ==================================================
     // 获取源域和目标域
-    // ==================================================
-
     const QuadraticField& FieldEmbedding::getSource() const {
         return source_;
     }
@@ -32,7 +25,6 @@ namespace zidian {
         return target_;
     }
 
-    // ==================================================
     // 验证嵌入是否存在
     //
     // 对于：
@@ -46,8 +38,6 @@ namespace zidian {
     //
     // 通过 getMappedGenerator() 获取生成元映射，
     // 同时完成缓存。
-    // ==================================================
-
     void FieldEmbedding::validateEmbedding(
         const QuadraticField& source
     ) const {
@@ -73,7 +63,6 @@ namespace zidian {
         getMappedGenerator(source);
     }
 
-    // ==================================================
     // 获取扩张生成元的映射
     //
     // source = parent(sqrt(d))
@@ -81,8 +70,6 @@ namespace zidian {
     // phi(sqrt(d)) = sqrt(phi(d))
     //
     // 结果缓存在 mappedGenerators_ 中。
-    // ==================================================
-
     const QuadraticNumber& FieldEmbedding::getMappedGenerator(
         const QuadraticField& source
     ) const {
@@ -93,20 +80,14 @@ namespace zidian {
             );
         }
 
-        // --------------------------------------------------
         // 查询缓存
-        // --------------------------------------------------
-
         auto it = mappedGenerators_.find(&source);
 
         if (it != mappedGenerators_.end()) {
             return it->second;
         }
 
-        // --------------------------------------------------
         // 获取扩张信息
-        // --------------------------------------------------
-
         const QuadraticNumber* radicand =
             source.getRadicand();
 
@@ -116,21 +97,15 @@ namespace zidian {
             );
         }
 
-        // --------------------------------------------------
         // 转换 radicand
         //
         // phi(d)
-        // --------------------------------------------------
-
         QuadraticNumber mappedRadicand =
             convertRecursive(*radicand);
 
-        // --------------------------------------------------
         // 在目标域中求正平方根
         //
         // phi(sqrt(d)) = sqrt(phi(d))
-        // --------------------------------------------------
-
         QuadraticNumber mappedSqrt(target_);
 
         if (!mappedRadicand.trySqrt(mappedSqrt)) {
@@ -140,10 +115,7 @@ namespace zidian {
             );
         }
 
-        // --------------------------------------------------
         // 写入缓存
-        // --------------------------------------------------
-
         auto result = mappedGenerators_.emplace(
             &source,
             mappedSqrt
@@ -152,7 +124,6 @@ namespace zidian {
         return result.first->second;
     }
 
-    // ==================================================
     // 递归转换
     //
     // source = parent(sqrt(d))
@@ -161,8 +132,6 @@ namespace zidian {
     //
     // phi(value) =
     //     phi(A) + phi(B) * phi(sqrt(d))
-    // ==================================================
-
     QuadraticNumber FieldEmbedding::convertRecursive(
         const QuadraticNumber& value
     ) const {
@@ -173,10 +142,7 @@ namespace zidian {
         const auto& coefficients =
             value.getCoefficients();
 
-        // --------------------------------------------------
         // 根域 Q
-        // --------------------------------------------------
-
         if (source.isBaseField()) {
 
             if (coefficients.size() != 1) {
@@ -191,10 +157,7 @@ namespace zidian {
             );
         }
 
-        // --------------------------------------------------
         // 当前扩张域
-        // --------------------------------------------------
-
         const QuadraticField* parent =
             source.getParent();
 
@@ -213,12 +176,9 @@ namespace zidian {
             );
         }
 
-        // --------------------------------------------------
         // 拆分：
         //
         // value = A + B * sqrt(d)
-        // --------------------------------------------------
-
         std::vector<Rational> aCoefficients(
             parentDimension,
             Rational(0)
@@ -249,39 +209,27 @@ namespace zidian {
             bCoefficients
         );
 
-        // --------------------------------------------------
         // 递归转换 A 和 B
-        // --------------------------------------------------
-
         QuadraticNumber mappedA =
             convertRecursive(a);
 
         QuadraticNumber mappedB =
             convertRecursive(b);
 
-        // --------------------------------------------------
         // 获取当前扩张生成元的映射
         //
         // 如果之前计算过，这里不会再次调用 trySqrt。
-        // --------------------------------------------------
-
         const QuadraticNumber& mappedSqrt =
             getMappedGenerator(source);
 
-        // --------------------------------------------------
         // 合成最终结果
         //
         // phi(value) =
         //     phi(A) + phi(B) * phi(sqrt(d))
-        // --------------------------------------------------
-
         return mappedA + mappedB * mappedSqrt;
     }
 
-    // ==================================================
     // 对外转换接口
-    // ==================================================
-
     QuadraticNumber FieldEmbedding::convert(
         const QuadraticNumber& value
     ) const {

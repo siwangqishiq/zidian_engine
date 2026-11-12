@@ -7,10 +7,7 @@
 
 namespace zidian {
 
-    // ==================================================
     // SqrtResult
-    // ==================================================
-
     FieldManager::SqrtResult::SqrtResult(
         const QuadraticField& field,
         const QuadraticNumber& value,
@@ -21,10 +18,7 @@ namespace zidian {
           extended(extended) {
     }
 
-    // ==================================================
     // 扩张节点
-    // ==================================================
-
     struct FieldManager::ExtensionNode {
 
         QuadraticNumber radicand;
@@ -39,10 +33,7 @@ namespace zidian {
         }
     };
 
-    // ==================================================
     // 构造与析构
-    // ==================================================
-
     FieldManager::FieldManager() = default;
 
     FieldManager::~FieldManager() {
@@ -53,18 +44,12 @@ namespace zidian {
         }
     }
 
-    // ==================================================
     // 根域
-    // ==================================================
-
     const QuadraticField& FieldManager::getRoot() const {
         return root_;
     }
 
-    // ==================================================
     // 判断数域归属
-    // ==================================================
-
     bool FieldManager::ownsField(
         const QuadraticField& field
     ) const {
@@ -83,7 +68,6 @@ namespace zidian {
         return false;
     }
 
-    // ==================================================
     // 查找等价扩张
     //
     // 不再要求：
@@ -95,8 +79,6 @@ namespace zidian {
     // candidate <-> existing
     //
     // 是否能够建立双向实数域嵌入。
-    // ==================================================
-
     const FieldManager::ExtensionNode*
     FieldManager::findEquivalentExtension(
         const QuadraticField& parent,
@@ -150,7 +132,6 @@ namespace zidian {
         return nullptr;
     }
 
-    // ==================================================
     // 创建扩张域中的平方根
     //
     // 已有扩张：
@@ -172,8 +153,6 @@ namespace zidian {
     // c = sqrt(a' / b)
     //
     // sqrt(a') = c * sqrt(b)
-    // ==================================================
-
     QuadraticNumber FieldManager::createExtendedSqrt(
         const ExtensionNode& node,
         const QuadraticField& sourceParent,
@@ -187,12 +166,9 @@ namespace zidian {
         const QuadraticField& targetField =
             node.field;
 
-        // --------------------------------------------------
         // 将源父域嵌入完整目标域。
         //
         // sourceParent -> targetField
-        // --------------------------------------------------
-
         FieldEmbedding embedding(
             sourceParent,
             targetField
@@ -202,10 +178,7 @@ namespace zidian {
         QuadraticNumber mappedRadicand =
             embedding.convert(radicand);
 
-        // --------------------------------------------------
         // 直接在完整目标域中求平方根。
-        // --------------------------------------------------
-
         QuadraticNumber result(targetField);
 
         if (!mappedRadicand.trySqrt(result)) {
@@ -218,10 +191,7 @@ namespace zidian {
         return result;
     }
 
-    // ==================================================
     // 创建二次扩张
-    // ==================================================
-
     const QuadraticField& FieldManager::extend(
         const QuadraticField& parent,
         const QuadraticNumber& radicand
@@ -276,10 +246,7 @@ namespace zidian {
         return result;
     }
 
-    // ==================================================
     // 当前数域中求平方根
-    // ==================================================
-
     bool FieldManager::trySqrt(
         const QuadraticField& field,
         const QuadraticNumber& value,
@@ -307,10 +274,7 @@ namespace zidian {
         return value.trySqrt(result);
     }
 
-    // ==================================================
     // 自动求平方根与扩张
-    // ==================================================
-
     std::optional<FieldManager::SqrtResult>
     FieldManager::trySqrtOrExtend(
         const QuadraticField& field,
@@ -329,10 +293,7 @@ namespace zidian {
             );
         }
 
-        // --------------------------------------------------
         // 1. 优先尝试当前域内求根。
-        // --------------------------------------------------
-
         QuadraticNumber sqrtValue(field);
 
         if (value.trySqrt(sqrtValue)) {
@@ -345,18 +306,12 @@ namespace zidian {
             );
         }
 
-        // --------------------------------------------------
         // 2. 负数无法在实数域中开平方。
-        // --------------------------------------------------
-
         if (value.sign() < 0) {
             return std::nullopt;
         }
 
-        // --------------------------------------------------
         // 3. 查找已有的等价扩张。
-        // --------------------------------------------------
-
         const ExtensionNode* existing =
             findEquivalentExtension(field, value);
 
@@ -377,10 +332,7 @@ namespace zidian {
             );
         }
 
-        // --------------------------------------------------
         // 4. 创建新的二次扩张。
-        // --------------------------------------------------
-
         const QuadraticField& extendedField =
             extend(field, value);
 
@@ -413,10 +365,7 @@ namespace zidian {
         );
     }
 
-    // ==================================================
     // 数域数量
-    // ==================================================
-
     std::size_t FieldManager::getFieldCount() const {
         return extensions_.size() + 1;
     }

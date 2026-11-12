@@ -122,10 +122,7 @@ namespace zidian {
         return true;
     }
 
-    // ============================================================
     // 构造函数
-    // ============================================================
-
     QuadraticNumber::QuadraticNumber(
         const QuadraticField& field
     )
@@ -174,7 +171,6 @@ namespace zidian {
         return ::zidian::isZeroCoefficients(coefficients_);
     }
 
-    // ============================================================
     // 递归乘法
     //
     // K = K_parent(sqrt(d))
@@ -183,8 +179,6 @@ namespace zidian {
     // y = C + D * sqrt(d)
     //
     // xy = (AC + dBD) + (AD + BC) * sqrt(d)
-    // ============================================================
-
     Coefficients multiply(
         const QuadraticField& field,
         const Coefficients& lhs,
@@ -246,14 +240,11 @@ namespace zidian {
         return low;
     }
 
-    // ============================================================
     // 递归除法
     //
     // x / y = x * conjugate(y) / norm(y)
     //
     // norm(y) = C² - dD²
-    // ============================================================
-
     Coefficients divide(
         const QuadraticField& field,
         const Coefficients& lhs,
@@ -316,14 +307,11 @@ namespace zidian {
         return multiply(field, lhs, inverseLow);
     }
 
-    // ============================================================
     // 递归符号判断
     //
     // x = A + B * sqrt(d)
     //
     // A、B 属于父数域，且 d > 0
-    // ============================================================
-
     int signCoefficients(
         const QuadraticField& field,
         const Coefficients& value
@@ -375,11 +363,8 @@ namespace zidian {
         return signA > 0 ? result : -result;
     }
 
-    // ============================================================
     // 转换成 double
     // 仅用于渲染和展示，不用于精确判断
-    // ============================================================
-
     double evaluate(
         const QuadraticField& field,
         const Coefficients& value
@@ -404,10 +389,7 @@ namespace zidian {
         return av + bv * std::sqrt(radicand);
     }
 
-    // ============================================================
     // 字符串转换
-    // ============================================================
-
     std::string format(
         const QuadraticField& field,
         const Coefficients& value
@@ -428,10 +410,7 @@ namespace zidian {
             field.getRadicand()->toString() + ")";
     }
 
-    // ============================================================
     // 符号判断
-    // ============================================================
-
     bool QuadraticNumber::isPositive() const {
         return sign() > 0;
     }
@@ -444,14 +423,11 @@ namespace zidian {
         return signCoefficients(field_, coefficients_);
     }
 
-    // ============================================================
     // 共轭
     //
     // A + B * sqrt(d)
     // ->
     // A - B * sqrt(d)
-    // ============================================================
-
     QuadraticNumber QuadraticNumber::conjugate() const {
         if (field_.isBaseField()) {
             return *this;
@@ -469,14 +445,11 @@ namespace zidian {
         return QuadraticNumber(field_, result);
     }
 
-    // ============================================================
     // 范数
     //
     // norm = A² - dB²
     //
     // 返回父数域中的数
-    // ============================================================
-
     QuadraticNumber QuadraticNumber::norm() const {
         if (field_.isBaseField()) {
             return *this;
@@ -510,10 +483,7 @@ namespace zidian {
         return QuadraticNumber(parent, result);
     }
 
-    // ============================================================
     // 转换
-    // ============================================================
-
     double QuadraticNumber::toDouble() const {
         return evaluate(field_, coefficients_);
     }
@@ -522,10 +492,7 @@ namespace zidian {
         return format(field_, coefficients_);
     }
 
-    // ============================================================
     // 一元运算
-    // ============================================================
-
     QuadraticNumber QuadraticNumber::operator-() const {
         return QuadraticNumber(
             field_,
@@ -533,10 +500,7 @@ namespace zidian {
         );
     }
 
-    // ============================================================
     // 复合赋值
-    // ============================================================
-
     QuadraticNumber& QuadraticNumber::operator+=(
         const QuadraticNumber& rhs
     ) {
@@ -591,10 +555,7 @@ namespace zidian {
         return *this;
     }
 
-    // ============================================================
     // 四则运算
-    // ============================================================
-
     QuadraticNumber operator+(
         const QuadraticNumber& lhs,
         const QuadraticNumber& rhs
@@ -651,10 +612,7 @@ namespace zidian {
         );
     }
 
-    // ============================================================
     // 比较运算
-    // ============================================================
-
     bool operator==(
         const QuadraticNumber& lhs,
         const QuadraticNumber& rhs
@@ -713,7 +671,6 @@ namespace zidian {
         return !(lhs < rhs);
     }
 
-    // ============================================================
     // 尝试在当前数域中寻找非负平方根
     //
     // 当前数域 K = K0(sqrt(d))
@@ -733,8 +690,6 @@ namespace zidian {
     //
     // U² = (A + C) / 2
     // V² = (A - C) / (2d)
-    // ============================================================
-
     bool QuadraticNumber::trySqrt(
         QuadraticNumber& result
     ) const {
@@ -756,10 +711,7 @@ namespace zidian {
             return true;
         }
 
-        // --------------------------------------------------
         // 基础数域 Q
-        // --------------------------------------------------
-
         if (field_.isBaseField()) {
             const Rational& value = coefficients_[0];
 
@@ -788,10 +740,7 @@ namespace zidian {
             return true;
         }
 
-        // --------------------------------------------------
         // 当前数域 K = K0(sqrt(d))
-        // --------------------------------------------------
-
         const QuadraticField* parent = field_.getParent();
         const QuadraticNumber* radicand = field_.getRadicand();
 
@@ -845,10 +794,7 @@ namespace zidian {
 
         QuadraticNumber zero(*parent);
 
-        // --------------------------------------------------
         // 情况一：B = 0
-        // --------------------------------------------------
-
         if (B.isZero()) {
             // 尝试 x = A，即寻找 U，使 U² = A
             {
@@ -882,10 +828,7 @@ namespace zidian {
             return false;
         }
 
-        // --------------------------------------------------
         // 情况二：B != 0
-        // --------------------------------------------------
-
         // N = A² - d * B²
         QuadraticNumber N = A * A - d * B * B;
 
