@@ -18,6 +18,8 @@ extern void TestGeometryQuadratic();
 
 extern void TestBigInt();
 
+extern int TestGeometryFieldManager();
+
 int main() {
     // TestLogs();
     // TestApplication();
@@ -31,8 +33,10 @@ int main() {
 
 
     // TestGeometryRational();
-    TestGeometryQuadratic();
+    // TestGeometryQuadratic();
 
     // TestBigInt();
+
+    TestGeometryFieldManager();
     return 0;
 }//end main
