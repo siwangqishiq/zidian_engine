@@ -20,6 +20,8 @@ extern void TestBigInt();
 
 extern int TestGeometryFieldManager();
 
+extern void TestComposeImageCase();
+
 int main() {
     // TestLogs();
     // TestApplication();
@@ -37,6 +39,8 @@ int main() {
 
     // TestBigInt();
 
-    TestGeometryFieldManager();
+    // TestGeometryFieldManager();
+
+    TestComposeImageCase();
     return 0;
 }//end main

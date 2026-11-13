@@ -100,16 +100,16 @@ namespace zidian {
         return textureMaps[key];
     }
 
-    std::shared_ptr<Image> TextureManager::createEmptyImage(uint32_t width, uint32_t height , glm::vec4 color){
+    std::shared_ptr<ComposeImage> TextureManager::createComposeImage(uint32_t width, uint32_t height, glm::vec4 color){
         std::string key = genEmptyImageIndex();
-        auto emptyImage = std::make_shared<Image>(ctx.device, key, width, height);
+        auto emptyImage = std::make_shared<ComposeImage>(ctx, key, width, height);
+
         textureMaps[key] = emptyImage;
 
         createImage(width, height, 
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 
+            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-            emptyImage->getTextureImage(), 
-            emptyImage->getTextureMemory());
+            emptyImage->getTextureImage(), emptyImage->getTextureMemory());
         
         auto commandBuffer = beginSingleTimeCommands();
 

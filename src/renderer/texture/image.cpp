@@ -163,7 +163,7 @@ namespace zidian {
     }
 
     std::shared_ptr<Image> Image::buildSubImage(uint32_t offsetX,uint32_t offsetY,uint32_t subWidth, uint32_t subHeight){
-        if(subWidth > width || subHeight > height || offsetX > subWidth || offsetY > subHeight) {
+        if(subWidth > width || subHeight > height) {
             Log::e("image", "build sub image params illegirate!");
             return nullptr;
         }

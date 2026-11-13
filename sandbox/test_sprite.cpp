@@ -27,7 +27,7 @@ public:
 
         spriteImage = render->textureManager->loadImageByPath("images/player_full_animation.png");
 
-        emptyImage = render->textureManager->createEmptyImage(512, 512, glm::vec4(0.0f, 1.0f, 0.0f , 0.5f));
+        // emptyImage = render->textureManager->createEmptyImage(512, 512, glm::vec4(0.0f, 1.0f, 0.0f , 0.5f));
     }
 
     virtual void onTick(float deltaTime) override{

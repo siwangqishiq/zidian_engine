@@ -8,7 +8,6 @@
 #include "renderer/command/command_list.h"
 #include "renderer/mem/memory_allocator.h"
 #include "renderer/pipeline/push_constant_data.h"
-#include "renderer/pipeline/pipe_common.h"
 #include "renderer/frame_resource.h"
 #include "renderer/texture/texture_manager.h"
 #include "renderer/command/render_queue.h"
@@ -24,7 +23,7 @@ namespace zidian{
         VkDebugUtilsMessageTypeFlagsEXT type,
         const VkDebugUtilsMessengerCallbackDataEXT* callback,
         void* user);
-
+    
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, 
         const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
         const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
