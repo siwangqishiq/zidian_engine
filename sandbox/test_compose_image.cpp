@@ -8,7 +8,8 @@ public:
     virtual void onInit() override{
         zidian::Log::brown("game", "TestComposeImage init");
         auto &render = zidian::Instance->getRender();
-        composeImage = render->textureManager->createComposeImage(300, 300, glm::vec4(0.0f, 1.0f, 0.0f , 1.0f));
+        composeImage = render->textureManager->createComposeImage(300, 300, 
+            glm::vec4(1.0f, 1.0f, 1.0f , 1.0f));
         // zidian::Log::brown("game", "wh %u %u", composeImage->width, composeImage->height);
         
         uint32_t subWidth = 100;
@@ -18,9 +19,9 @@ public:
         int index = 0;
         for(int i = 0 ; i < subHeight ;i++){
             for(int j = 0 ; j < subWidth; j++){
-                pixel[index++] = 255;
-                pixel[index++] = 255;
                 pixel[index++] = 0;
+                pixel[index++] = 0;
+                pixel[index++] = 255;
                 pixel[index++] = 255; 
             }
         }
@@ -40,7 +41,12 @@ public:
         zidian::Rect dstRect = srcRect;
 
         // zidian::Log::brown("game", "%f %f", srcRect.width, srcRect.height);
-        canvas->drawImage(composeImage, srcRect, dstRect);
+        // canvas->drawImage(composeImage, srcRect, dstRect);
+
+        zidian::Rect srcRect1 = subImg1->getImageRect();
+        zidian::Rect dstRect1 = srcRect1;
+        dstRect1.left = 300.0f + 2.0f;
+        canvas->drawImage(subImg1, srcRect1, dstRect1);
     }
 
     virtual void onDispose() override {
