@@ -12,7 +12,7 @@ namespace zidian {
         ~ComposeImage();
         
         std::shared_ptr<Image> loadImageData(uint32_t offsetX, uint32_t offsetY, 
-                uint32_t imageWidth , uint32_t imageHeight, size_t size, uint8_t *pixels);
+                uint32_t imageWidth , uint32_t imageHeight, uint8_t *pixels);
         
         Render& context_;
 

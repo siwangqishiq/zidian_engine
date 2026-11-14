@@ -15,7 +15,16 @@ public:
         uint32_t subHeight = 100;
         const unsigned size = 4 * subWidth * subHeight;
         uint8_t *pixel = new uint8_t[size];
-        subImg1 = composeImage->loadImageData(150,150,subWidth, subHeight , size , pixel);
+        int index = 0;
+        for(int i = 0 ; i < subHeight ;i++){
+            for(int j = 0 ; j < subWidth; j++){
+                pixel[index++] = 255;
+                pixel[index++] = 255;
+                pixel[index++] = 0;
+                pixel[index++] = 255; 
+            }
+        }
+        subImg1 = composeImage->loadImageData(100,20,subWidth, subHeight, pixel);
         delete[] pixel;
     }
 

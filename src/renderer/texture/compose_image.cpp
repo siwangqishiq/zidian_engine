@@ -10,8 +10,7 @@ namespace zidian{
 
     std::shared_ptr<Image> ComposeImage::loadImageData(
             uint32_t offsetX, uint32_t offsetY, 
-            uint32_t imageWidth , uint32_t imageHeight, 
-            size_t size, uint8_t *pixels){
+            uint32_t imageWidth , uint32_t imageHeight, uint8_t *pixels){
         if(pixels == nullptr || imageWidth == 0 || imageHeight == 0){
             return nullptr;
         }
@@ -42,7 +41,11 @@ namespace zidian{
         region.imageSubresource.mipLevel = 0;
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount = 1;
-        region.imageOffset = {offsetX, offsetY, 0};
+        region.imageOffset = {
+            static_cast<int>(offsetX), 
+            static_cast<int>(offsetY), 
+            0
+        };
         region.imageExtent = {
             static_cast<uint32_t>(imageWidth),
             static_cast<uint32_t>(imageHeight),
