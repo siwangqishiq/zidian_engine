@@ -328,6 +328,10 @@ namespace zidian {
         Log::i("render","point size range %f : %f", physicalDeviceProperties.limits.pointSizeRange[0], 
                 physicalDeviceProperties.limits.pointSizeRange[1]);
         
+        uint32_t maxImageDimension3D = physicalDeviceProperties.limits.maxImageDimension3D;
+        uint32_t maxImageDimension2D = physicalDeviceProperties.limits.maxImageDimension2D;
+        uint32_t maxImageDimension1D = physicalDeviceProperties.limits.maxImageDimension1D;
+        Log::i("render","max image dimension 1D:%u  2D:%u  3D:%u", maxImageDimension1D,maxImageDimension2D, maxImageDimension3D);
     }
 
     bool Render::isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props){
