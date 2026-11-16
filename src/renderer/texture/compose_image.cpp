@@ -8,10 +8,23 @@ namespace zidian{
         :Image(ctx.device, name_ , width_ , height_) , context_(ctx) {
     }
 
+    std::shared_ptr<Image> ComposeImage::autoLoadImageData(uint32_t imageWidth , uint32_t imageHeight, uint8_t *pixels){
+        if(pixels == nullptr || imageWidth == 0 || imageHeight == 0){
+            return nullptr;
+        }
+        
+        return nullptr;
+    }
+
     std::shared_ptr<Image> ComposeImage::loadImageData(
             uint32_t offsetX, uint32_t offsetY, 
             uint32_t imageWidth , uint32_t imageHeight, uint8_t *pixels){
         if(pixels == nullptr || imageWidth == 0 || imageHeight == 0){
+            return nullptr;
+        }
+
+        if(offsetX + imageWidth > getResImageWidth() || offsetY + imageHeight > getResImageHeight()){
+            Log::e("image", "compose image load image offset + size overflow!");
             return nullptr;
         }
 

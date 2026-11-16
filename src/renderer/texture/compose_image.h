@@ -13,11 +13,14 @@ namespace zidian {
         
         std::shared_ptr<Image> loadImageData(uint32_t offsetX, uint32_t offsetY, 
                 uint32_t imageWidth , uint32_t imageHeight, uint8_t *pixels);
+
+        std::shared_ptr<Image> autoLoadImageData(uint32_t imageWidth , uint32_t imageHeight, uint8_t *pixels);
         
         Render& context_;
 
-        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     protected:
+        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+        
         VkCommandBuffer beginSingleTimeCommands();
 
         void endSingleTimeCommands(VkCommandBuffer &commandBuffer);
