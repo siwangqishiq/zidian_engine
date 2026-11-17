@@ -5,11 +5,65 @@ public:
     std::shared_ptr<zidian::ComposeImage> composeImage;
     std::shared_ptr<zidian::Image> subImg1;
     std::shared_ptr<zidian::Image> subImg2;
+    std::shared_ptr<zidian::Image> subImg3;
+    std::shared_ptr<zidian::Image> spriteImage;
+
+    int spriteIndex = 0;
+    float duratingSeconds = 0.8f;
+    int frameCount = 6;
+    float frameWaitTime = 0.0f;
+
+
+    std::vector<std::shared_ptr<zidian::Image>> subImages;
 
     virtual void onInit() override{
         zidian::Log::brown("game", "TestComposeImage init");
         // testEmptyImageInit();
-        testCase2Init(); 
+        // testCase2Init(); 
+        testCase3Init();
+    }
+
+    virtual void onTick(float deltaTime) override{
+        // testEmptyImage(deltaTime);
+        testCase3();
+        testSprite(deltaTime);
+    }
+
+    void testCase3Init(){
+        auto &render = zidian::Instance->getRender();
+        composeImage = render->textureManager->createComposeImage(
+            2048, 2048, 
+            glm::vec4(1.0f, 1.0f, 1.0f , 1.0f)
+        );
+
+        subImg1 = composeImage->autoLoadImageFromAssetImageFile("images/test2.jpg");
+        subImg2 = composeImage->autoLoadImageFromAssetImageFile("images/test3.png");
+
+        const int size = 20;
+        subImages.resize(size);
+        for(int i = 0 ; i < size; i++){
+            subImages[i] = composeImage->autoLoadImageFromAssetImageFile("images/test3.png");
+        }
+
+        spriteImage = composeImage->autoLoadImageFromAssetImageFile("images/player_full_animation.png");
+    }
+
+    void testSprite(float deltaTime){
+        auto &render = zidian::Instance->getRender();
+        auto &canvas = render->getCanvas();
+
+        float spriteWidth = 40.0f;
+        float spriteHeight = 64.0f;
+
+        frameWaitTime += deltaTime;
+        if(frameWaitTime >= (duratingSeconds / frameCount)){
+            spriteIndex = (spriteIndex + 1) % frameCount;
+            frameWaitTime = 0.0f;
+        }
+
+        zidian::Rect srcRect{spriteIndex * spriteWidth, 0, spriteWidth, spriteHeight};
+        zidian::Rect dstRect{0.0f,0.0f,2.0f * spriteWidth,2.0f * spriteHeight};
+        canvas->drawImage(spriteImage, srcRect, dstRect);
     }
 
     void testCase2Init(){
@@ -41,6 +95,16 @@ public:
             subImg2 = composeImage->loadImageData(imageWidth,0,imageWidth2, imageHeight2, pixels);
             zidian::AssetManager::getInstance()->freePixels(pixels);
         }
+    }
+
+    void testCase3(){
+        auto &render = zidian::Instance->getRender();
+        auto &canvas = render->getCanvas();
+
+        zidian::Rect srcRect = composeImage->getImageRect();
+        const float srcW = (srcRect.width / srcRect.height) * canvas->getHeight();
+        zidian::Rect dstRect {0.0f, 0.0f, srcW, static_cast<float>(canvas->getHeight())};
+        canvas->drawImage(composeImage, srcRect, dstRect);
     }
 
     void testCase2(){
@@ -93,11 +157,6 @@ public:
         delete[] pixel;
     }
 
-    virtual void onTick(float deltaTime) override{
-        // testEmptyImage(deltaTime);
-        testCase2();
-    }
-
     void testEmptyImage(float deltaTime){
         auto &render = zidian::Instance->getRender();
         auto &canvas = render->getCanvas();
@@ -120,7 +179,10 @@ public:
         composeImage = nullptr;
         subImg1 = nullptr;
         subImg2 = nullptr;
-        
+        subImg3 = nullptr;
+        subImages.clear();
+        spriteImage = nullptr;
+
         zidian::AudioManager::getInstance()->dispose();
     }
 };

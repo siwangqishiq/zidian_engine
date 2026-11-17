@@ -15,6 +15,8 @@ namespace zidian {
                 uint32_t imageWidth , uint32_t imageHeight, uint8_t *pixels);
 
         std::shared_ptr<Image> autoLoadImageData(uint32_t imageWidth , uint32_t imageHeight, uint8_t *pixels);
+
+        std::shared_ptr<Image> autoLoadImageFromAssetImageFile(std::string path);
         
         Render& context_;
 
@@ -32,5 +34,9 @@ namespace zidian {
         void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     private:
         std::vector<Rect> idleRects_;
+
+        int findFitestIdleRect(uint32_t imageWidth , uint32_t imageHeight);
+
+        const int IdleRectPadding = 1;
     };
 }

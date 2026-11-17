@@ -16,6 +16,9 @@ namespace zidian{
 
         float right() const;
         float bottom() const;
+
+        Rect(float l,float t, float w, float h) : left(l),top(t), width(w),height(h){}
+        Rect() : left(0.0f),top(0.0f), width(0.0f),height(0.0f){}
     };
 
     class Geometry{

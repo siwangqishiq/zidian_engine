@@ -2,10 +2,28 @@
 #include "renderer/render.h"
 #include <stdexcept>
 #include "utils/log.h"
+#include <limits>
+#include "resource/asset_manager.h"
 
 namespace zidian{
     ComposeImage::ComposeImage(Render &ctx,std::string name_, uint32_t width_ , uint32_t height_)
         :Image(ctx.device, name_ , width_ , height_) , context_(ctx) {
+        idleRects_.push_back(Rect(0,0,width_,height_));
+    }
+
+    std::shared_ptr<Image> ComposeImage::autoLoadImageFromAssetImageFile(std::string path){
+        int imageWidth;
+        int imageHeight;
+        int channel;
+
+        auto pixels = AssetManager::getInstance()->readAssetImageFile(path,imageWidth, imageHeight,channel);
+        if(pixels && imageWidth > 0 && imageHeight > 0){
+            auto retImage = autoLoadImageData(imageWidth, imageHeight, pixels);
+            zidian::AssetManager::getInstance()->freePixels(pixels);
+            return retImage;
+        }
+
+        return nullptr;
     }
 
     std::shared_ptr<Image> ComposeImage::autoLoadImageData(uint32_t imageWidth , uint32_t imageHeight, uint8_t *pixels){
@@ -13,7 +31,87 @@ namespace zidian{
             return nullptr;
         }
         
-        return nullptr;
+        if(idleRects_.empty()){
+            Log::w("compose_image", "compose idle image is empty.");
+            return nullptr;
+        }
+
+        const int rectIndex = findFitestIdleRect(imageWidth, imageHeight);
+        if(rectIndex < 0){
+            Log::w("compose_image", "not found the fit rect");
+            return nullptr;
+        }
+
+        const Rect fitRect = idleRects_[rectIndex];
+        const std::shared_ptr<Image> subImage = loadImageData(
+            static_cast<uint32_t>(fitRect.left), 
+            static_cast<uint32_t>(fitRect.top), 
+            imageWidth, 
+            imageHeight,
+            pixels
+        );
+
+        if(subImage == nullptr){
+            Log::e("compose_image", "compose image load failed!");
+            return nullptr;
+        }
+
+        //移除选中的FitRect 
+        idleRects_.erase(idleRects_.begin() + rectIndex);
+
+        //分裂此fitRect 
+        Rect rightRect;
+        rightRect.left = fitRect.left + imageWidth + IdleRectPadding;
+        rightRect.width = fitRect.width - (imageWidth + IdleRectPadding);
+        rightRect.top = fitRect.top;
+        rightRect.height = static_cast<float>(imageHeight);
+        if(rightRect.width > 0.0f && rightRect.height > 0.0f){
+            idleRects_.push_back(rightRect);
+        }
+
+        Rect bottomRect;
+        bottomRect.left = fitRect.left;
+        bottomRect.width = fitRect.width;
+        bottomRect.top = fitRect.top + imageHeight + IdleRectPadding;
+        bottomRect.height = fitRect.height - (imageHeight + IdleRectPadding);
+        if(bottomRect.width > 0.0f && bottomRect.height > 0.0f){
+            idleRects_.push_back(bottomRect);
+        }
+        return subImage;
+    }
+
+    int ComposeImage::findFitestIdleRect(uint32_t imageWidth , uint32_t imageHeight){
+        if(idleRects_.empty()){
+            Log::w("compose_image", "compose idle image is empty.");
+            return -1;
+        }
+
+        int bestIndex = -1;
+        uint32_t bestShortSideFit = std::numeric_limits<uint32_t>::max();
+        uint32_t bestLongSideFit = std::numeric_limits<uint32_t>::max();
+
+        for (int i = 0; i < idleRects_.size(); ++i) {
+            const Rect& rect = idleRects_[i];
+
+            if (rect.width < imageWidth ||
+                rect.height < imageHeight) {
+                continue;
+            }
+
+            const uint32_t remainWidth = rect.width - imageWidth;
+            const uint32_t remainHeight = rect.height - imageHeight;
+            const uint32_t shortSideFit = std::min(remainWidth, remainHeight);
+
+            const uint32_t longSideFit = std::max(remainWidth, remainHeight);
+            
+            if (shortSideFit < bestShortSideFit ||(shortSideFit == bestShortSideFit && longSideFit < bestLongSideFit)) {
+                bestShortSideFit = shortSideFit;
+                bestLongSideFit = longSideFit;
+                bestIndex = i;
+            }
+        }
+
+        return bestIndex;
     }
 
     std::shared_ptr<Image> ComposeImage::loadImageData(

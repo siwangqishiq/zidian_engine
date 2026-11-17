@@ -98,12 +98,11 @@ public:
         zidian::Rect rect = image1->getImageRect();
         float dstWidth = canvas->getWidth() / 2.0f;
         float dstHeight = dstWidth / (static_cast<float>(image1->width) / static_cast<float>(image1->height));
-        zidian::Rect dstRect{
-            .left = 0.0f,
-            .top = 0.0f,
-            .width = dstWidth,
-            .height = dstHeight
-        };
+        zidian::Rect dstRect;
+        dstRect.left = 0.0f;
+        dstRect.top = 0.0f;
+        dstRect.width = dstWidth;
+        dstRect.height = dstHeight;
         canvas->drawImage(image1, rect, dstRect, glm::vec4(1.0f, 1.0f , 0.0f , 1.0f));
         
         zidian::Rect srcRect2 = image2->getImageRect();
@@ -112,12 +111,11 @@ public:
 
         float dstHeight2 = dstHeight;
         float dstWidth2 = (static_cast<float>(image2->width) / static_cast<float>(image2->height)) * dstHeight2;
-        zidian::Rect dstRect2{
-            .left = canvas->getWidth() / 2.0f,
-            .top = 0.0f,
-            .width = dstWidth2,
-            .height = dstHeight2
-        };
+        zidian::Rect dstRect2;
+        dstRect2.left = canvas->getWidth() / 2.0f;
+        dstRect2.top = 0.0f;
+        dstRect2.width = dstWidth2;
+        dstRect2.height = dstHeight2;
         canvas->drawImage(image2, srcRect2, dstRect2);
     }
 
