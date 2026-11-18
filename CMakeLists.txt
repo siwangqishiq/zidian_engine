@@ -81,6 +81,34 @@ else()
     )
 endif()
 
+set(FREETYPE_ROOT
+    "${CMAKE_SOURCE_DIR}/vendor/freetype"
+)
+
+find_path(FREETYPE_INCLUDE_DIRS
+    ft2build.h
+    PATHS "${FREETYPE_ROOT}/include/freetype2"
+    NO_DEFAULT_PATH
+)
+
+if (MSVC)
+    find_library(FREETYPE_LIBRARY
+        NAMES freetype
+        PATHS "${CMAKE_SOURCE_DIR}/lib/windows_msvc"
+        NO_DEFAULT_PATH
+    )
+else()
+    find_library(FREETYPE_LIBRARY
+        NAMES freetype
+        PATHS "${CMAKE_SOURCE_DIR}/lib/windows"
+        NO_DEFAULT_PATH
+    )
+endif()
+
+if(NOT FREETYPE_INCLUDE_DIRS OR NOT FREETYPE_LIBRARY)
+    message(FATAL_ERROR "FreeType not found!")
+endif()
+
 # set_target_properties(glfw3 PROPERTIES
 #     IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/windows/libglfw3.a
 # )
@@ -140,11 +168,17 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE 
         glfw3
         vulkan
+        ${FREETYPE_LIBRARY}
 )
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
         ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
+    ${FREETYPE_INCLUDE_DIRS}
 )
 
 add_dependencies(${PROJECT_NAME} Shaders)

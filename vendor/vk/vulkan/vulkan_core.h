@@ -3519,8 +3519,8 @@ typedef struct VkPhysicalDeviceFeatures {
 
 typedef struct VkPhysicalDeviceLimits {
     uint32_t              maxImageDimension1D;
-    uint32_t              maxImageDimension2D;
     uint32_t              maxImageDimension3D;
+    uint32_t              maxImageDimension2D;
     uint32_t              maxImageDimensionCube;
     uint32_t              maxImageArrayLayers;
     uint32_t              maxTexelBufferElements;

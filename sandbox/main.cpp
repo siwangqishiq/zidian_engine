@@ -22,6 +22,8 @@ extern int TestGeometryFieldManager();
 
 extern void TestComposeImageCase();
 
+extern int TestFreeTypeLib();
+
 int main() {
     // TestLogs();
     // TestApplication();
@@ -41,6 +43,8 @@ int main() {
 
     // TestGeometryFieldManager();
 
-    TestComposeImageCase();
+    // TestComposeImageCase();
+
+    TestFreeTypeLib();
     return 0;
 }//end main

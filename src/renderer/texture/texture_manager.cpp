@@ -218,7 +218,13 @@ namespace zidian {
         }
     }
 
-    void TextureManager::createImage(uint32_t texWidth,uint32_t texHeight,VkImageUsageFlags usage, VkMemoryPropertyFlags properties,VkImage &image, VkDeviceMemory &imageMemory){
+    void TextureManager::createImage(
+            uint32_t texWidth,
+            uint32_t texHeight,
+            VkImageUsageFlags usage, 
+            VkMemoryPropertyFlags properties,
+            VkImage &image, 
+            VkDeviceMemory &imageMemory) {
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = VK_IMAGE_TYPE_2D;

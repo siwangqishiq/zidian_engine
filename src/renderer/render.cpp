@@ -697,7 +697,7 @@ namespace zidian {
         cfBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         cfBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         vkBeginCommandBuffer(frameResource->commandBuffers[currentFrameIndex], &cfBeginInfo);
-
+        
         //begin render pass
         VkRenderPassBeginInfo passBeginInfo{};
         passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

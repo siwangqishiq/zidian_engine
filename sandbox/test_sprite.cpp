@@ -60,7 +60,7 @@ public:
             frameWaitTime = 0.0f;
         }
 
-        zidian::Rect srcRect{spriteWidth + spriteIndex * spriteWidth, 0, spriteWidth, spriteHeight};
+        zidian::Rect srcRect{spriteIndex * spriteWidth, 0, spriteWidth, spriteHeight};
         zidian::Rect dstRect{0.0f,0.0f,2.0f * spriteWidth,2.0f * spriteHeight};
         canvas->drawImage(spriteImage, srcRect, dstRect);
     }
