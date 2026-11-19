@@ -7,22 +7,16 @@ extern void TestBatchDraw();
 extern void TestCircleDraw();
 extern void TestSpriteDraw1();
 extern void TestTestMultiPipeline();
-
 extern void TestPictureShow();
-
 extern void TestCustomShader();
-
 extern void TestGeometryRational();
-
 extern void TestGeometryQuadratic();
-
 extern void TestBigInt();
-
 extern int TestGeometryFieldManager();
-
 extern void TestComposeImageCase();
-
 extern int TestFreeTypeLib();
+extern void TestDrawLinesCase();
+extern void TestDrawBezierCase();
 
 int main() {
     // TestLogs();
@@ -45,7 +39,9 @@ int main() {
 
     // TestComposeImageCase();
 
-    TestFreeTypeLib();
-    
+    // TestFreeTypeLib();
+
+    // TestDrawLinesCase();
+    TestDrawBezierCase();
     return 0;
 }//end main

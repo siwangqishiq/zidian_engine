@@ -60,6 +60,35 @@ namespace zidian {
         drawTriangles(vertices.data(), colors.data(), vertexCount);
     }
 
+    void VkCanvas::drawLines(glm::vec2 *points, uint32_t pointsCount, float lineWidth, const glm::vec4 color) {
+        if(points == nullptr || pointsCount <= 1){
+            return;
+        }
+
+        auto vertices = geometry.genLinesVertices(points, pointsCount, lineWidth);
+        const uint32_t vertexCount = vertices.size();
+        std::vector<glm::vec4> colors(vertexCount, color);
+        drawTriangles(vertices.data(), colors.data(), vertexCount);
+    }
+
+    void VkCanvas::drawLine(glm::vec2 start, glm::vec2 end,float lineWidth, const glm::vec4 color) {
+        const uint32_t pointCount = 2;
+        std::vector<glm::vec2> points(pointCount);
+        points[0] = start;
+        points[1] = end;
+        return drawLines(points.data(), pointCount, lineWidth, color);
+    }
+
+    void VkCanvas::drawBezier2(glm::vec2 p0,glm::vec2 p1,glm::vec2 p2, float lineWidth, const glm::vec4 color) {
+        auto points = geometry.genBezier2Vertices(p0,p1,p2);
+        drawLines(points.data(), points.size(), lineWidth, color);
+    }
+    
+    void VkCanvas::drawBezier3(glm::vec2 p0,glm::vec2 p1,glm::vec2 p2, glm::vec2 p3, float lineWidth, const glm::vec4 color) {
+        auto points = geometry.genBezier3Vertices(p0,p1,p2,p3);
+        drawLines(points.data(), points.size(), lineWidth, color);
+    }
+
     void VkCanvas::drawSimpleRect(float left, float top, float width, float height, const glm::vec4 color){
         Cmd cmd;
         cmd.type = CmdType::DrawSimpleRect;
