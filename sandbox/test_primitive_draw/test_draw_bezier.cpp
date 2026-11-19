@@ -248,6 +248,7 @@ void TestDrawBezierCase(){
     config.clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
     config.vsync = true;
     config.isRecordLog = true;
+    config.isFullScreen = false;
 
     zidian::Application app;
     app.setGameObject(std::make_shared<TestDrawBezier>());
