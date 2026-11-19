@@ -46,5 +46,6 @@ int main() {
     // TestComposeImageCase();
 
     TestFreeTypeLib();
+    
     return 0;
 }//end main
