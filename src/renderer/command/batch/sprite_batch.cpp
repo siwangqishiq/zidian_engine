@@ -17,7 +17,7 @@ namespace zidian{
     }
 
     VkDeviceSize SpriteBatch::genBufferSize(){
-        const uint32_t MAX_VERTEX_SIZE = 32 * 1024 * 1024;
+        const uint32_t MAX_VERTEX_SIZE = 4 * 1024 * 1024;
         return sizeof(SpriteVertex) * MAX_VERTEX_SIZE;
     }
 

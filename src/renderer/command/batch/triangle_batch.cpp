@@ -17,7 +17,7 @@ namespace zidian{
     }
 
     VkDeviceSize TriangleBatch::genBufferSize(){
-        const uint32_t MAX_VERTEX_SIZE = 2 * 1024 * 1024;
+        const uint32_t MAX_VERTEX_SIZE = 4 * 1024 * 1024;
         return sizeof(TriangleVertex) * MAX_VERTEX_SIZE;
     }
 
@@ -42,8 +42,9 @@ namespace zidian{
     
     void TriangleBatch::commit(VkCommandBuffer &cmdBuffer,uint32_t frameIndex) {
         vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, attachPipeline->pipeline);
-
+        
         const uint32_t vertexCount = vertexData.size();
+        // Log::blue("debug", "vertexCount --> %u",vertexCount);
         auto* dst = static_cast<std::byte*>(vertexMemoryMappeds[frameIndex]) + offsets[frameIndex];
         memcpy(dst, vertexData.data(), vertexCount * sizeof(TriangleVertex));
         VkDeviceSize offset[] = {offsets[frameIndex]};
