@@ -9,6 +9,38 @@ namespace zidian {
         return top + height;
     }
 
+    glm::vec2 Rect::center() const {
+        return glm::vec2(left + width / 2.0f , top + height / 2.0f);
+    }
+
+    Rect Rect::applyMatrix(const glm::mat3& matrix) const {
+        glm::vec2 points[4] = {
+            {left, top},
+            {right(), top},
+            {right(), bottom()},
+            {left, bottom()}
+        };
+
+        float minX = std::numeric_limits<float>::max();
+        float minY = std::numeric_limits<float>::max();
+        float maxX = std::numeric_limits<float>::lowest();
+        float maxY = std::numeric_limits<float>::lowest();
+
+        for (auto& point : points) {
+            glm::vec3 transformed = matrix * glm::vec3(point, 1.0f);
+
+            // 齐次坐标归一化
+            glm::vec2 p = glm::vec2(transformed) / transformed.z;
+
+            minX = std::min(minX, p.x);
+            minY = std::min(minY, p.y);
+            maxX = std::max(maxX, p.x);
+            maxY = std::max(maxY, p.y);
+        }
+
+        return Rect(minX, minY, maxX - minX, maxY - minY);
+    }
+
     std::vector<glm::vec2> Geometry::genRectVertices(float left, float top, float width, float height) const{
         std::vector<glm::vec2> vertices = {
             {left + width, top},

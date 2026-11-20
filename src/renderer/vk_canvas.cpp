@@ -3,6 +3,8 @@
 #include "renderer/pipeline/primitive_vertex.h"
 #include "renderer/command/cmd.h"
 #include "renderer/command/render_queue.h"
+#include "glm/gtc/matrix_transform.hpp"
+
 
 namespace zidian {
     VkCanvas::VkCanvas(Render &context) : ctx(context) {
@@ -121,6 +123,22 @@ namespace zidian {
     }
 
     void VkCanvas::drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect, const glm::vec4 color){
+       drawImage(image, srcRect , dstRect, color, glm::mat4(1.0f));
+    }
+
+    void VkCanvas::drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect, const glm::vec4 color, glm::vec2 rotateCenter, float rotateDegree) {
+        glm::mat4 matrix(1.0f);
+        if (rotateDegree != 0.0f){
+            float radian = -glm::radians(rotateDegree);
+            glm::mat4 T1 = glm::translate(glm::mat4(1.0f), -glm::vec3(rotateCenter,0.0f));
+            glm::mat4 R  = glm::rotate(glm::mat4(1.0f), radian , {0.0f, 0.0f , 1.0f});
+            glm::mat4 T2 = glm::translate(glm::mat4(1.0f), glm::vec3(rotateCenter,0.0f));
+            matrix = T2 * R * T1 * matrix;
+        }
+        drawImage(image, srcRect , dstRect, color, matrix);
+    }
+
+    void VkCanvas::drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect, const glm::vec4 color, const glm::mat4 &matrix) {
         Cmd cmd;
         cmd.type = CmdType::DrawSprite;
 
@@ -128,6 +146,7 @@ namespace zidian {
         data.image = image;
         data.srcRect = srcRect;
         data.dstRect = dstRect;
+        data.matrix = matrix;
         data.color = color;
 
         cmd.data = data;

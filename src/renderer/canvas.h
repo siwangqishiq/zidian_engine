@@ -33,8 +33,9 @@ namespace zidian{
 
         //
         virtual void drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect) = 0;
-        
         virtual void drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect, const glm::vec4 color) = 0;
+        virtual void drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect, const glm::vec4 color, glm::vec2 rotateCenter, float rotateDegree) = 0;
+        virtual void drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect, const glm::vec4 color, const glm::mat4 &matrix) = 0;
 
         virtual void drawCustomShader(CustomShaderPipelineId pid, float left, float top, float width, float height) = 0;
         

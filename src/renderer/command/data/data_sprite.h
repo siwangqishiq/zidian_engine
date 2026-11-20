@@ -13,6 +13,7 @@ namespace zidian{
         Rect srcRect;
         Rect dstRect;
         glm::vec4 color;
+        glm::mat4 matrix;
         std::shared_ptr<Image> image;
     };
 

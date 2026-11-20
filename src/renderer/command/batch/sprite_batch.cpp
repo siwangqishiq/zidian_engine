@@ -47,6 +47,8 @@ namespace zidian{
             return;
         }
 
+        const glm::mat4& matrix = spriteData.matrix;
+
         float posLeft = spriteData.dstRect.left;
         float posRight = spriteData.dstRect.right();
         float posTop = spriteData.dstRect.top;
@@ -66,19 +68,23 @@ namespace zidian{
 
         SpriteVertex vertex[4];
         // 0 1 2
-        vertex[0].position = glm::vec3(posLeft, posTop, 1.0f);
+        glm::vec4 pos = matrix * glm::vec4(posLeft, posTop, 0.0f, 1.0f);
+        vertex[0].position = { pos[0], pos[1], 1.0f};
         vertex[0].uv = glm::vec2(uvCoords[0], uvCoords[1]);
         vertex[0].color = spriteData.color;
-
-        vertex[1].position = glm::vec3(posLeft, posBottom, 1.0f);
+        
+        pos = matrix * glm::vec4(posLeft, posBottom,0.0f, 1.0f);
+        vertex[1].position = { pos[0], pos[1], 1.0f};
         vertex[1].uv = glm::vec2(uvCoords[2], uvCoords[3]);
         vertex[1].color = spriteData.color;
-
-        vertex[2].position = glm::vec3(posRight, posBottom, 1.0f);
+        
+        pos = matrix * glm::vec4(posRight, posBottom,0.0f, 1.0f);
+        vertex[2].position = { pos[0], pos[1], 1.0f};
         vertex[2].uv = glm::vec2(uvCoords[4], uvCoords[5]);
         vertex[2].color = spriteData.color;
 
-        vertex[3].position = glm::vec3(posRight, posTop, 1.0f);
+        pos = matrix * glm::vec4(posRight, posTop, 0.0f, 1.0f);
+        vertex[3].position = { pos[0], pos[1], 1.0f};
         vertex[3].uv = glm::vec2(uvCoords[6], uvCoords[7]);
         vertex[3].color = spriteData.color;
 

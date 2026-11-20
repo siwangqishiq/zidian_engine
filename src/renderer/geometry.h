@@ -16,9 +16,12 @@ namespace zidian{
 
         float right() const;
         float bottom() const;
+        glm::vec2 center() const;
 
         Rect(float l,float t, float w, float h) : left(l),top(t), width(w),height(h){}
         Rect() : left(0.0f),top(0.0f), width(0.0f),height(0.0f){}
+
+        Rect applyMatrix(const glm::mat3& matrix) const;
     };
 
     struct Bezier2 {

@@ -18,6 +18,8 @@ extern int TestFreeTypeLib();
 extern void TestDrawLinesCase();
 extern void TestDrawBezierCase();
 
+extern void TestSpriteTransformCase();
+
 int main() {
     // TestLogs();
     // TestApplication();
@@ -26,9 +28,7 @@ int main() {
     // TestCircleDraw();
     // TestTestMultiPipeline();
     // TestPictureShow();
-    // TestSpriteDraw1();
     // TestCustomShader();
-
 
     // TestGeometryRational();
     // TestGeometryQuadratic();
@@ -42,6 +42,10 @@ int main() {
     // TestFreeTypeLib();
 
     // TestDrawLinesCase();
-    TestDrawBezierCase();
+    // TestDrawBezierCase();
+
+    TestSpriteTransformCase();
+    
+    // TestSpriteDraw1();
     return 0;
 }//end main
