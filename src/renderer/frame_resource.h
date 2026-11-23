@@ -55,6 +55,10 @@ namespace zidian{
 
         // CPU 侧 Transform 数据
         std::vector<std::vector<glm::mat4>> transformDatas;
+
+        void uploadTransformData(const uint32_t frameIndex);
+
+        std::vector<VkDescriptorSet> globalDescriptorSets;
     private:
         Render &ctx;
 
@@ -67,7 +71,6 @@ namespace zidian{
         // void createPrimitiveUniformBuffers();
 
         void createTransformBuffers();
-        void uploadTransformData(const uint32_t frameIndex);
 
         void destroyTransformBuffers();
     public:

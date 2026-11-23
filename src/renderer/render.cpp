@@ -728,6 +728,8 @@ namespace zidian {
     }
 
     void Render::endRenderFrame(){
+        frameResource->uploadTransformData(currentFrameIndex);
+        
         //record commands
         recordCommands();
 
@@ -784,7 +786,7 @@ namespace zidian {
 
         //reset All Batchs
         batchManager->resetAllBatch(currentFrameIndex);
-        
+
         currentFrameIndex = (currentFrameIndex + 1) % MAX_FRAME_IN_FLIGHT;
         // Log::purple("render", "currentFrameIndex = %u", currentFrameIndex);
     }

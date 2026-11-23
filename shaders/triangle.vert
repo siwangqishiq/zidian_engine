@@ -8,7 +8,7 @@ layout(push_constant) uniform PushConstant {
     mat4 proj;
 } pc;
 
-layout(set = 0, binding = 1, std430) readonly buffer TransformBuffer {
+layout(set = 0, binding = 0, std430) readonly buffer TransformBuffer {
     mat4 transforms[];
 };
 
