@@ -28,7 +28,7 @@ int main() {
     // TestCircleDraw();
     // TestTestMultiPipeline();
     // TestPictureShow();
-    // TestCustomShader();
+    TestCustomShader();
 
     // TestGeometryRational();
     // TestGeometryQuadratic();
@@ -44,7 +44,7 @@ int main() {
     // TestDrawLinesCase();
     // TestDrawBezierCase();
 
-    TestSpriteTransformCase();
+    // TestSpriteTransformCase();
     
     // TestSpriteDraw1();
     return 0;

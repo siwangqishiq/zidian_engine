@@ -22,7 +22,7 @@ namespace zidian{
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
 
         std::vector<VkDescriptorSet> descriptorSets;
-
+        
         virtual VkShaderModule getVertexShaderModule();
         virtual VkShaderModule getFragmentShaderModule();
         

@@ -53,6 +53,8 @@ namespace zidian{
 
         void recreateSwapchain();
 
+        uint32_t addTransform(const glm::mat4& matrix);
+
         std::unique_ptr<ICanvas>& getCanvas();
 
         CommandList commandList;
@@ -120,7 +122,6 @@ namespace zidian{
 
         void destroyImageViews();
         void destroySurface();
-
 
         // void uploadCommands();
         // void uploadPrimitive();

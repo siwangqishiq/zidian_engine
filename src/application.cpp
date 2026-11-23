@@ -159,12 +159,13 @@ namespace zidian{
     }
 
     void Application::tick(float deltaTime){
-        onDrawFrame(deltaTime);
-        taskSchedule->tick();
-
         if(!render->beginRenderFrame()) {
             return;
         }
+
+        onDrawFrame(deltaTime);
+        taskSchedule->tick();
+
         render->endRenderFrame();
 
         fps++;

@@ -332,6 +332,9 @@ namespace zidian {
         uint32_t maxImageDimension2D = physicalDeviceProperties.limits.maxImageDimension2D;
         uint32_t maxImageDimension1D = physicalDeviceProperties.limits.maxImageDimension1D;
         Log::i("render","max image dimension 1D:%u  2D:%u  3D:%u", maxImageDimension1D,maxImageDimension2D, maxImageDimension3D);
+
+        uint32_t maxSsboRange = physicalDeviceProperties.limits.maxStorageBufferRange;
+        Log::i("render","Max storage shader buffer object size : %u", maxSsboRange);
     }
 
     bool Render::isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props){
@@ -671,6 +674,9 @@ namespace zidian {
         }
 
         vkWaitForFences(device, 1, &frameResource->inFlightFences[currentFrameIndex], VK_TRUE, UINT64_MAX);
+        // 清理当前帧 Transform 数据
+        frameResource->transformDatas[currentFrameIndex].clear();
+
         uint32_t imageIdx = UINT32_MAX;
         VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, frameResource->imageAvailableSemaphores[currentFrameIndex], VK_NULL_HANDLE, &imageIdx);
         if(result == VK_SUBOPTIMAL_KHR){
@@ -778,7 +784,7 @@ namespace zidian {
 
         //reset All Batchs
         batchManager->resetAllBatch(currentFrameIndex);
-
+        
         currentFrameIndex = (currentFrameIndex + 1) % MAX_FRAME_IN_FLIGHT;
         // Log::purple("render", "currentFrameIndex = %u", currentFrameIndex);
     }
@@ -980,6 +986,17 @@ namespace zidian {
         if (func != nullptr) {
             return func(instance, messenger, nullptr);
         }
+    }
+
+    uint32_t Render::addTransform(const glm::mat4& matrix){
+        if (frameResource->transformDatas[currentFrameIndex].size() >= FrameResource::MAX_TRANSFORM_COUNT) {
+            Log::e("render", "Transform buffer capacity exceeded!");
+            return UINT32_MAX;
+        }
+
+        const uint32_t index = frameResource->transformDatas[currentFrameIndex].size();
+        frameResource->transformDatas[currentFrameIndex].push_back(matrix);
+        return index;
     }
 
     Render::~Render(){

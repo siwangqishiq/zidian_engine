@@ -298,28 +298,28 @@ namespace zidian{
 
     //更新DescriptorSet
     void BasePipeline::updateDescriptorSet(){
-        if(ctx.frameResource->primitiveUniformBuffers.empty()){
-            Log::e("primitive_pipeline", "updateDescriptorSet but uniform buffer is empty");
-            return;
-        }
+        // if(ctx.frameResource->primitiveUniformBuffers.empty()){
+        //     Log::e("primitive_pipeline", "updateDescriptorSet but uniform buffer is empty");
+        //     return;
+        // }
 
-        for(uint32_t i = 0 ; i < descriptorSets.size() ; i++){
-            VkDescriptorBufferInfo bufferInfo{};
-            bufferInfo.buffer = ctx.frameResource->primitiveUniformBuffers[i];
-            bufferInfo.offset = 0;
-            bufferInfo.range = sizeof(PrimitiveUniformData);
+        // for(uint32_t i = 0 ; i < descriptorSets.size() ; i++){
+        //     VkDescriptorBufferInfo bufferInfo{};
+        //     bufferInfo.buffer = ctx.frameResource->primitiveUniformBuffers[i];
+        //     bufferInfo.offset = 0;
+        //     bufferInfo.range = sizeof(PrimitiveUniformData);
 
-            VkWriteDescriptorSet write{};
-            write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            write.dstSet = descriptorSets[i];
-            write.dstBinding = 0;
-            write.dstArrayElement = 0;
-            write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            write.descriptorCount = 1;
-            write.pBufferInfo = &bufferInfo;
+        //     VkWriteDescriptorSet write{};
+        //     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        //     write.dstSet = descriptorSets[i];
+        //     write.dstBinding = 0;
+        //     write.dstArrayElement = 0;
+        //     write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        //     write.descriptorCount = 1;
+        //     write.pBufferInfo = &bufferInfo;
 
-            vkUpdateDescriptorSets(ctx.device, 1, &write, 0, nullptr);
-        }//end for i
+        //     vkUpdateDescriptorSets(ctx.device, 1, &write, 0, nullptr);
+        // }//end for i
     }
 
     // 返回流水线布局

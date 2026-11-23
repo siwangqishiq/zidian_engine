@@ -165,6 +165,10 @@ namespace zidian {
 
         ctx.renderQueue->addCmd(cmd);
     }
+    
+    uint32_t VkCanvas::addTransform(const glm::mat4& matrix) {
+        return ctx.addTransform(matrix);
+    }
 
     void VkCanvas::flush(){
     }

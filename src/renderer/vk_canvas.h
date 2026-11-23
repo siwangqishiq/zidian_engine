@@ -31,6 +31,8 @@ namespace zidian {
         virtual void drawSimpleCircle(glm::vec2 center, float radius, const glm::vec4 color) override;
         
         virtual void drawCustomShader(CustomShaderPipelineId pid, float left, float top, float width, float height) override;
+
+        virtual uint32_t addTransform(const glm::mat4& matrix) override;
         
         virtual void flush() override;
 

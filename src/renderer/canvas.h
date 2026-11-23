@@ -7,6 +7,13 @@
 
 namespace zidian{
     class Image;
+
+    //canvas状态
+    struct CanvasState{
+        glm::mat4 matrix{1.0f};
+        uint32_t matrixIndex = UINT32_MAX;
+        // float alpha = 1.0f;
+    };
     
     class ICanvas{
     public:
@@ -37,11 +44,38 @@ namespace zidian{
         virtual void drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect, const glm::vec4 color, glm::vec2 rotateCenter, float rotateDegree) = 0;
         virtual void drawImage(std::shared_ptr<Image> image, Rect srcRect, Rect dstRect, const glm::vec4 color, const glm::mat4 &matrix) = 0;
 
+        // custom shader 
         virtual void drawCustomShader(CustomShaderPipelineId pid, float left, float top, float width, float height) = 0;
         
-        virtual ~ICanvas(){}
-
         virtual int getWidth() = 0;
         virtual int getHeight() = 0;
+
+        // =========== canvas state ================
+        int save();
+        void restore();
+        void restoreToCount(int count);
+        //平移变换
+        void translate(float dx, float dy);
+
+        //缩放变换
+        void scale(float sx, float sy);
+        void scale(float sx,float sy,float px,float py);
+
+        // 旋转变换
+        void rotate(float degrees);
+        void rotate(float degrees,float px,float py);
+
+        void concat(const glm::mat4& matrix);
+        void setMatrix(const glm::mat4& matrix);
+
+        virtual uint32_t addTransform(const glm::mat4& matrix) = 0;
+
+        uint32_t getMatrixIndex();
+
+        virtual ~ICanvas(){}
+    private:
+
+        std::vector<CanvasState> stateStack_;
+        CanvasState state_;
     };//end canvas
 }

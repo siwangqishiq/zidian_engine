@@ -15,6 +15,7 @@ namespace zidian{
     struct TriangleVertex{
         glm::vec3 position;
         glm::vec4 color;
+        uint32_t matrixIndex;
         
         static VkVertexInputBindingDescription bindingDesc();
         static std::vector<VkVertexInputAttributeDescription> attributeDesc();

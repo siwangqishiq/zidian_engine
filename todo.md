@@ -15,3 +15,6 @@
 - [ ] 开发第一个可绘制圆形 + 直线的场景
 - [ ] 关卡谜题设计 
 
+
+### canvas状态更新方案
+修改顶点属性 新增transformIndex  新增SSBO 存储变换矩阵 创建多条pipeline共用的 global descriptorSet

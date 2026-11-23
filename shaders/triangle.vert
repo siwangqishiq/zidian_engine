@@ -2,10 +2,15 @@
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec4 inColor;
+layout(location = 2) in uint inMatIndex;
 
 layout(push_constant) uniform PushConstant {
     mat4 proj;
 } pc;
+
+layout(set = 0, binding = 1, std430) readonly buffer TransformBuffer {
+    mat4 transforms[];
+};
 
 layout(location = 0) out vec4 fragColor;
 

@@ -10,4 +10,8 @@ namespace zidian{
         
         static std::array<VkDescriptorSetLayoutBinding, 1> bindingDesc();
     };
+
+    struct TransformData{
+        glm::mat4 matrix{1.0f};
+    };
 }
