@@ -17,11 +17,12 @@ namespace zidian {
         createFramebuffers();
         createCommandBuffers();
         createSyncObjects();
-
-        // createPrimitiveVertexBuffers();
-        // createPrimitiveUniformBuffers();
         createPushConstantDatas();
+
         createTransformBuffers();
+        createGlobalDescriptorSetLayout();
+        createGlobalDescriptorSetPool();
+        
 
         //创建完buffer后  更新descriptorSet
         ctx.pipelineManager->updateDescriptorSets();
@@ -108,65 +109,6 @@ namespace zidian {
         Log::i("render", "Create sync object success imageAvailableSemaphore renderFinishSemaphore flightFence");
     }
 
-    // void FrameResource::createPrimitiveVertexBuffers(){
-    //     primitiveVertexBuffers.resize(MAX_FRAME_IN_FLIGHT);
-    //     primitiveVertexMemorys.resize(MAX_FRAME_IN_FLIGHT);
-    //     primitiveMemoryMappeds.resize(MAX_FRAME_IN_FLIGHT);
-
-    //     const uint32_t MAX_VERTEX_SIZE = 1024 * 1024;
-
-    //     for(uint32_t i = 0 ;i < MAX_FRAME_IN_FLIGHT; i++){
-    //         primitiveVertexMaxCounts.push_back(MAX_VERTEX_SIZE);
-
-    //         if(!createPrimitiveVertexBuffer(i)){
-    //             Log::e("render", "createPrimitiveVertexBuffer failed! index : %u", i);
-    //             break;
-    //         }
-    //     }//end for i
-    // }
-
-    // bool FrameResource::createPrimitiveVertexBuffer(const uint32_t index){
-    //     if(index >= MAX_FRAME_IN_FLIGHT){
-    //         return false;
-    //     }
-
-    //     VkDeviceSize bufferSize = sizeof(PrimitiveVertex) * primitiveVertexMaxCounts[index];
-
-    //     VkBufferCreateInfo bufferCreateInfo{};
-    //     bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    //     bufferCreateInfo.size = bufferSize;
-    //     bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-    //     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    //     if(vkCreateBuffer(ctx.device, &bufferCreateInfo, nullptr, &primitiveVertexBuffers[index]) != VK_SUCCESS){
-    //         Log::e("render", "Create primitive vertex buffer failed!");
-    //         return false;
-    //     }
-
-    //     VkMemoryRequirements memRequirements{};
-    //     vkGetBufferMemoryRequirements(ctx.device, primitiveVertexBuffers[index], &memRequirements);
-
-    //     VkMemoryAllocateInfo allocInfo{};
-    //     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    //     allocInfo.allocationSize = memRequirements.size;
-    //     allocInfo.memoryTypeIndex = ctx.memoryAllocator.findMemoryType(memRequirements.memoryTypeBits, 
-    //             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        
-    //     if(vkAllocateMemory(ctx.device,&allocInfo,nullptr,&primitiveVertexMemorys[index]) != VK_SUCCESS){
-    //         Log::e("render", "allocte primitive memory failed!");
-    //         return false;
-    //     }
-
-    //     vkBindBufferMemory(ctx.device, primitiveVertexBuffers[index], primitiveVertexMemorys[index], 0);
-
-    //     auto memoryMapResult = vkMapMemory(ctx.device, primitiveVertexMemorys[index], 0, bufferSize, 0, &primitiveMemoryMappeds[index]);
-    //     if(memoryMapResult != VK_SUCCESS){
-    //         Log::e("render", "map the primitive memory failed!");
-    //         return false;
-    //     }
-        
-    //     return true;
-    // }
-
     void FrameResource::createPushConstantDatas(){
         for(uint32_t i = 0 ; i < MAX_FRAME_IN_FLIGHT; i++){
             pushConstDatas.push_back({
@@ -175,60 +117,6 @@ namespace zidian {
         }//end for i;
     }
 
-    // void FrameResource::createUniformDatas(){
-    //     primitiveUniformDatas.resize(MAX_FRAME_IN_FLIGHT);
-    //     for(uint32_t i = 0 ; i < MAX_FRAME_IN_FLIGHT; i++){
-    //        primitiveUniformDatas.push_back(
-    //         { 
-    //             glm::mat4()
-    //         }
-    //        );
-    //     }//end for i;
-    // }
-
-    // void FrameResource::createPrimitiveUniformBuffers(){
-    //     primitiveUniformBuffers.resize(MAX_FRAME_IN_FLIGHT);
-    //     primitiveUniformMemorys.resize(MAX_FRAME_IN_FLIGHT);
-    //     primitiveUniformMemoryMappeds.resize(MAX_FRAME_IN_FLIGHT);
-
-    //     for(uint32_t i = 0 ;i < MAX_FRAME_IN_FLIGHT; i++){
-    //         VkDeviceSize bufferSize = sizeof(PrimitiveUniformData);
-    //         VkBufferCreateInfo bufferCreateInfo{};
-    //         bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    //         bufferCreateInfo.size = bufferSize;
-    //         bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-    //         bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    //         if(vkCreateBuffer(ctx.device, &bufferCreateInfo, nullptr, &primitiveUniformBuffers[i]) != VK_SUCCESS){
-    //             Log::e("render", "Create primitive uniform buffer failed!");
-    //             continue;
-    //         }
-
-    //         VkMemoryRequirements memRequirements{};
-    //         vkGetBufferMemoryRequirements(ctx.device, primitiveUniformBuffers[i], &memRequirements);
-
-    //         VkMemoryAllocateInfo allocInfo{};
-    //         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    //         allocInfo.allocationSize = memRequirements.size;
-    //         allocInfo.memoryTypeIndex = ctx.memoryAllocator.findMemoryType(memRequirements.memoryTypeBits, 
-    //                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    //         if(vkAllocateMemory(ctx.device,&allocInfo,nullptr,&primitiveUniformMemorys[i]) != VK_SUCCESS){
-    //             Log::e("render", "allocte uniform memory failed!");
-    //             continue;
-    //         }
-
-    //         vkBindBufferMemory(ctx.device, primitiveUniformBuffers[i], primitiveUniformMemorys[i], 0);
-
-    //         //map memory
-    //         auto memoryMapResult = vkMapMemory(ctx.device, primitiveUniformMemorys[i], 0, bufferSize, 0, &primitiveUniformMemoryMappeds[i]);
-    //         if(memoryMapResult != VK_SUCCESS){
-    //             Log::e("render", "map the uniform memory failed!");
-    //             continue;
-    //         }
-    //     }//end for i
-    // }
-
-    
     void FrameResource::createTransformBuffers(){
         transformBuffers.resize(MAX_FRAME_IN_FLIGHT);
         transformMemorys.resize(MAX_FRAME_IN_FLIGHT);
@@ -282,6 +170,37 @@ namespace zidian {
         }//end for i
     }
 
+    //创建DescriptotrSetLayout
+    void FrameResource::createGlobalDescriptorSetLayout(){
+        VkDescriptorSetLayoutBinding bindings[1]{};
+        bindings[0].binding = 0;
+        bindings[0].descriptorCount = 1;
+        bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+        VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
+        layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutCreateInfo.bindingCount = 1;
+        layoutCreateInfo.pBindings = bindings;
+
+        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &globalDescSetLayout_) != VK_SUCCESS){
+            Log::e("render", "create global descriptorset layout error");
+            return;
+        }
+
+        Log::i("render", "create global descriptorset layout success!");
+    }
+
+    //创建DescriptotrSetPool
+    void FrameResource::createGlobalDescriptorSetPool(){
+        
+    }
+    
+    //创建DescriptotrSet 并完成更新
+    void FrameResource::allocAndUpdateGlobalDescriptorSet(){
+
+    }
+
     void FrameResource::uploadTransformData(const uint32_t frameIndex){
         auto &transforms = transformDatas[frameIndex];
         if (transforms.empty()) {
@@ -318,26 +237,7 @@ namespace zidian {
     void FrameResource::destroy(){
         VkDevice &device = ctx.device;
 
-        // for(uint32_t i = 0 ; i < MAX_FRAME_IN_FLIGHT; i++){
-        //     vkUnmapMemory(ctx.device, primitiveVertexMemorys[i]);
-        //     vkDestroyBuffer(device, primitiveVertexBuffers[i], nullptr);
-        //     vkFreeMemory(device, primitiveVertexMemorys[i], nullptr);
-        // }//end for i;
-        // primitiveMemoryMappeds.clear();
-        // primitiveVertexBuffers.clear();
-        // primitiveVertexMemorys.clear();
-
-
-        // for(uint32_t i = 0 ; i < primitiveUniformMemorys.size(); i++){
-        //     vkUnmapMemory(ctx.device, primitiveUniformMemorys[i]);
-
-        //     vkDestroyBuffer(device, primitiveUniformBuffers[i], nullptr);
-        //     vkFreeMemory(device, primitiveUniformMemorys[i], nullptr);
-        // }//end for i;
-        // primitiveUniformMemoryMappeds.clear();
-        // primitiveUniformBuffers.clear();
-        // primitiveUniformMemorys.clear();
-
+        destroyGlobalDescriptorSetResources();
         destroyTransformBuffers();
 
         for(auto &fence : inFlightFences){
@@ -363,6 +263,16 @@ namespace zidian {
             vkDestroyFramebuffer(ctx.device, fb, nullptr);
         }//end for each
         frameBuffers.clear();
+    }
+
+    VkDescriptorSetLayout& FrameResource::getGlobalDescriptorSetLayout(){
+        return globalDescSetLayout_;
+    }
+
+    void FrameResource::destroyGlobalDescriptorSetResources(){
+        if(globalDescSetLayout_ != VK_NULL_HANDLE){
+            vkDestroyDescriptorSetLayout(ctx.device, globalDescSetLayout_, nullptr);
+        }
     }
 }
 

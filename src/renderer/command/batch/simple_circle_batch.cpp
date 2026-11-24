@@ -1,7 +1,6 @@
 #include "renderer/command/batch/simple_circle_batch.h"
 #include "utils/log.h"
 #include "renderer/frame_resource.h"
-#include <variant>
 
 namespace zidian{
     SimpleCircleBatch::SimpleCircleBatch(Render &ctx_) : Batch(ctx_){
@@ -12,7 +11,7 @@ namespace zidian{
     }
 
     VkDeviceSize SimpleCircleBatch::genBufferSize() {
-        const uint32_t MAX_VERTEX_SIZE = 2 * 1024 * 1024;
+        const uint32_t MAX_VERTEX_SIZE = 16 * 1024;
         return sizeof(SimpleCircleVertex) * MAX_VERTEX_SIZE;
     }
 
@@ -29,12 +28,11 @@ namespace zidian{
     }
 
     void SimpleCircleBatch::putCmd(const Cmd& cmd,uint32_t frameIndex){
-        SimpleCircleVertex item{};
         const DrawSimpleCircleData &data = std::get<DrawSimpleCircleData>(cmd.data);
+        SimpleCircleVertex item{};
         item.position = glm::vec3(data.center, 0.0f);
         item.radius = data.radius;
         item.color = data.color;
-
         vertexData.emplace_back(item);
     }
 
@@ -48,15 +46,13 @@ namespace zidian{
         vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffers[frameIndex], offset);
         offsets[frameIndex] += vertexCount * sizeof(SimpleCircleVertex);
 
-        // pushConstantDatas[frameIndex].proj = {
-        //     glm::vec4(2.0f / ctx.swapChainExtent.width, 0.0f, 0.0f, 0.0f),
-        //     glm::vec4(0.0f, 2.0f / ctx.swapChainExtent.height, 0.0f, 0.0f),
-        //     glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
-        //     glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
-        // };
-        // vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
-
-        updateTransformMatrix(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
+        pushConstantDatas[frameIndex].proj = {
+            glm::vec4(2.0f / ctx.swapChainExtent.width, 0.0f, 0.0f, 0.0f),
+            glm::vec4(0.0f, 2.0f / ctx.swapChainExtent.height, 0.0f, 0.0f),
+            glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
+            glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
+        };
+        vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
         
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
 
@@ -70,6 +66,6 @@ namespace zidian{
     }
 
     SimpleCircleBatch::~SimpleCircleBatch(){
-        // Log::purple("batch", "SimpleCircleBatch destroy buffer");
+        Log::purple("batch", "SimpleCircleBatch destroy buffer");
     }
 }

@@ -326,4 +326,8 @@ namespace zidian{
     VkPipelineLayout BasePipeline::getPipelineLayout(){
         return pipelineLayout;
     }
+
+    std::vector<VkDescriptorSetLayout> BasePipeline::getDescriptorSetLayouts(){
+        return std::vector<VkDescriptorSetLayout>();
+    }
 }

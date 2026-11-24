@@ -8,7 +8,7 @@ namespace zidian{
         attachPipeline = std::make_unique<SimpleRectPipeline>(ctx, *ctx.pipelineManager);
         attachPipeline->create();
 
-        Log::green("pipeline", "create simple_rect pipeline success!");
+        Log::i("pipeline", "create simple_rect pipeline success!");
     }
 
     VkDeviceSize SimpleRectBatch::genBufferSize() {
@@ -19,7 +19,7 @@ namespace zidian{
 
     void SimpleRectBatch::init(){
         createBuffers();
-        Log::green("pipeline", "create simple_rect buffer success~");
+        Log::i("pipeline", "create simple_rect buffer success~");
     }
 
     bool SimpleRectBatch::canBatch(const Cmd& cmd){

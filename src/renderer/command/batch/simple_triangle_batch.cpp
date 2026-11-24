@@ -7,7 +7,7 @@ namespace zidian{
     SimpleTriangleBatch::SimpleTriangleBatch(Render &ctx_) : Batch(ctx_){
         attachPipeline = std::make_unique<SimpleTrianglePipeline>(ctx, *ctx.pipelineManager);
         attachPipeline->create();
-        Log::green("pipeline", "create simple_triangle pipeline success!");
+        Log::i("pipeline", "create simple_triangle pipeline success!");
     }
 
     VkDeviceSize SimpleTriangleBatch::genBufferSize(){
@@ -17,7 +17,7 @@ namespace zidian{
 
     void SimpleTriangleBatch::init(){
         createBuffers();
-        Log::green("pipeline", "create simple_triangle buffer success~");
+        Log::i("pipeline", "create simple_triangle buffer success~");
     }
 
     bool SimpleTriangleBatch::canBatch(const Cmd& cmd){

@@ -19,5 +19,6 @@ namespace zidian{
 
         virtual void createDescriptorSetLayout() override;
         
+        virtual std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts() override;
     };
 }

@@ -45,16 +45,20 @@ namespace zidian{
     }
 
     bool TrianglePipeline::createPipelineLayout(){
-        createDescriptorSetLayout();
+        layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        std::vector<VkDescriptorSetLayout> setLayouts = getDescriptorSetLayouts();
+        if(setLayouts.empty()){
+            layoutCreateInfo.setLayoutCount = 0;
+            layoutCreateInfo.pSetLayouts = nullptr;
+        }else{
+            layoutCreateInfo.setLayoutCount = setLayouts.size();
+            layoutCreateInfo.pSetLayouts = setLayouts.data();
+        }
         
         VkPushConstantRange range{};
         range.offset = 0;
         range.size = sizeof(CommonUniform);
         range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-        layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutCreateInfo.setLayoutCount = 0;
-        layoutCreateInfo.pSetLayouts = nullptr;
         layoutCreateInfo.pushConstantRangeCount = 1;
         layoutCreateInfo.pPushConstantRanges = &range;
         
@@ -91,5 +95,11 @@ namespace zidian{
             Log::e("TrianglePipeline", "create descriptor set objects failed! %d", result);
             return;
         }
+    }
+
+    std::vector<VkDescriptorSetLayout> TrianglePipeline::getDescriptorSetLayouts() {
+        return {
+            ctx.frameResource->getGlobalDescriptorSetLayout()
+        };
     }
 }//end namespace

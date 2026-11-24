@@ -30,19 +30,8 @@ namespace zidian{
         //CPU -> GPU 同步对象
         std::vector<VkFence> inFlightFences;
 
-        //primitive vertices buffer 
-        // std::vector<uint32_t> primitiveVertexMaxCounts;
-        // std::vector<VkBuffer> primitiveVertexBuffers;
-        // std::vector<VkDeviceMemory> primitiveVertexMemorys;
-        // std::vector<void *> primitiveMemoryMappeds;
-
         // push constant data
         std::vector<PushConstantData> pushConstDatas;
-
-        //primitive uniform buffer
-        // std::vector<VkDeviceMemory> primitiveUniformMemorys;
-        // std::vector<VkBuffer> primitiveUniformBuffers;
-        // std::vector<void *> primitiveUniformMemoryMappeds;
 
         std::vector<PrimitiveUniformData> primitiveUniformDatas;
 
@@ -62,23 +51,26 @@ namespace zidian{
     private:
         Render &ctx;
 
+        VkDescriptorSetLayout globalDescSetLayout_ = VK_NULL_HANDLE;
+
         void createCommandBuffers();
         void createSyncObjects();
 
         void createPushConstantDatas();
 
-        // void createUniformDatas();
-        // void createPrimitiveUniformBuffers();
-
         void createTransformBuffers();
 
         void destroyTransformBuffers();
-    public:
-        // void createPrimitiveVertexBuffers();
-        // bool createPrimitiveVertexBuffer(const uint32_t index);
 
+        void createGlobalDescriptorSetLayout();
+        void createGlobalDescriptorSetPool();
+        void allocAndUpdateGlobalDescriptorSet();
+    public:
         void createFramebuffers();
         void destroyFramebuffers();
+        void destroyGlobalDescriptorSetResources();
+
+        VkDescriptorSetLayout& getGlobalDescriptorSetLayout();
     };
 }
 
