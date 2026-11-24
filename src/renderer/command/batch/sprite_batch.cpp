@@ -120,10 +120,12 @@ namespace zidian{
         //     glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
         // };
         // vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
-
+        
         updateTransformMatrix(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
 
-        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, attachPipeline->pipelineLayout, 1, 
+        vkCmdBindDescriptorSets(cmdBuffer, 
+                VK_PIPELINE_BIND_POINT_GRAPHICS, 
+                attachPipeline->pipelineLayout, 1, 
                 1, &currentImage->getDescriptorSets()[frameIndex], 0, nullptr);
         
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);

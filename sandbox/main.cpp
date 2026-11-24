@@ -26,7 +26,7 @@ int main() {
     // TestDraw();
     // TestBatchDraw();
     // TestCircleDraw();
-    // TestTestMultiPipeline();
+    TestTestMultiPipeline();
     // TestPictureShow();
     // TestCustomShader();
 
@@ -46,6 +46,6 @@ int main() {
 
     // TestSpriteTransformCase();
     
-    TestSpriteDraw1();
+    // TestSpriteDraw1();
     return 0;
 }//end main

@@ -249,7 +249,7 @@ namespace zidian {
     }
 
     void Render::printMemoryInfo(){
-         VkPhysicalDeviceMemoryProperties memProperties{};
+        VkPhysicalDeviceMemoryProperties memProperties{};
         vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
         Log::green("render", "memoryTypeCount : %d", memProperties.memoryTypeCount);
         Log::green("render", "memoryHeapCount : %d", memProperties.memoryHeapCount);
@@ -335,6 +335,9 @@ namespace zidian {
 
         uint32_t maxSsboRange = physicalDeviceProperties.limits.maxStorageBufferRange;
         Log::i("render","Max storage shader buffer object size : %u", maxSsboRange);
+        
+        uint32_t maxUboRange = physicalDeviceProperties.limits.maxUniformBufferRange;
+        Log::i("render","Max Uniform buffer object size : %u", maxUboRange);
     }
 
     bool Render::isPhyDeviceSuitable(VkPhysicalDevice device, VkPhysicalDeviceProperties props){
