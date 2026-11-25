@@ -2,7 +2,7 @@
 #include "renderer/frame_resource.h"
 #include "utils/log.h"
 #include "renderer/pipeline/primitive_uniform_data.h"
-
+#include "config.h"
 
 namespace zidian {
     uint32_t FrameResource::MAX_FRAME_IN_FLIGHT = 2;
@@ -193,7 +193,42 @@ namespace zidian {
 
     //创建DescriptotrSetPool
     void FrameResource::createGlobalDescriptorSetPool(){
-        
+        VkDescriptorPoolCreateInfo poolCreateInfo{};
+        poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT; //允许单独释放 DescriptorSet
+        poolCreateInfo.maxSets = MAX_FRAME_IN_FLIGHT;
+        VkDescriptorPoolSize poolSizes[] = {
+            {
+                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                MAX_FRAME_IN_FLIGHT
+            }
+        };
+        poolCreateInfo.poolSizeCount = sizeof(poolSizes) / sizeof(poolSizes[0]);
+        poolCreateInfo.pPoolSizes = poolSizes;
+
+        if(vkCreateDescriptorPool(ctx.device, &poolCreateInfo, nullptr, &globalDescSetPool_) != VK_SUCCESS) {
+            Log::e("render", "create global descriptorset pool error");
+            return;
+        }
+
+        Log::i("render", "create global descriptorset pool success!");
+
+        if(IS_DEBUG){
+            PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT =
+            reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
+                vkGetDeviceProcAddr(
+                    ctx.device,
+                    "vkSetDebugUtilsObjectNameEXT"
+                )
+            );
+
+            VkDebugUtilsObjectNameInfoEXT nameInfo{};
+            nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+            nameInfo.objectType = VK_OBJECT_TYPE_DESCRIPTOR_POOL;
+            nameInfo.objectHandle = reinterpret_cast<uint64_t>(globalDescSetPool_);
+            nameInfo.pObjectName = "GlobalDescriptorSetPool_zidian";
+            vkSetDebugUtilsObjectNameEXT(ctx.device, &nameInfo);
+        }
     }
     
     //创建DescriptotrSet 并完成更新
@@ -272,6 +307,10 @@ namespace zidian {
     void FrameResource::destroyGlobalDescriptorSetResources(){
         if(globalDescSetLayout_ != VK_NULL_HANDLE){
             vkDestroyDescriptorSetLayout(ctx.device, globalDescSetLayout_, nullptr);
+        }
+
+        if(globalDescSetPool_ != VK_NULL_HANDLE){
+            vkDestroyDescriptorPool(ctx.device, globalDescSetPool_, nullptr);
         }
     }
 }

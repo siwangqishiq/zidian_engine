@@ -52,6 +52,7 @@ namespace zidian{
         Render &ctx;
 
         VkDescriptorSetLayout globalDescSetLayout_ = VK_NULL_HANDLE;
+        VkDescriptorPool globalDescSetPool_ = VK_NULL_HANDLE;
 
         void createCommandBuffers();
         void createSyncObjects();
