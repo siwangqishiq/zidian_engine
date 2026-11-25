@@ -113,20 +113,18 @@ namespace zidian{
         vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffers[frameIndex], offset);
         offsets[frameIndex] += vertexCount * sizeof(SpriteVertex);
 
-        // pushConstantDatas[frameIndex].proj = {
-        //     glm::vec4(2.0f / ctx.swapChainExtent.width, 0.0f, 0.0f, 0.0f),
-        //     glm::vec4(0.0f, 2.0f / ctx.swapChainExtent.height, 0.0f, 0.0f),
-        //     glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
-        //     glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
-        // };
-        // vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
-        
         updateTransformMatrix(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
 
-        vkCmdBindDescriptorSets(cmdBuffer, 
-                VK_PIPELINE_BIND_POINT_GRAPHICS, 
-                attachPipeline->pipelineLayout, 1, 
-                1, &currentImage->getDescriptorSets()[frameIndex], 0, nullptr);
+        vkCmdBindDescriptorSets(
+            cmdBuffer, 
+            VK_PIPELINE_BIND_POINT_GRAPHICS, 
+            attachPipeline->pipelineLayout, 
+            1, 
+            1, 
+            &currentImage->getDescriptorSets()[frameIndex], \
+            0, 
+            nullptr
+        );
         
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
 
