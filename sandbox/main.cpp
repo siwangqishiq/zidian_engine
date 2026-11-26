@@ -21,6 +21,7 @@ extern void TestDrawBezierCase();
 extern void TestSpriteTransformCase();
 
 extern void TestCanvasTransformTrianglesCase();
+extern void TestCanvasTransformSpriteCase();
 
 int main() {
     // TestLogs();
@@ -46,10 +47,11 @@ int main() {
     // TestDrawLinesCase();
     // TestDrawBezierCase();
 
-    TestSpriteTransformCase();
+    // TestSpriteTransformCase();
     
     // TestSpriteDraw1();
     // TestCanvasTransformTrianglesCase();
+    TestCanvasTransformSpriteCase();
 
     return 0;
 }//end main

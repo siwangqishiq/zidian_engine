@@ -187,7 +187,7 @@ namespace zidian {
     // }
 
     Image::~Image(){
-        Log::i("Image", "Image %s is free", name.c_str());
+        // Log::i("Image", "Image %s is free", name.c_str());
     }
 
 
