@@ -68,31 +68,31 @@ namespace zidian{
         return true;
     }
 
-    void SimpleTrianglePipeline::createDescriptorSetLayout(){
-        std::array<VkDescriptorSetLayoutBinding, 1> uboLayoutBindings = CommonUniform::bindingDesc();
+    // void SimpleTrianglePipeline::createDescriptorSetLayout(){
+    //     std::array<VkDescriptorSetLayoutBinding, 1> uboLayoutBindings = CommonUniform::bindingDesc();
         
-        VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
-        layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutCreateInfo.bindingCount = uboLayoutBindings.size();
-        layoutCreateInfo.pBindings = uboLayoutBindings.data();
+    //     VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
+    //     layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    //     layoutCreateInfo.bindingCount = uboLayoutBindings.size();
+    //     layoutCreateInfo.pBindings = uboLayoutBindings.data();
 
-        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS){
-            Log::e("SimpleTrianglePipeline", "create descriptor set layout failed!");
-            return;
-        }
+    //     if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS){
+    //         Log::e("SimpleTrianglePipeline", "create descriptor set layout failed!");
+    //         return;
+    //     }
 
-        std::vector<VkDescriptorSetLayout> layouts(FrameResource::MAX_FRAME_IN_FLIGHT, descriptorSetLayout);
-        VkDescriptorSetAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = pipelineMgr.descriptorPool;
-        allocInfo.descriptorSetCount = layouts.size();
-        allocInfo.pSetLayouts = layouts.data();
+    //     std::vector<VkDescriptorSetLayout> layouts(FrameResource::MAX_FRAME_IN_FLIGHT, descriptorSetLayout);
+    //     VkDescriptorSetAllocateInfo allocInfo{};
+    //     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    //     allocInfo.descriptorPool = pipelineMgr.descriptorPool;
+    //     allocInfo.descriptorSetCount = layouts.size();
+    //     allocInfo.pSetLayouts = layouts.data();
 
-        descriptorSets.resize(layouts.size());
-        VkResult result = vkAllocateDescriptorSets(ctx.device, &allocInfo, descriptorSets.data());
-        if(result != VK_SUCCESS){
-            Log::e("SimpleTrianglePipeline", "create descriptor set objects failed! %d", result);
-            return;
-        }
-    }
+    //     descriptorSets.resize(layouts.size());
+    //     VkResult result = vkAllocateDescriptorSets(ctx.device, &allocInfo, descriptorSets.data());
+    //     if(result != VK_SUCCESS){
+    //         Log::e("SimpleTrianglePipeline", "create descriptor set objects failed! %d", result);
+    //         return;
+    //     }
+    // }
 }

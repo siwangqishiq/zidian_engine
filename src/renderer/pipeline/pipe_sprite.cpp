@@ -4,6 +4,7 @@
 #include "utils/log.h"
 #include "renderer/command/data/common_uniform.h"
 #include "renderer/command/data/data_sprite.h"
+#include "config.h"
 
 namespace zidian{
     SpritePipeline::SpritePipeline(Render &context, PipelineManager &pipelineManager)
@@ -11,6 +12,10 @@ namespace zidian{
     }
     
     SpritePipeline::~SpritePipeline(){
+        if(uniformDescSetLayout_ != VK_NULL_HANDLE){
+            vkDestroyDescriptorSetLayout(ctx.device, uniformDescSetLayout_, nullptr);
+            uniformDescSetLayout_ = VK_NULL_HANDLE;
+        }
         dispose();
         Log::i("SpritePipeline","SpritePipeline::~SpritePipeline");
     }
@@ -54,7 +59,7 @@ namespace zidian{
         layoutCreateInfo.pushConstantRangeCount = 1;
         layoutCreateInfo.pPushConstantRanges = &range;
 
-        descriptorSetLayouts_ = getDescriptorSetLayouts();
+        descriptorSetLayouts_ = genDescriptorSetLayouts();
         if(descriptorSetLayouts_.empty()){
             layoutCreateInfo.setLayoutCount = 0;
             layoutCreateInfo.pSetLayouts = nullptr;
@@ -70,14 +75,11 @@ namespace zidian{
         return true;
     }
 
-    std::vector<VkDescriptorSetLayout> SpritePipeline::getDescriptorSetLayouts(){
+    std::vector<VkDescriptorSetLayout> SpritePipeline::genDescriptorSetLayouts(){
+        // Log::purple("debug", "SpritePipeline::getDescriptorSetLayouts~~~");
+        
         std::vector<VkDescriptorSetLayout> descSetLayouts;
         descSetLayouts.push_back(ctx.frameResource->getGlobalDescriptorSetLayout());
-
-        // descSetLayouts[0] = ctx.frameResource->getGlobalDescriptorSetLayout();
-        // descSetLayouts[1] = VK_NULL_HANDLE;
-
-        VkDescriptorSetLayout uniformDescSetLayout;
 
         auto uboLayoutBindings = SpriteUniform::layoutBindingDesc();
         VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
@@ -85,16 +87,34 @@ namespace zidian{
         layoutCreateInfo.bindingCount = uboLayoutBindings.size();
         layoutCreateInfo.pBindings = uboLayoutBindings.data();
 
-        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &uniformDescSetLayout) != VK_SUCCESS){
+        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &uniformDescSetLayout_) != VK_SUCCESS){
             Log::e("SpritePipeline", "create descriptor set layout failed!");
         }else{
-            descSetLayouts.push_back(uniformDescSetLayout);
+            descSetLayouts.push_back(uniformDescSetLayout_);
         }
+
+        if(IS_DEBUG){
+            PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT =
+            reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
+                vkGetDeviceProcAddr(
+                    ctx.device,
+                    "vkSetDebugUtilsObjectNameEXT"
+                )
+            );
+
+            VkDebugUtilsObjectNameInfoEXT nameInfo{};
+            nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+            nameInfo.objectType = VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
+            nameInfo.objectHandle = reinterpret_cast<uint64_t>(uniformDescSetLayout_);
+            nameInfo.pObjectName = "uniformDescSetLayout_SetLayout_zidian";
+            vkSetDebugUtilsObjectNameEXT(ctx.device, &nameInfo);
+        }
+
         return descSetLayouts;
     }
 
     std::vector<VkDescriptorSetLayout>& SpritePipeline::getDescriptorSetLayout(){
         return descriptorSetLayouts_;
     }
-    
+
 }//end namespace

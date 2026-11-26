@@ -58,7 +58,7 @@ namespace zidian{
         virtual void populateDepthStencilState();
         virtual void populateViewportState();
 
-        virtual std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts();
+        virtual std::vector<VkDescriptorSetLayout> genDescriptorSetLayouts();
 
         virtual VkPipelineLayout getPipelineLayout();
     };

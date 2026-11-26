@@ -153,7 +153,7 @@ namespace zidian{
     }
 
     VkDescriptorSetLayout SpriteBatch::getDescriptorSetLayout() {
-        return attachPipeline->getDescriptorSetLayouts()[1];
+        return attachPipeline->getDescriptorSetLayout()[1];
     }
     
     SpriteBatch::~SpriteBatch(){

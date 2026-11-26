@@ -67,8 +67,8 @@ namespace zidian{
         layoutCreateInfo.pushConstantRangeCount = 1;
         layoutCreateInfo.pPushConstantRanges = &range;
         
-        // layoutCreateInfo.setLayoutCount = 1;
-        // layoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+        layoutCreateInfo.setLayoutCount = 0;
+        layoutCreateInfo.pSetLayouts = nullptr;
         
         if(vkCreatePipelineLayout(ctx.device, &layoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS){
             Log::e("SpritePipeline", "create pipeline layout failed!");

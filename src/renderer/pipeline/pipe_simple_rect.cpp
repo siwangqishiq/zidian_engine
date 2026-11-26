@@ -67,32 +67,4 @@ namespace zidian{
         }
         return true;
     }
-
-    void SimpleRectPipeline::createDescriptorSetLayout(){
-        std::array<VkDescriptorSetLayoutBinding, 1> uboLayoutBindings = CommonUniform::bindingDesc();
-        
-        VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
-        layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutCreateInfo.bindingCount = uboLayoutBindings.size();
-        layoutCreateInfo.pBindings = uboLayoutBindings.data();
-
-        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS){
-            Log::e("primitive_pipeline", "create descriptor set layout failed!");
-            return;
-        }
-
-        std::vector<VkDescriptorSetLayout> layouts(FrameResource::MAX_FRAME_IN_FLIGHT, descriptorSetLayout);
-        VkDescriptorSetAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = pipelineMgr.descriptorPool;
-        allocInfo.descriptorSetCount = layouts.size();
-        allocInfo.pSetLayouts = layouts.data();
-
-        descriptorSets.resize(layouts.size());
-        VkResult result = vkAllocateDescriptorSets(ctx.device, &allocInfo, descriptorSets.data());
-        if(result != VK_SUCCESS){
-            Log::e("primitive_pipeline", "create descriptor set objects failed! %d", result);
-            return;
-        }
-    }
 }

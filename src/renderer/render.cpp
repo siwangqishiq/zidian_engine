@@ -30,7 +30,7 @@ namespace zidian {
         textureManager = std::make_unique<TextureManager>(*this);
         //命令队列
         renderQueue = std::make_unique<RenderQueue>(*this);
-
+        
         initBatchManager();
     }
 

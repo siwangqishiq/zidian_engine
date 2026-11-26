@@ -16,11 +16,7 @@ namespace zidian{
         virtual void populateInputAssemblyState() override;
 
         virtual bool createPipelineLayout() override;
-
-        virtual void createDescriptorSetLayout() override;
         
-        virtual std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts() override;
-    private:
-        std::vector<VkDescriptorSet> descriptorSets;
+        virtual std::vector<VkDescriptorSetLayout> genDescriptorSetLayouts() override;
     };
 }

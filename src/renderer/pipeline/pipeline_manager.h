@@ -27,7 +27,7 @@ namespace zidian{
 
         VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 
-        std::unique_ptr<PrimitivePipeline> primitivePipe;
+        // std::unique_ptr<PrimitivePipeline> primitivePipe;
 
         CustomShaderPipelineId createCustomShaderPipeline(std::string moduleName);
 

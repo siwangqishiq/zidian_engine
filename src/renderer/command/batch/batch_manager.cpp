@@ -16,6 +16,8 @@ namespace zidian{
     }
 
     void BatchManager::autoRegisterBatchs(){
+        Log::i("BatchManager","Auto register batchs");
+
         std::shared_ptr<Batch> simpleRectBatch = std::make_shared<SimpleRectBatch>(ctx);
         registerBatch(CmdType::DrawSimpleRect, simpleRectBatch);
 

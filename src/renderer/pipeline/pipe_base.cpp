@@ -247,7 +247,7 @@ namespace zidian{
     }
 
     bool BasePipeline::createPipelineLayout(){
-        createDescriptorSetLayout();
+        // createDescriptorSetLayout();
         
         //set push constant
         VkPushConstantRange pushConstantRange{};
@@ -256,10 +256,10 @@ namespace zidian{
         pushConstantRange.size = sizeof(PushConstantData);
 
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutCreateInfo.setLayoutCount = 1;
-        layoutCreateInfo.pSetLayouts = &descriptorSetLayout;
         layoutCreateInfo.pushConstantRangeCount = 1;
         layoutCreateInfo.pPushConstantRanges = &pushConstantRange;
+        layoutCreateInfo.setLayoutCount = 0;
+        layoutCreateInfo.pSetLayouts = nullptr;
         
         if(vkCreatePipelineLayout(ctx.device, &layoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS){
             Log::e("primitive_pipeline", "create pipeline layout failed!");
@@ -302,7 +302,7 @@ namespace zidian{
         return pipelineLayout;
     }
 
-    std::vector<VkDescriptorSetLayout> BasePipeline::getDescriptorSetLayouts(){
+    std::vector<VkDescriptorSetLayout> BasePipeline::genDescriptorSetLayouts(){
         return std::vector<VkDescriptorSetLayout>();
     }
 }

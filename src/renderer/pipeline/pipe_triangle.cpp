@@ -46,7 +46,7 @@ namespace zidian{
 
     bool TrianglePipeline::createPipelineLayout(){
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        std::vector<VkDescriptorSetLayout> setLayouts = getDescriptorSetLayouts();
+        std::vector<VkDescriptorSetLayout> setLayouts = genDescriptorSetLayouts();
         if(setLayouts.empty()){
             layoutCreateInfo.setLayoutCount = 0;
             layoutCreateInfo.pSetLayouts = nullptr;
@@ -59,7 +59,7 @@ namespace zidian{
         range.offset = 0;
         range.size = sizeof(CommonUniform);
         range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        
+
         layoutCreateInfo.pushConstantRangeCount = 1;
         layoutCreateInfo.pPushConstantRanges = &range;
         
@@ -70,35 +70,7 @@ namespace zidian{
         return true;
     }
 
-    void TrianglePipeline::createDescriptorSetLayout(){
-        std::array<VkDescriptorSetLayoutBinding, 1> uboLayoutBindings = CommonUniform::bindingDesc();
-        
-        VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
-        layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutCreateInfo.bindingCount = uboLayoutBindings.size();
-        layoutCreateInfo.pBindings = uboLayoutBindings.data();
-
-        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS){
-            Log::e("TrianglePipeline", "create descriptor set layout failed!");
-            return;
-        }
-
-        std::vector<VkDescriptorSetLayout> layouts(FrameResource::MAX_FRAME_IN_FLIGHT, descriptorSetLayout);
-        VkDescriptorSetAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = pipelineMgr.descriptorPool;
-        allocInfo.descriptorSetCount = layouts.size();
-        allocInfo.pSetLayouts = layouts.data();
-
-        descriptorSets.resize(layouts.size());
-        VkResult result = vkAllocateDescriptorSets(ctx.device, &allocInfo, descriptorSets.data());
-        if(result != VK_SUCCESS){
-            Log::e("TrianglePipeline", "create descriptor set objects failed! %d", result);
-            return;
-        }
-    }
-
-    std::vector<VkDescriptorSetLayout> TrianglePipeline::getDescriptorSetLayouts() {
+    std::vector<VkDescriptorSetLayout> TrianglePipeline::genDescriptorSetLayouts() {
         return {
             ctx.frameResource->getGlobalDescriptorSetLayout()
         };
