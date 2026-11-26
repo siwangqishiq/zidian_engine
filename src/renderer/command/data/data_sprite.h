@@ -15,12 +15,15 @@ namespace zidian{
         glm::vec4 color;
         glm::mat4 matrix;
         std::shared_ptr<Image> image;
+
+        uint32_t transformMatrixIndex;
     };
 
     struct SpriteVertex{
         glm::vec3 position;
         glm::vec2 uv;
         glm::vec4 color;
+        uint32_t matIndex;
         
         static VkVertexInputBindingDescription bindingDesc();
         static std::vector<VkVertexInputAttributeDescription> attributeDesc();

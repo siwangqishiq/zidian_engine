@@ -385,6 +385,23 @@ namespace zidian {
         vkGetDeviceQueue(device, graphQueueFamily, 0, &graphQueue);
 
         Log::i("render", "Create logical device success.");
+
+        if(IS_DEBUG){
+            PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT =
+            reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
+                vkGetDeviceProcAddr(
+                    device,
+                    "vkSetDebugUtilsObjectNameEXT"
+                )
+            );
+
+            VkDebugUtilsObjectNameInfoEXT nameInfo{};
+            nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+            nameInfo.objectType = VK_OBJECT_TYPE_DEVICE;
+            nameInfo.objectHandle = reinterpret_cast<uint64_t>(device);
+            nameInfo.pObjectName = "GlobalLogicDevice_zidian";
+            vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
+        }
     }
 
     void Render::createSwapchain(){
@@ -677,6 +694,8 @@ namespace zidian {
         }
 
         vkWaitForFences(device, 1, &frameResource->inFlightFences[currentFrameIndex], VK_TRUE, UINT64_MAX);
+
+        canvas->resetState();
         // 清理当前帧 Transform 数据
         frameResource->transformDatas[currentFrameIndex].clear();
 
@@ -789,6 +808,7 @@ namespace zidian {
 
         //reset All Batchs
         batchManager->resetAllBatch(currentFrameIndex);
+        // canvas->restore();
 
         currentFrameIndex = (currentFrameIndex + 1) % MAX_FRAME_IN_FLIGHT;
         // Log::purple("render", "currentFrameIndex = %u", currentFrameIndex);

@@ -126,10 +126,10 @@ namespace zidian{
             descriptorSetLayout = VK_NULL_HANDLE;
         }
 
-        for(int i = 0 ; i < descriptorSetLayouts.size() ;i++){
-            vkDestroyDescriptorSetLayout(ctx.device, descriptorSetLayouts[i] , nullptr);
-        }
-        descriptorSetLayouts.clear();
+        // for(int i = 0 ; i < descriptorSetLayouts.size() ;i++){
+        //     vkDestroyDescriptorSetLayout(ctx.device, descriptorSetLayouts[i] , nullptr);
+        // }
+        // descriptorSetLayouts.clear();
     }
 
     BasePipeline::~BasePipeline(){
@@ -269,31 +269,6 @@ namespace zidian{
     }
 
     void BasePipeline::createDescriptorSetLayout(){
-        std::array<VkDescriptorSetLayoutBinding, 1> uboLayoutBindings = PrimitiveUniformData::bindingDescs();
-        
-        VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
-        layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutCreateInfo.bindingCount = uboLayoutBindings.size();
-        layoutCreateInfo.pBindings = uboLayoutBindings.data();
-
-        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS){
-            Log::e("primitive_pipeline", "create descriptor set layout failed!");
-            return;
-        }
-
-        //分配 DescriptorSet
-        std::vector<VkDescriptorSetLayout> layouts(FrameResource::MAX_FRAME_IN_FLIGHT, descriptorSetLayout);
-        VkDescriptorSetAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = pipelineMgr.descriptorPool;
-        allocInfo.descriptorSetCount = layouts.size();
-        allocInfo.pSetLayouts = layouts.data();
-
-        descriptorSets.resize(layouts.size());
-        if(vkAllocateDescriptorSets(ctx.device, &allocInfo, descriptorSets.data()) != VK_SUCCESS){
-            Log::e("primitive_pipeline", "create descriptor set objects failed!");
-            return;
-        }
     }
 
     //更新DescriptorSet

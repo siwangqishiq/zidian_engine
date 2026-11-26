@@ -72,21 +72,25 @@ namespace zidian{
         vertex[0].position = { pos[0], pos[1], 1.0f};
         vertex[0].uv = glm::vec2(uvCoords[0], uvCoords[1]);
         vertex[0].color = spriteData.color;
+        vertex[0].matIndex = spriteData.transformMatrixIndex;
         
         pos = matrix * glm::vec4(posLeft, posBottom,0.0f, 1.0f);
         vertex[1].position = { pos[0], pos[1], 1.0f};
         vertex[1].uv = glm::vec2(uvCoords[2], uvCoords[3]);
         vertex[1].color = spriteData.color;
+        vertex[1].matIndex = spriteData.transformMatrixIndex;
         
         pos = matrix * glm::vec4(posRight, posBottom,0.0f, 1.0f);
         vertex[2].position = { pos[0], pos[1], 1.0f};
         vertex[2].uv = glm::vec2(uvCoords[4], uvCoords[5]);
         vertex[2].color = spriteData.color;
+        vertex[2].matIndex = spriteData.transformMatrixIndex;
 
         pos = matrix * glm::vec4(posRight, posTop, 0.0f, 1.0f);
         vertex[3].position = { pos[0], pos[1], 1.0f};
         vertex[3].uv = glm::vec2(uvCoords[6], uvCoords[7]);
         vertex[3].color = spriteData.color;
+        vertex[3].matIndex = spriteData.transformMatrixIndex;
 
         vertexData.emplace_back(vertex[0]);
         vertexData.emplace_back(vertex[1]);
@@ -113,7 +117,18 @@ namespace zidian{
         vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffers[frameIndex], offset);
         offsets[frameIndex] += vertexCount * sizeof(SpriteVertex);
 
-        updateTransformMatrix(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
+        updatePushConstants(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
+
+        vkCmdBindDescriptorSets(
+            cmdBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            attachPipeline->pipelineLayout,
+            0,
+            1,
+            &ctx.frameResource->globalDescriptorSets_[frameIndex],
+            0,
+            nullptr
+        );
 
         vkCmdBindDescriptorSets(
             cmdBuffer, 
@@ -121,7 +136,7 @@ namespace zidian{
             attachPipeline->pipelineLayout, 
             1, 
             1, 
-            &currentImage->getDescriptorSets()[frameIndex], \
+            &currentImage->getDescriptorSets()[frameIndex], 
             0, 
             nullptr
         );
@@ -138,7 +153,7 @@ namespace zidian{
     }
 
     VkDescriptorSetLayout SpriteBatch::getDescriptorSetLayout() {
-        return attachPipeline->descriptorSetLayouts[1];
+        return attachPipeline->getDescriptorSetLayouts()[1];
     }
     
     SpriteBatch::~SpriteBatch(){

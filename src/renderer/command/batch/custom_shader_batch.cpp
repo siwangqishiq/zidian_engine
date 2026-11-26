@@ -87,7 +87,7 @@ namespace zidian{
 
         vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffers[frameIndex], offset);
         offsets[frameIndex] += vertexCount * sizeof(CustomShaderVertex);
-        updateTransformMatrix(cmdBuffer, frameIndex , customPipeline->pipelineLayout);
+        updatePushConstants(cmdBuffer, frameIndex , customPipeline->pipelineLayout);
 
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
 

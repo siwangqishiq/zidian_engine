@@ -20,13 +20,15 @@ extern void TestDrawBezierCase();
 
 extern void TestSpriteTransformCase();
 
+extern void TestCanvasTransformTrianglesCase();
+
 int main() {
     // TestLogs();
     // TestApplication();
     // TestDraw();
     // TestBatchDraw();
     // TestCircleDraw();
-    TestTestMultiPipeline();
+    // TestTestMultiPipeline();
     // TestPictureShow();
     // TestCustomShader();
 
@@ -44,8 +46,10 @@ int main() {
     // TestDrawLinesCase();
     // TestDrawBezierCase();
 
-    // TestSpriteTransformCase();
+    TestSpriteTransformCase();
     
     // TestSpriteDraw1();
+    // TestCanvasTransformTrianglesCase();
+
     return 0;
 }//end main

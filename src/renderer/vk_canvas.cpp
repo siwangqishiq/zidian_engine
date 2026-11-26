@@ -4,7 +4,7 @@
 #include "renderer/command/cmd.h"
 #include "renderer/command/render_queue.h"
 #include "glm/gtc/matrix_transform.hpp"
-
+#include "utils/log.h"
 
 namespace zidian {
     VkCanvas::VkCanvas(Render &context) : ctx(context) {
@@ -29,8 +29,10 @@ namespace zidian {
             data.vertices[i] = vertices[i];
             data.colors[i] = colors[i];
         }//end for i
-        cmd.data = data;
+        data.transformMatrixIndex = getMatrixIndex();
+        // Log::purple("canvasdebug", "transformMatrixIndex = %u", data.transformMatrixIndex);
         
+        cmd.data = data;
         ctx.renderQueue->addCmd(cmd);
     }
 
@@ -148,6 +150,7 @@ namespace zidian {
         data.dstRect = dstRect;
         data.matrix = matrix;
         data.color = color;
+        data.transformMatrixIndex = getMatrixIndex();
 
         cmd.data = data;
         

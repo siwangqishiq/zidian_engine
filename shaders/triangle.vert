@@ -10,11 +10,11 @@ layout(push_constant) uniform PushConstant {
 
 layout(set = 0, binding = 0, std430) readonly buffer TransformBuffer {
     mat4 transforms[];
-};
+} transBuffer;
 
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-    gl_Position = pc.proj * vec4(inPosition , 1.0f);
+    gl_Position = pc.proj * transBuffer.transforms[inMatIndex] * vec4(inPosition , 1.0f);
     fragColor = inColor;
 }

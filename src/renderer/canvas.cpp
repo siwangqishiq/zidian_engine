@@ -2,6 +2,10 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 namespace zidian{
+    void ICanvas::resetState(){
+        state_ = CanvasState();
+        stateStack_.clear();
+    }
 
     int ICanvas::save(){
         stateStack_.push_back(state_);

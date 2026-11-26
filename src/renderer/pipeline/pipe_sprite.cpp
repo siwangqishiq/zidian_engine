@@ -45,8 +45,6 @@ namespace zidian{
     }
 
     bool SpritePipeline::createPipelineLayout(){
-        createDescriptorSetLayout();
-        
         VkPushConstantRange range{};
         range.offset = 0;
         range.size = sizeof(CommonUniform);
@@ -56,8 +54,14 @@ namespace zidian{
         layoutCreateInfo.pushConstantRangeCount = 1;
         layoutCreateInfo.pPushConstantRanges = &range;
 
-        layoutCreateInfo.setLayoutCount = descriptorSetLayouts.size();
-        layoutCreateInfo.pSetLayouts = descriptorSetLayouts.data();
+        descriptorSetLayouts_ = getDescriptorSetLayouts();
+        if(descriptorSetLayouts_.empty()){
+            layoutCreateInfo.setLayoutCount = 0;
+            layoutCreateInfo.pSetLayouts = nullptr;
+        }else{
+            layoutCreateInfo.setLayoutCount = descriptorSetLayouts_.size();
+            layoutCreateInfo.pSetLayouts = descriptorSetLayouts_.data();
+        }
         
         if(vkCreatePipelineLayout(ctx.device, &layoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS){
             Log::e("SpritePipeline", "create pipeline layout failed!");
@@ -66,29 +70,31 @@ namespace zidian{
         return true;
     }
 
-    void SpritePipeline::createDescriptorSetLayout(){
-        descriptorSetLayouts.resize(2);
+    std::vector<VkDescriptorSetLayout> SpritePipeline::getDescriptorSetLayouts(){
+        std::vector<VkDescriptorSetLayout> descSetLayouts;
+        descSetLayouts.push_back(ctx.frameResource->getGlobalDescriptorSetLayout());
 
-        descriptorSetLayouts[0] = VK_NULL_HANDLE;
-        descriptorSetLayouts[1] = VK_NULL_HANDLE;
+        // descSetLayouts[0] = ctx.frameResource->getGlobalDescriptorSetLayout();
+        // descSetLayouts[1] = VK_NULL_HANDLE;
+
+        VkDescriptorSetLayout uniformDescSetLayout;
 
         auto uboLayoutBindings = SpriteUniform::layoutBindingDesc();
-
         VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         layoutCreateInfo.bindingCount = uboLayoutBindings.size();
         layoutCreateInfo.pBindings = uboLayoutBindings.data();
 
-        // Log::green("SpritePipeline", "create sprite pipeline descriptorSet layout");
-
-        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayouts[0]) != VK_SUCCESS){
+        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &uniformDescSetLayout) != VK_SUCCESS){
             Log::e("SpritePipeline", "create descriptor set layout failed!");
-            return;
+        }else{
+            descSetLayouts.push_back(uniformDescSetLayout);
         }
-        
-        if(vkCreateDescriptorSetLayout(ctx.device, &layoutCreateInfo, nullptr, &descriptorSetLayouts[1]) != VK_SUCCESS){
-            Log::e("SpritePipeline", "create descriptor set layout failed!");
-            return;
-        }
+        return descSetLayouts;
     }
+
+    std::vector<VkDescriptorSetLayout>& SpritePipeline::getDescriptorSetLayout(){
+        return descriptorSetLayouts_;
+    }
+    
 }//end namespace

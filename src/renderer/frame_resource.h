@@ -10,7 +10,7 @@ namespace zidian{
 
     class FrameResource{
     public:
-        static uint32_t MAX_FRAME_IN_FLIGHT;
+        static constexpr uint32_t MAX_FRAME_IN_FLIGHT = 2;
         static constexpr uint32_t MAX_TRANSFORM_COUNT = 4 * 1024;
 
         FrameResource(Render &context);
@@ -47,7 +47,7 @@ namespace zidian{
 
         void uploadTransformData(const uint32_t frameIndex);
 
-        std::vector<VkDescriptorSet> globalDescriptorSets;
+        std::vector<VkDescriptorSet> globalDescriptorSets_;
     private:
         Render &ctx;
 
@@ -66,6 +66,7 @@ namespace zidian{
         void createGlobalDescriptorSetLayout();
         void createGlobalDescriptorSetPool();
         void allocAndUpdateGlobalDescriptorSet();
+
     public:
         void createFramebuffers();
         void destroyFramebuffers();

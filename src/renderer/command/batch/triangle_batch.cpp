@@ -34,6 +34,7 @@ namespace zidian{
             TriangleVertex item;
             item.position = glm::vec3(trianglesData.vertices[i], 1.0f);
             item.color = trianglesData.colors[i];
+            item.matrixIndex = trianglesData.transformMatrixIndex;
 
             // Log::purple("debug", "item.position %f %f  color %f %f %f %f ", item.position[0], item.position[1], item.color[0],item.color[1],item.color[2],item.color[3]);
             vertexData.emplace_back(item);
@@ -42,6 +43,8 @@ namespace zidian{
     
     void TriangleBatch::commit(VkCommandBuffer &cmdBuffer,uint32_t frameIndex) {
         vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, attachPipeline->pipeline);
+
+        ctx.frameResource->uploadTransformData(frameIndex);
         
         const uint32_t vertexCount = vertexData.size();
         // Log::blue("debug", "vertexCount --> %u",vertexCount);
@@ -52,15 +55,19 @@ namespace zidian{
         vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffers[frameIndex], offset);
         offsets[frameIndex] += vertexCount * sizeof(TriangleVertex);
 
-        // pushConstantDatas[frameIndex].proj = {
-        //     glm::vec4(2.0f / ctx.swapChainExtent.width, 0.0f, 0.0f, 0.0f),
-        //     glm::vec4(0.0f, 2.0f / ctx.swapChainExtent.height, 0.0f, 0.0f),
-        //     glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
-        //     glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f)
-        // };
-        // vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
-        // Log::green("pipeline", "commit triangles batch! vertexCount =  %d", vertexCount);
-        updateTransformMatrix(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
+        updatePushConstants(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
+
+        vkCmdBindDescriptorSets(
+            cmdBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            attachPipeline->pipelineLayout,
+            0,
+            1,
+            &ctx.frameResource->globalDescriptorSets_[frameIndex],
+            0,
+            nullptr
+        );
+
 
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
 

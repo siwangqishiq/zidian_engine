@@ -51,6 +51,7 @@ namespace zidian{
         virtual int getHeight() = 0;
 
         // =========== canvas state ================
+        void resetState();
         int save();
         void restore();
         void restoreToCount(int count);
@@ -74,7 +75,6 @@ namespace zidian{
 
         virtual ~ICanvas(){}
     private:
-
         std::vector<CanvasState> stateStack_;
         CanvasState state_;
     };//end canvas

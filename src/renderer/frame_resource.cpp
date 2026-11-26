@@ -5,8 +5,6 @@
 #include "config.h"
 
 namespace zidian {
-    uint32_t FrameResource::MAX_FRAME_IN_FLIGHT = 2;
-
     FrameResource::FrameResource(Render &context) : ctx(context){
     }
 
@@ -22,6 +20,7 @@ namespace zidian {
         createTransformBuffers();
         createGlobalDescriptorSetLayout();
         createGlobalDescriptorSetPool();
+        allocAndUpdateGlobalDescriptorSet();
         
 
         //创建完buffer后  更新descriptorSet
@@ -233,7 +232,48 @@ namespace zidian {
     
     //创建DescriptotrSet 并完成更新
     void FrameResource::allocAndUpdateGlobalDescriptorSet(){
+        VkDescriptorSetLayout setLayouts[] = {
+            globalDescSetLayout_,
+            globalDescSetLayout_
+        };
+        const uint32_t setCount = static_cast<uint32_t>(sizeof(setLayouts) / sizeof(setLayouts[0]));
+        globalDescriptorSets_.resize(setCount);
 
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = globalDescSetPool_;
+        allocInfo.descriptorSetCount = setCount;
+        allocInfo.pSetLayouts = setLayouts;
+        if(vkAllocateDescriptorSets(ctx.device, &allocInfo, globalDescriptorSets_.data()) != VK_SUCCESS){
+            Log::e("render", "Alloc global descriptorset error");
+            return;
+        }
+        Log::i("render", "Alloc global descriptorsets success!");
+
+        for(size_t i = 0 ; i < globalDescriptorSets_.size(); i++){
+            VkWriteDescriptorSet descSetWriter{};
+            descSetWriter.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descSetWriter.descriptorCount = 1;
+            descSetWriter.dstArrayElement = 0;
+            descSetWriter.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            descSetWriter.dstBinding = 0;
+            descSetWriter.dstSet = globalDescriptorSets_[i];
+
+            VkDescriptorBufferInfo bufferInfo{};
+            bufferInfo.buffer = transformBuffers[i];
+            bufferInfo.range = VK_WHOLE_SIZE;
+            bufferInfo.offset = 0;
+            descSetWriter.pBufferInfo = &bufferInfo;
+
+            vkUpdateDescriptorSets(
+                ctx.device,
+                1,
+                &descSetWriter,
+                0,
+                nullptr
+            );
+        }//end for i
+        Log::i("render", "Update global descriptorsets success!");
     }
 
     void FrameResource::uploadTransformData(const uint32_t frameIndex){

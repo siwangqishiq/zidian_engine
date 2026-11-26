@@ -59,6 +59,7 @@ namespace zidian{
         range.offset = 0;
         range.size = sizeof(CommonUniform);
         range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        
         layoutCreateInfo.pushConstantRangeCount = 1;
         layoutCreateInfo.pPushConstantRanges = &range;
         

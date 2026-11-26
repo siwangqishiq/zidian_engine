@@ -11,7 +11,7 @@ namespace zidian{
     }
 
     std::vector<VkVertexInputAttributeDescription> SpriteVertex::attributeDesc(){
-        std::array<VkVertexInputAttributeDescription, 3> descs{};
+        std::array<VkVertexInputAttributeDescription, 4> descs{};
 
         //position 
         descs[0].binding = 0;
@@ -30,6 +30,12 @@ namespace zidian{
         descs[2].location = 2;
         descs[2].offset = offsetof(SpriteVertex, color);
         descs[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+
+        //matIndex
+        descs[3].binding = 0;
+        descs[3].location = 3;
+        descs[3].offset = offsetof(SpriteVertex, matIndex);
+        descs[3].format = VK_FORMAT_R32_UINT;
         
         return std::vector<VkVertexInputAttributeDescription>(descs.begin(), descs.end());
     }

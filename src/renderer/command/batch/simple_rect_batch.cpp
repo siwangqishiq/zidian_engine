@@ -58,7 +58,7 @@ namespace zidian{
         // };
         // vkCmdPushConstants(cmdBuffer, attachPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CommonUniform), &pushConstantDatas[frameIndex]);
 
-        updateTransformMatrix(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
+        updatePushConstants(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
         
         // Log::green("pipeline", "commit simple rect batch!");
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);

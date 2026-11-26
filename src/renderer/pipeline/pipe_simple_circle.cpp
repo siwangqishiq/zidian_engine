@@ -89,7 +89,7 @@ namespace zidian{
         descriptorSets.resize(layouts.size());
         VkResult result = vkAllocateDescriptorSets(ctx.device, &allocInfo, descriptorSets.data());
         if(result != VK_SUCCESS){
-            Log::e("primitive_pipeline", "create descriptor set objects failed! %d", result);
+            Log::e("simple_circle_pipeline", "create descriptor set objects failed! %d", result);
             return;
         }
     }
