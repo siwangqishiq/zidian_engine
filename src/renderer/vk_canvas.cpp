@@ -116,6 +116,7 @@ namespace zidian {
         Cmd cmd;
         cmd.type = CmdType::DrawSimpleCircle;
         DrawSimpleCircleData data = {.center = center , .radius = radius , .color = color};
+        data.transformMatrixIndex = getMatrixIndex();
         cmd.data = data;
 
         ctx.renderQueue->addCmd(cmd);

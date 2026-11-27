@@ -7,7 +7,7 @@ namespace zidian{
         attachPipeline = std::make_unique<SimpleCirclePipeline>(ctx, *ctx.pipelineManager);
         attachPipeline->create();
 
-        Log::green("pipeline", "create simple_circle pipeline success!");
+        Log::i("pipeline", "create simple_circle pipeline success!");
     }
 
     VkDeviceSize SimpleCircleBatch::genBufferSize() {
@@ -17,7 +17,7 @@ namespace zidian{
 
     void SimpleCircleBatch::init(){
         createBuffers();
-        Log::green("pipeline", "create simple_circle buffer success~");
+        Log::i("pipeline", "create simple_circle buffer success~");
     }
 
     bool SimpleCircleBatch::canBatch(const Cmd& cmd){
@@ -33,6 +33,8 @@ namespace zidian{
         item.position = glm::vec3(data.center, 0.0f);
         item.radius = data.radius;
         item.color = data.color;
+        item.matIndex = data.transformMatrixIndex;
+        
         vertexData.emplace_back(item);
     }
 
@@ -48,6 +50,17 @@ namespace zidian{
 
         updatePushConstants(cmdBuffer, frameIndex , attachPipeline->pipelineLayout);
 
+        vkCmdBindDescriptorSets(
+            cmdBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            attachPipeline->pipelineLayout,
+            0,
+            1,
+            &ctx.frameResource->globalDescriptorSets_[frameIndex],
+            0,
+            nullptr
+        );
+
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
 
         vertexData.clear();
@@ -59,7 +72,7 @@ namespace zidian{
         offsets[frameIndex] = 0;
     }
 
-    SimpleCircleBatch::~SimpleCircleBatch(){
-        Log::purple("batch", "SimpleCircleBatch destroy buffer");
+    SimpleCircleBatch::~SimpleCircleBatch() {
+        Log::i("batch", "SimpleCircleBatch destroy buffer");
     }
 }
