@@ -18,15 +18,6 @@ namespace zidian{
     void BatchManager::autoRegisterBatchs(){
         Log::i("BatchManager","Auto register batchs");
 
-        std::shared_ptr<Batch> simpleRectBatch = std::make_shared<SimpleRectBatch>(ctx);
-        registerBatch(CmdType::DrawSimpleRect, simpleRectBatch);
-
-        std::shared_ptr<Batch> simpleCircleBatch = std::make_shared<SimpleCircleBatch>(ctx);
-        registerBatch(CmdType::DrawSimpleCircle, simpleCircleBatch);
-
-        std::shared_ptr<Batch> simpleTriangleBatch = std::make_shared<SimpleTriangleBatch>(ctx);
-        registerBatch(CmdType::DrawSimpleTriangle, simpleTriangleBatch);
-
         std::shared_ptr<Batch> trianglesBatch = std::make_shared<TriangleBatch>(ctx);
         registerBatch(CmdType::DrawTriangles, trianglesBatch);
 
@@ -35,6 +26,15 @@ namespace zidian{
 
         std::shared_ptr<Batch> customShaderBatch = std::make_shared<CustomShaderBatch>(ctx);
         registerBatch(CmdType::DrawCustomShader, customShaderBatch);
+
+        std::shared_ptr<Batch> simpleRectBatch = std::make_shared<SimpleRectBatch>(ctx);
+        registerBatch(CmdType::DrawSimpleRect, simpleRectBatch);
+
+        std::shared_ptr<Batch> simpleCircleBatch = std::make_shared<SimpleCircleBatch>(ctx);
+        registerBatch(CmdType::DrawSimpleCircle, simpleCircleBatch);
+
+        std::shared_ptr<Batch> simpleTriangleBatch = std::make_shared<SimpleTriangleBatch>(ctx);
+        registerBatch(CmdType::DrawSimpleTriangle, simpleTriangleBatch);
     }
 
     //将type与batch注册

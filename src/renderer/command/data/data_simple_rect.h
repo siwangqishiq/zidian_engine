@@ -11,12 +11,15 @@ namespace zidian{
         float height;
         
         glm::vec4 color;
+
+        uint32_t transformMatrixIndex;
     };
 
     struct SimpleRectVertex{
         glm::vec3 position;
         glm::vec2 size;
         glm::vec4 color;
+        uint32_t matIndex;
 
         static VkVertexInputBindingDescription bindingDesc();
         static std::vector<VkVertexInputAttributeDescription> attributeDesc();

@@ -97,6 +97,7 @@ namespace zidian {
         Cmd cmd;
         cmd.type = CmdType::DrawSimpleRect;
         DrawSimpleRectData data{.left = left, .top = top, .width = width , .height = height,.color = color};
+        data.transformMatrixIndex = getMatrixIndex();
         cmd.data = data;
         
         ctx.renderQueue->addCmd(cmd);
