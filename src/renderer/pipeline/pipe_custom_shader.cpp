@@ -53,31 +53,35 @@ namespace zidian{
         Log::i("CustomShaderPipeline","CustomShaderPipeline::populateInputAssemblyState");
     }
 
+    std::vector<VkDescriptorSetLayout> CustomShaderPipeline::genDescriptorSetLayouts() {
+        return {
+            ctx.frameResource->getGlobalDescriptorSetLayout()
+        };
+    }
+
     bool CustomShaderPipeline::createPipelineLayout(){
-        createDescriptorSetLayout();
-        
+        layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        const std::vector<VkDescriptorSetLayout> descriptorSetLayouts = genDescriptorSetLayouts();
+        if(descriptorSetLayouts.empty()){
+            layoutCreateInfo.setLayoutCount = 0;
+            layoutCreateInfo.pSetLayouts = nullptr;
+        }else{
+            layoutCreateInfo.setLayoutCount = descriptorSetLayouts.size();
+            layoutCreateInfo.pSetLayouts = descriptorSetLayouts.data();
+        }
+
         VkPushConstantRange range{};
         range.offset = 0;
         range.size = sizeof(CommonUniform);
         range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-        layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutCreateInfo.setLayoutCount = 0;
-        layoutCreateInfo.pSetLayouts = nullptr;
         layoutCreateInfo.pushConstantRangeCount = 1;
         layoutCreateInfo.pPushConstantRanges = &range;
-        
-        layoutCreateInfo.setLayoutCount = 0;
-        layoutCreateInfo.pSetLayouts = nullptr;
         
         if(vkCreatePipelineLayout(ctx.device, &layoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS){
             Log::e("SpritePipeline", "create pipeline layout failed!");
             return false;
         }
         return true;
-    }
-
-    void CustomShaderPipeline::createDescriptorSetLayout(){
     }
 
     CustomShaderPipelineId CustomShaderPipeline::getCustomPipelineId(){

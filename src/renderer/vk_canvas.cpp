@@ -167,6 +167,7 @@ namespace zidian {
         DrawCustomShaderData data;
         data.pipeId = pid;
         data.dstRect = Rect{left, top , width , height};
+        data.transformMatrixIndex = getMatrixIndex();
         cmd.data = data;
 
         ctx.renderQueue->addCmd(cmd);

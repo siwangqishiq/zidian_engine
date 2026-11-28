@@ -17,7 +17,7 @@ namespace zidian {
         virtual void populateVertexInputState() override;
         virtual void populateInputAssemblyState() override;
         virtual bool createPipelineLayout() override;
-        virtual void createDescriptorSetLayout() override;
+        virtual std::vector<VkDescriptorSetLayout> genDescriptorSetLayouts() override;
 
         CustomShaderPipelineId getCustomPipelineId();
     private:

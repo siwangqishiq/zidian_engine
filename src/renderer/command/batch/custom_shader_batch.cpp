@@ -43,15 +43,19 @@ namespace zidian{
         // 0 1 2
         vertex[0].position = glm::vec3(posRight, posTop, 1.0f);
         vertex[0].uv = glm::vec2(1.0f, 0.0f);
+        vertex[0].matIndex = customShaderData.transformMatrixIndex;
 
         vertex[1].position = glm::vec3(posLeft, posTop, 1.0f);
         vertex[1].uv = glm::vec2(0.0f, 0.0f);
+        vertex[1].matIndex = customShaderData.transformMatrixIndex;
 
         vertex[2].position = glm::vec3(posLeft, posBottom, 1.0f);
         vertex[2].uv = glm::vec2(0.0f, 1.0f);
+        vertex[2].matIndex = customShaderData.transformMatrixIndex;
 
         vertex[3].position = glm::vec3(posRight, posBottom, 1.0f);
         vertex[3].uv = glm::vec2(1.0f, 1.0f);
+        vertex[3].matIndex = customShaderData.transformMatrixIndex;
 
         vertexData.emplace_back(vertex[0]);
         vertexData.emplace_back(vertex[1]);
@@ -88,6 +92,17 @@ namespace zidian{
         vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffers[frameIndex], offset);
         offsets[frameIndex] += vertexCount * sizeof(CustomShaderVertex);
         updatePushConstants(cmdBuffer, frameIndex , customPipeline->pipelineLayout);
+
+        vkCmdBindDescriptorSets(
+            cmdBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            customPipeline->pipelineLayout,
+            0,
+            1,
+            &ctx.frameResource->globalDescriptorSets_[frameIndex],
+            0,
+            nullptr
+        );
 
         vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
 
