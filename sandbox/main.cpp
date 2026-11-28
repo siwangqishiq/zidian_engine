@@ -19,6 +19,7 @@ extern void TestDrawLinesCase();
 extern void TestDrawBezierCase();
 
 extern void TestSpriteTransformCase();
+extern void TestSpriteFlipCase();
 
 extern void TestCanvasTransformTrianglesCase();
 extern void TestCanvasTransformSpriteCase();
@@ -52,6 +53,8 @@ int main() {
     // TestDrawBezierCase();
 
     // TestSpriteTransformCase();
+    TestSpriteFlipCase();
+
     
     // TestSpriteDraw1();
     // TestCanvasTransformTrianglesCase();
@@ -59,7 +62,7 @@ int main() {
     // TestCanvasTransformSimpleDrawCase();
     // TestCanvasTransformSimpleCircleCase();
     // TestCanvasTransformSimpleTriangleCase();
-    TestCanvasTransformCustomShaderCase();
+    // TestCanvasTransformCustomShaderCase();
     
     return 0;
 }//end main

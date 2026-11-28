@@ -1,7 +1,8 @@
 ## zidian Todo
 - [x] 纹理渲染添加spriteSheet 方便批量的纹理绘制 
 - [x] 基础图元绘制贝塞尔曲线 
-- [ ] 各条渲染管线transform matrix加入 
+- [x] 各条渲染管线transform matrix加入 
+- [ ] 纹理渲染flip功能
 - [ ] SDF渲染管线的引入 
 - [ ] 文字Render 
 - [ ] 演示Demo开发 flapbird pingpong (可选)
@@ -18,8 +19,13 @@
 ## 尺规游戏关卡收集
 1. 连接两个点 绘制一条直线
 2. 绘制一个圆
-3. 绘制指定长度的一条线段
-4. 2等分一个给定角
+3. 复制一个指定角
+4. 绘制指定长度的一条线段
+5. 2等分一个给定角
+6. 二等分一条线段
+7. 过指定点绘制一条与已知直线平行的直线
+8. 三等分一条线段
+9. 绘制根号2长度的线段
 
 
 ### canvas状态更新方案
@@ -31,5 +37,26 @@
 Tracy通用分析工具 
 硬件级的测量需要不同显卡厂商提供的对应工具
 
-### Vulkan自带GPU Timestamp Query使用
+### Vulkan自带GPU Timestamp Query使用 
+
+```C
+if(IS_DEBUG){
+    PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT =
+    reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
+        vkGetDeviceProcAddr(
+            device,
+            "vkSetDebugUtilsObjectNameEXT"
+        )
+    );
+
+    VkDebugUtilsObjectNameInfoEXT nameInfo{};
+    nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+    nameInfo.objectType = VK_OBJECT_TYPE_DEVICE;
+    nameInfo.objectHandle = reinterpret_cast<uint64_t>(device);
+    nameInfo.pObjectName = "Zidian_Global_LogicDevice";
+    vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
+}
+
+
+
 
