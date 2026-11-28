@@ -107,6 +107,7 @@ namespace zidian {
         Cmd cmd;
         cmd.type = CmdType::DrawSimpleTriangle;
         DrawSimpleTriangleData data{.p1 = p1, .p2 = p2, .p3 = p3,.color = color};
+        data.transformMatrixIndex = getMatrixIndex();
         cmd.data = data;
 
         ctx.renderQueue->addCmd(cmd);

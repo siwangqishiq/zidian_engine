@@ -12,7 +12,7 @@ namespace zidian {
     }
 
     std::vector<VkVertexInputAttributeDescription> SimpleTriangleVertex::attributeDesc(){
-        std::array<VkVertexInputAttributeDescription, 6> descs{};
+        std::array<VkVertexInputAttributeDescription, 7> descs{};
 
         //position
         descs[0].binding = 0;
@@ -45,6 +45,11 @@ namespace zidian {
         descs[5].location = 5;
         descs[5].offset = offsetof(SimpleTriangleVertex, color);
         descs[5].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+
+        descs[6].binding = 0;
+        descs[6].location = 6;
+        descs[6].offset = offsetof(SimpleTriangleVertex, matIndex);
+        descs[6].format = VK_FORMAT_R32_UINT;
         
         return std::vector<VkVertexInputAttributeDescription>(descs.begin(), descs.end());
     }

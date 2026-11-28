@@ -9,6 +9,8 @@ namespace zidian{
         glm::vec2 p2;
         glm::vec2 p3;
         glm::vec4 color;
+
+        uint32_t transformMatrixIndex;
     };
 
     struct SimpleTriangleVertex{
@@ -18,6 +20,7 @@ namespace zidian{
         glm::vec2 p2;
         glm::vec2 p3;
         glm::vec4 color;
+        uint32_t matIndex;
 
         static VkVertexInputBindingDescription bindingDesc();
         static std::vector<VkVertexInputAttributeDescription> attributeDesc();
